@@ -14,8 +14,10 @@ export interface Project {
   title: string;
   description: string;
   url: string;
-  iconType: 'auto' | 'preset';
+  iconType: 'auto' | 'preset' | 'generated'; // 新增 generated 类型
   presetIcon?: string; // name of lucide icon
+  imageBase64?: string; // 新增：存储 Favicon 的 Base64 数据
+  customSvg?: string;   // 新增：存储 AI 生成的 SVG 代码
 }
 
 export type Theme = 'light' | 'dark';

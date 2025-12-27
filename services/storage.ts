@@ -55,6 +55,18 @@ export const StorageService = {
           preset_icon TEXT
         );
       `;
+      
+      // 数据库迁移：尝试添加新列（如果不存在）
+      // 注意：Neon/Postgres 不支持在 ADD COLUMN 中直接使用 IF NOT EXISTS，
+      // 所以这里使用一个简单的 try-catch 块来忽略列已存在的错误，或者使用 DO block
+      try {
+        await sql`ALTER TABLE projects ADD COLUMN image_base64 TEXT`;
+      } catch (e) { /* ignore if exists */ }
+      
+      try {
+        await sql`ALTER TABLE projects ADD COLUMN custom_svg TEXT`;
+      } catch (e) { /* ignore if exists */ }
+
       console.log('Database tables verified.');
     } catch (error) {
       console.error('Failed to initialize database tables:', error);
@@ -143,7 +155,9 @@ export const StorageService = {
           description: row.description,
           url: row.url,
           iconType: row.icon_type, 
-          presetIcon: row.preset_icon 
+          presetIcon: row.preset_icon,
+          imageBase64: row.image_base64, // 新增
+          customSvg: row.custom_svg        // 新增
       })) as Project[];
     } catch (e) {
       console.error("Error fetching projects:", e);
@@ -154,14 +168,16 @@ export const StorageService = {
   saveProject: async (project: Project): Promise<void> => {
     if (!DATABASE_URL) return;
     await sql`
-      INSERT INTO projects (id, title, description, url, icon_type, preset_icon)
-      VALUES (${project.id}, ${project.title}, ${project.description}, ${project.url}, ${project.iconType}, ${project.presetIcon})
+      INSERT INTO projects (id, title, description, url, icon_type, preset_icon, image_base64, custom_svg)
+      VALUES (${project.id}, ${project.title}, ${project.description}, ${project.url}, ${project.iconType}, ${project.presetIcon}, ${project.imageBase64 || null}, ${project.customSvg || null})
       ON CONFLICT (id) DO UPDATE SET
         title = EXCLUDED.title,
         description = EXCLUDED.description,
         url = EXCLUDED.url,
         icon_type = EXCLUDED.icon_type,
-        preset_icon = EXCLUDED.preset_icon;
+        preset_icon = EXCLUDED.preset_icon,
+        image_base64 = EXCLUDED.image_base64,
+        custom_svg = EXCLUDED.custom_svg;
     `;
   },
 

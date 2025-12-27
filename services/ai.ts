@@ -138,5 +138,106 @@ export const AIService = {
         console.error("AI Tag Generation Failed", e);
         return [];
     }
+  },
+
+  /**
+   * Recommend an icon from the list based on project info
+   */
+  recommendIcon: async (title: string, description: string, availableIcons: string[], provider: AIProvider): Promise<string | null> => {
+    const systemInstruction = `你是一个UI设计师。我将提供一个项目名称和描述，以及一个可用的图标名称列表。
+    请从列表中选择最符合该项目的一个图标名称。
+    
+    可用图标列表：
+    ${availableIcons.join(', ')}
+    
+    规则：
+    1. 只返回一个图标名称（String）。
+    2. 不要返回任何Markdown格式、标点符号或解释。
+    3. 如果没有完美匹配，请选择最抽象或通用的相关图标（如 Globe, Layout, Box, Star）。`;
+
+    const userPrompt = `项目名称：${title}\n描述：${description}`;
+    let result = '';
+
+    try {
+        if (provider === 'gemini') {
+            const response = await geminiClient.models.generateContent({
+                model: "gemini-3-flash-preview",
+                contents: userPrompt,
+                config: { systemInstruction: systemInstruction, temperature: 0.1 }
+            });
+            result = response.text || '';
+        } else {
+             const response = await deepseekClient.chat.completions.create({
+                messages: [
+                  { role: "system", content: systemInstruction },
+                  { role: "user", content: userPrompt }
+                ],
+                model: "deepseek-chat",
+                temperature: 0.1,
+            });
+            result = response.choices[0]?.message?.content || '';
+        }
+        const cleaned = result.trim().replace(/['"`.]/g, '');
+        return availableIcons.includes(cleaned) ? cleaned : null;
+    } catch (e) {
+        console.error("Recommend Icon Failed", e);
+        return null;
+    }
+  },
+
+  /**
+   * Generate an SVG icon
+   */
+  generateSVGIcon: async (title: string, description: string, provider: AIProvider): Promise<string> => {
+      const systemInstruction = `你是一个SVG图标生成专家。请根据用户的项目名称和描述，编写一个简洁、现代、线条风格（Outline style）的 SVG 图标代码。
+      
+      技术要求：
+      1. viewBox="0 0 24 24"。
+      2. 使用 stroke="currentColor"，fill="none"，stroke-width="2"，stroke-linecap="round"，stroke-linejoin="round"。
+      3. 不要包含 XML 声明或 DOCTYPE。
+      4. 只返回 <svg>...</svg> 代码块本身。
+      5. 不要使用Markdown代码块标记（不要使用 \`\`\`xml 或 \`\`\`svg）。
+      6. 代码要非常精简，不要有多余的注释。`;
+      
+      const userPrompt = `项目名称：${title}\n描述：${description}\n请设计一个抽象且具象结合的图标。`;
+      let result = '';
+
+      try {
+        if (provider === 'gemini') {
+            const response = await geminiClient.models.generateContent({
+                model: "gemini-3-flash-preview",
+                contents: userPrompt,
+                config: { systemInstruction: systemInstruction, temperature: 0.8 }
+            });
+            result = response.text || '';
+        } else {
+             const response = await deepseekClient.chat.completions.create({
+                messages: [
+                  { role: "system", content: systemInstruction },
+                  { role: "user", content: userPrompt }
+                ],
+                model: "deepseek-chat",
+                temperature: 0.8,
+            });
+            result = response.choices[0]?.message?.content || '';
+        }
+        
+        // Cleanup response
+        let svg = result.trim();
+        if (svg.startsWith('```')) {
+            svg = svg.replace(/^```(xml|svg)?\n/, '').replace(/\n```$/, '');
+        }
+        const svgStart = svg.indexOf('<svg');
+        const svgEnd = svg.lastIndexOf('</svg>');
+        
+        if (svgStart !== -1 && svgEnd !== -1) {
+            return svg.substring(svgStart, svgEnd + 6);
+        }
+        return '';
+
+    } catch (e) {
+        console.error("Generate SVG Failed", e);
+        return '';
+    }
   }
 };

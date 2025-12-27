@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useMemo } from 'react';
 import { StorageService } from '../../services/storage';
 import { AIService, AIProvider } from '../../services/ai';
-import { Plus, Layout, Trash2, Edit2, Save, Globe, Search, X, Settings, Database, Sparkles, Loader2, Zap, BrainCircuit } from 'lucide-react';
+import { Plus, Layout, Trash2, Edit2, Save, Globe, Search, X, Settings, Database, Sparkles, Loader2, Zap, BrainCircuit, Wand2, DownloadCloud } from 'lucide-react';
 import { Article, Project } from '../../types';
 import * as Icons from 'lucide-react';
 import { MarkdownRenderer } from '../../components/MarkdownRenderer';
@@ -82,7 +82,8 @@ const ProjectEditor: React.FC<{
   project?: Project;
   onSave: (p: Project) => void;
   onCancel: () => void;
-}> = ({ project, onSave, onCancel }) => {
+  aiProvider: AIProvider;
+}> = ({ project, onSave, onCancel, aiProvider }) => {
   const [formData, setFormData] = useState<Project>(
     project || {
       id: '',
@@ -91,9 +92,16 @@ const ProjectEditor: React.FC<{
       url: '',
       iconType: 'auto',
       presetIcon: 'Globe',
+      imageBase64: '',
+      customSvg: ''
     }
   );
   const [saving, setSaving] = useState(false);
+  
+  // States for icon functionalities
+  const [fetchingFavicon, setFetchingFavicon] = useState(false);
+  const [recommendingIcon, setRecommendingIcon] = useState(false);
+  const [generatingSvg, setGeneratingSvg] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -105,6 +113,88 @@ const ProjectEditor: React.FC<{
   const SelectedIconComp = formData.presetIcon && (Icons as any)[formData.presetIcon] 
     ? (Icons as any)[formData.presetIcon] 
     : Icons.Globe;
+
+  // 1. Fetch Favicon Logic
+  const handleFetchFavicon = async () => {
+    if (!formData.url) {
+        alert("请先填写 URL");
+        return;
+    }
+    setFetchingFavicon(true);
+    setFormData(prev => ({...prev, iconType: 'auto'}));
+    
+    try {
+        const domain = new URL(formData.url).hostname;
+        const iconUrl = `https://www.google.com/s2/favicons?domain=${domain}&sz=128`;
+        // Use a CORS proxy to fetch the image data
+        const proxyUrl = `https://api.allorigins.win/raw?url=${encodeURIComponent(iconUrl)}`;
+        
+        const response = await fetch(proxyUrl);
+        if (!response.ok) throw new Error("Fetch failed");
+        
+        const blob = await response.blob();
+        
+        // Convert blob to base64
+        const reader = new FileReader();
+        reader.onloadend = () => {
+            const base64data = reader.result as string;
+            setFormData(prev => ({ ...prev, imageBase64: base64data }));
+        };
+        reader.readAsDataURL(blob);
+
+    } catch (e) {
+        console.error("Favicon fetch error", e);
+        alert("自动获取图标失败，请手动尝试或检查 URL。");
+    } finally {
+        setFetchingFavicon(false);
+    }
+  };
+
+  // 2. AI Recommend Icon
+  const handleRecommendIcon = async () => {
+    if (!formData.title && !formData.description) {
+        alert("请先填写标题或描述，以便 AI 分析。");
+        return;
+    }
+    setRecommendingIcon(true);
+    setFormData(prev => ({...prev, iconType: 'preset'}));
+    
+    try {
+        const recommended = await AIService.recommendIcon(formData.title, formData.description, CURATED_ICONS, aiProvider);
+        if (recommended) {
+            setFormData(prev => ({ ...prev, presetIcon: recommended }));
+        } else {
+            alert("AI 未能找到合适的匹配，请手动选择。");
+        }
+    } catch (e) {
+        alert("AI 服务暂时不可用。");
+    } finally {
+        setRecommendingIcon(false);
+    }
+  };
+
+  // 3. AI Generate SVG
+  const handleGenerateSvg = async () => {
+    if (!formData.title && !formData.description) {
+        alert("请先填写标题或描述，以便 AI 生成。");
+        return;
+    }
+    setGeneratingSvg(true);
+    setFormData(prev => ({...prev, iconType: 'generated'}));
+    
+    try {
+        const svgCode = await AIService.generateSVGIcon(formData.title, formData.description, aiProvider);
+        if (svgCode) {
+            setFormData(prev => ({ ...prev, customSvg: svgCode }));
+        } else {
+            alert("SVG 生成失败，请重试。");
+        }
+    } catch (e) {
+        alert("生成失败。");
+    } finally {
+        setGeneratingSvg(false);
+    }
+  };
 
   return (
     <div className="fixed inset-0 z-[60] bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-200">
@@ -142,53 +232,120 @@ const ProjectEditor: React.FC<{
             />
           </div>
           
-          <div className="space-y-3">
-             <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">图标来源</label>
-                <div className="grid grid-cols-2 gap-3">
-                  <button
+          <div className="space-y-3 pt-2">
+             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">图标设置</label>
+             
+             {/* Icon Type Tabs */}
+             <div className="flex bg-gray-100 dark:bg-neutral-800 p-1 rounded-lg">
+                <button
                     type="button"
                     onClick={() => setFormData({...formData, iconType: 'auto'})}
-                    className={`flex items-center justify-center gap-2 px-3 py-2 rounded-lg border transition-all ${
-                      formData.iconType === 'auto' 
-                        ? 'border-indigo-600 bg-indigo-50 text-indigo-700 dark:bg-indigo-900/30 dark:text-indigo-300 dark:border-indigo-500' 
-                        : 'border-gray-200 bg-gray-50 text-gray-600 dark:border-neutral-700 dark:bg-neutral-800 dark:text-gray-400 hover:bg-gray-100'
+                    className={`flex-1 flex items-center justify-center gap-2 py-1.5 text-xs font-medium rounded-md transition-all ${
+                        formData.iconType === 'auto' ? 'bg-white dark:bg-neutral-700 shadow text-indigo-600 dark:text-indigo-400' : 'text-gray-500 dark:text-gray-400'
                     }`}
-                  >
-                    <Globe size={18} />
-                    自动获取 (Favicon)
-                  </button>
-                  <button
+                >
+                    <Globe size={14} /> 自动获取
+                </button>
+                <button
                     type="button"
                     onClick={() => setFormData({...formData, iconType: 'preset'})}
-                    className={`flex items-center justify-center gap-2 px-3 py-2 rounded-lg border transition-all ${
-                      formData.iconType === 'preset' 
-                        ? 'border-indigo-600 bg-indigo-50 text-indigo-700 dark:bg-indigo-900/30 dark:text-indigo-300 dark:border-indigo-500' 
-                        : 'border-gray-200 bg-gray-50 text-gray-600 dark:border-neutral-700 dark:bg-neutral-800 dark:text-gray-400 hover:bg-gray-100'
+                    className={`flex-1 flex items-center justify-center gap-2 py-1.5 text-xs font-medium rounded-md transition-all ${
+                        formData.iconType === 'preset' ? 'bg-white dark:bg-neutral-700 shadow text-indigo-600 dark:text-indigo-400' : 'text-gray-500 dark:text-gray-400'
                     }`}
-                  >
-                    <Layout size={18} />
-                    选择图标
-                  </button>
-                </div>
+                >
+                    <Layout size={14} /> 预设图标
+                </button>
+                <button
+                    type="button"
+                    onClick={() => setFormData({...formData, iconType: 'generated'})}
+                    className={`flex-1 flex items-center justify-center gap-2 py-1.5 text-xs font-medium rounded-md transition-all ${
+                        formData.iconType === 'generated' ? 'bg-white dark:bg-neutral-700 shadow text-indigo-600 dark:text-indigo-400' : 'text-gray-500 dark:text-gray-400'
+                    }`}
+                >
+                    <Wand2 size={14} /> AI 生成
+                </button>
              </div>
 
-             {/* Visual Icon Picker */}
-             {formData.iconType === 'preset' && (
-               <div className="animate-in slide-in-from-top-2 duration-200">
-                  <div className="flex items-center justify-between mb-2">
-                    <label className="text-sm font-medium text-gray-700 dark:text-gray-300">选择图标</label>
-                    <div className="flex items-center gap-2 text-sm text-gray-500 bg-gray-100 dark:bg-neutral-800 px-2 py-1 rounded">
-                      当前: <SelectedIconComp size={16} className="text-indigo-600" /> 
-                      <span className="font-mono">{formData.presetIcon}</span>
-                    </div>
-                  </div>
-                  <IconPicker 
-                    selectedIcon={formData.presetIcon || 'Globe'}
-                    onSelect={(icon) => setFormData({...formData, presetIcon: icon})}
-                  />
-               </div>
-             )}
+             {/* Content Area based on Type */}
+             <div className="bg-gray-50 dark:bg-neutral-800/50 rounded-lg p-4 border border-gray-100 dark:border-neutral-800 min-h-[120px] flex flex-col justify-center items-center">
+                 
+                 {/* 1. Auto */}
+                 {formData.iconType === 'auto' && (
+                     <div className="flex flex-col items-center gap-4 w-full">
+                         <div className="w-16 h-16 bg-white dark:bg-neutral-800 rounded-xl flex items-center justify-center shadow-sm border border-gray-100 dark:border-neutral-700 overflow-hidden">
+                             {formData.imageBase64 ? (
+                                 <img src={formData.imageBase64} className="w-full h-full object-cover" alt="Favicon" />
+                             ) : (
+                                 <Globe className="text-gray-300" size={32} />
+                             )}
+                         </div>
+                         <div className="text-xs text-gray-500">
+                             {formData.imageBase64 ? '已存储图标数据' : '暂无图标'}
+                         </div>
+                         <button
+                            type="button"
+                            onClick={handleFetchFavicon}
+                            disabled={fetchingFavicon}
+                            className="flex items-center gap-2 px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-xs font-medium transition-colors"
+                         >
+                            {fetchingFavicon ? <Loader2 size={14} className="animate-spin" /> : <DownloadCloud size={14} />}
+                            {fetchingFavicon ? '获取中...' : '抓取并保存'}
+                         </button>
+                         <p className="text-[10px] text-gray-400 text-center max-w-xs">
+                             我们将通过代理抓取目标网站的图标并将其直接存入数据库，确保图标永久有效。
+                         </p>
+                     </div>
+                 )}
+
+                 {/* 2. Preset */}
+                 {formData.iconType === 'preset' && (
+                     <div className="w-full">
+                         <div className="flex items-center justify-between mb-2">
+                            <div className="flex items-center gap-2 text-sm text-gray-500 bg-white dark:bg-neutral-800 px-2 py-1 rounded shadow-sm">
+                                当前: <SelectedIconComp size={16} className="text-indigo-600" /> 
+                                <span className="font-mono">{formData.presetIcon}</span>
+                            </div>
+                            <button
+                                type="button"
+                                onClick={handleRecommendIcon}
+                                disabled={recommendingIcon}
+                                className="flex items-center gap-1.5 text-xs text-indigo-600 dark:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-900/30 px-2 py-1 rounded transition-colors"
+                            >
+                                {recommendingIcon ? <Loader2 size={12} className="animate-spin" /> : <Sparkles size={12} />}
+                                {recommendingIcon ? '分析中...' : '智能推荐'}
+                            </button>
+                         </div>
+                         <IconPicker 
+                            selectedIcon={formData.presetIcon || 'Globe'}
+                            onSelect={(icon) => setFormData({...formData, presetIcon: icon})}
+                        />
+                     </div>
+                 )}
+
+                 {/* 3. Generated */}
+                 {formData.iconType === 'generated' && (
+                     <div className="flex flex-col items-center gap-4 w-full">
+                         <div 
+                            className="w-16 h-16 bg-white dark:bg-neutral-800 rounded-xl flex items-center justify-center shadow-sm border border-gray-100 dark:border-neutral-700 text-indigo-600 dark:text-indigo-400 p-3"
+                            dangerouslySetInnerHTML={{ __html: formData.customSvg || '' }}
+                         >
+                            {!formData.customSvg && <Wand2 className="text-gray-300" size={32} />}
+                         </div>
+                         <button
+                            type="button"
+                            onClick={handleGenerateSvg}
+                            disabled={generatingSvg}
+                            className="flex items-center gap-2 px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg text-xs font-medium transition-colors"
+                         >
+                            {generatingSvg ? <Loader2 size={14} className="animate-spin" /> : <Wand2 size={14} />}
+                            {generatingSvg ? '生成中...' : 'AI 设计图标'}
+                         </button>
+                         <p className="text-[10px] text-gray-400 text-center max-w-xs">
+                             AI 将根据项目描述，为您编写独一无二的 SVG 矢量图标代码。
+                         </p>
+                     </div>
+                 )}
+             </div>
           </div>
 
           <div className="flex justify-end gap-3 mt-8 pt-4 border-t border-gray-100 dark:border-neutral-800">
@@ -600,12 +757,22 @@ export const AdminDashboard: React.FC = () => {
             </div>
              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 p-4">
                  {projects.map(project => {
-                     const IconComp = (Icons as any)[project.presetIcon || 'Globe'] || Icons.Globe;
+                     // Determine icon to show
+                     let IconDisplay: React.ReactNode = <Globe size={24} />;
+                     if (project.iconType === 'generated' && project.customSvg) {
+                         IconDisplay = <div className="w-6 h-6 text-indigo-600 dark:text-indigo-400" dangerouslySetInnerHTML={{ __html: project.customSvg }} />;
+                     } else if (project.iconType === 'auto' && project.imageBase64) {
+                         IconDisplay = <img src={project.imageBase64} alt="icon" className="w-6 h-6 object-cover rounded" />;
+                     } else {
+                         const IconComp = (Icons as any)[project.presetIcon || 'Globe'] || Icons.Globe;
+                         IconDisplay = <IconComp size={24} />;
+                     }
+
                      return (
                      <div key={project.id} className="flex items-center justify-between p-4 border border-gray-100 dark:border-neutral-800 rounded-xl hover:border-indigo-200 dark:hover:border-indigo-900 bg-gray-50/50 dark:bg-neutral-800/30 transition-all hover:shadow-sm group">
                          <div className="flex items-center gap-4 overflow-hidden">
-                             <div className="w-12 h-12 rounded-lg bg-white dark:bg-neutral-800 flex items-center justify-center text-indigo-600 dark:text-indigo-400 shadow-sm shrink-0 border border-gray-100 dark:border-neutral-700">
-                                 {project.iconType === 'auto' ? <Globe size={24}/> : <IconComp size={24}/>}
+                             <div className="w-12 h-12 rounded-lg bg-white dark:bg-neutral-800 flex items-center justify-center text-indigo-600 dark:text-indigo-400 shadow-sm shrink-0 border border-gray-100 dark:border-neutral-700 overflow-hidden p-2">
+                                 {IconDisplay}
                              </div>
                              <div className="truncate flex-1">
                                  <h4 className="font-bold text-gray-900 dark:text-white truncate">{project.title}</h4>
@@ -643,7 +810,7 @@ export const AdminDashboard: React.FC = () => {
                      <div>
                          <label className="text-sm font-medium text-gray-900 dark:text-white mb-4 block">默认 AI 模型</label>
                          <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">
-                             选择用于生成文章摘要和智能标签的 AI 模型。DeepSeek 适合中文语境，Gemini 响应速度极快。
+                             选择用于生成文章摘要、智能标签和图标设计的 AI 模型。DeepSeek 适合中文语境，Gemini 响应速度极快。
                          </p>
                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                              <button 
@@ -686,6 +853,7 @@ export const AdminDashboard: React.FC = () => {
             project={currentProject} 
             onSave={handleSaveProject} 
             onCancel={() => setIsEditingProject(false)} 
+            aiProvider={aiProvider}
           />
       )}
 

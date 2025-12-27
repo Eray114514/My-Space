@@ -41,6 +41,28 @@ export const Home: React.FC = () => {
   };
 
   const renderIcon = (project: Project) => {
+    // 1. AI Generated SVG
+    if (project.iconType === 'generated' && project.customSvg) {
+        return (
+            <div 
+                className="w-8 h-8 text-indigo-600 dark:text-indigo-400 [&>svg]:w-full [&>svg]:h-full" 
+                dangerouslySetInnerHTML={{ __html: project.customSvg }} 
+            />
+        );
+    }
+
+    // 2. Saved Base64 Favicon
+    if (project.iconType === 'auto' && project.imageBase64) {
+        return (
+            <img 
+              src={project.imageBase64} 
+              alt={project.title} 
+              className="w-8 h-8 rounded object-cover"
+            />
+        );
+    }
+
+    // 3. Fallback to live URL fetch if 'auto' but no saved image (Legacy support)
     if (project.iconType === 'auto') {
       return (
         <img 
@@ -54,7 +76,7 @@ export const Home: React.FC = () => {
       );
     }
     
-    // Preset Icon
+    // 4. Preset Icon
     const IconComponent = (Icons as any)[project.presetIcon || 'Globe'];
     return IconComponent ? <IconComponent size={32} className="text-indigo-600 dark:text-indigo-400" /> : <Globe size={32} />;
   };
