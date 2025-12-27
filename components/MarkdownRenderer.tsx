@@ -17,7 +17,7 @@ const PreBlock = ({ children }: any) => {
 
   // 安全地提取 code 元素及其属性
   const codeElement = isValidElement(children) ? children : null;
-
+  
   // 如果 pre 内部不是 code 元素（极少情况），直接渲染原始内容
   if (!codeElement) {
     return <pre className="bg-gray-900 text-white p-4 rounded-lg overflow-x-auto">{children}</pre>;
@@ -87,8 +87,8 @@ const PreBlock = ({ children }: any) => {
 // 注意：被 PreBlock 处理过的 code 内容不会再经过这里
 const InlineCode = ({ children, className, ...props }: any) => {
   return (
-    <code
-      className={`${className || ''} bg-gray-100 dark:bg-neutral-800 text-indigo-600 dark:text-indigo-400 px-1.5 py-0.5 rounded text-sm font-mono border border-gray-200 dark:border-neutral-700 align-middle`}
+    <code 
+      className={`${className || ''} bg-gray-100 dark:bg-neutral-800 text-indigo-600 dark:text-indigo-400 px-1.5 py-0.5 rounded text-sm font-mono border border-gray-200 dark:border-neutral-700 align-middle`} 
       {...props}
     >
       {children}
@@ -110,7 +110,7 @@ export const MarkdownRenderer: React.FC<Props> = ({ content }) => {
       /* 移除默认的 code 样式，完全由自定义组件控制 */
       prose-code:before:content-none prose-code:after:content-none prose-code:font-normal
     ">
-      <ReactMarkdown
+      <ReactMarkdown 
         remarkPlugins={[remarkGfm, remarkAlert]}
         components={{
           pre: PreBlock,   // 拦截代码块
