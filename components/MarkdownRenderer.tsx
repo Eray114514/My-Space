@@ -25,9 +25,10 @@ const CodeBlock = ({ inline, className, children, ...props }: any) => {
     }
   };
 
-  if (!inline && match) {
+  // Handle all block-level code (both with language and without)
+  if (!inline) {
     return (
-      <div className="relative group rounded-lg overflow-hidden my-6 shadow-md border border-gray-200 dark:border-neutral-800">
+      <div className="relative group rounded-lg overflow-hidden my-6 shadow-md border border-gray-200 dark:border-neutral-800 not-prose text-sm">
         {/* Copy Button */}
         <div className="absolute top-3 right-3 z-10 opacity-0 group-hover:opacity-100 transition-opacity">
           <button
@@ -43,18 +44,21 @@ const CodeBlock = ({ inline, className, children, ...props }: any) => {
         <SyntaxHighlighter
           {...props}
           style={vscDarkPlus}
-          language={match[1]}
+          language={match ? match[1] : 'text'}
           PreTag="div"
           customStyle={{
             margin: 0,
-            padding: '1.5rem',
+            padding: '1.25rem', // Slightly reduced padding
             borderRadius: '0',
             fontSize: '0.9rem',
-            lineHeight: '1.5',
+            lineHeight: '1.6', // Increased line height for readability
             backgroundColor: '#1e1e1e', // Ensure dark background matches vscDarkPlus
           }}
           codeTagProps={{
-            style: { fontFamily: 'ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace' }
+            style: {
+              fontFamily: 'ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace',
+              fontSize: 'inherit'
+            }
           }}
         >
           {codeString}
@@ -63,12 +67,16 @@ const CodeBlock = ({ inline, className, children, ...props }: any) => {
     );
   }
 
+  // Inline code styling
   return (
-    <code className={className} {...props}>
+    <code className={`${className} bg-gray-100 dark:bg-neutral-800 text-gray-800 dark:text-gray-200 px-1.5 py-0.5 rounded text-sm font-mono border border-gray-200 dark:border-neutral-700`} {...props}>
       {children}
     </code>
   );
 };
+
+// Component to strip the default <pre> wrapper from react-markdown
+const PreBlock = ({ children }: any) => <>{children}</>;
 
 export const MarkdownRenderer: React.FC<Props> = ({ content }) => {
   return (
@@ -77,14 +85,17 @@ export const MarkdownRenderer: React.FC<Props> = ({ content }) => {
       prose-h1:text-3xl prose-h2:text-2xl prose-h3:text-xl
       prose-a:text-indigo-600 dark:prose-a:text-indigo-400 prose-a:no-underline hover:prose-a:underline
       prose-blockquote:not-italic prose-blockquote:font-normal
-      prose-code:bg-gray-100 dark:prose-code:bg-zinc-800 prose-code:px-1.5 prose-code:py-0.5 prose-code:rounded prose-code:text-sm prose-code:font-mono prose-code:before:content-none prose-code:after:content-none
-      prose-pre:p-0 prose-pre:bg-transparent prose-pre:rounded-none
+      prose-blockquote:border-l-4 prose-blockquote:border-gray-200 dark:prose-blockquote:border-neutral-700
       prose-img:rounded-xl prose-img:shadow-md
       prose-table:border-collapse prose-th:border-b prose-th:border-gray-300 dark:prose-th:border-gray-700 prose-th:p-2 prose-td:p-2 prose-td:border-b prose-td:border-gray-100 dark:prose-td:border-gray-800
+      
+      /* Disable default typography code styles as we handle them manually */
+      prose-code:before:content-none prose-code:after:content-none
     ">
-      <ReactMarkdown 
+      <ReactMarkdown
         remarkPlugins={[remarkGfm, remarkAlert]}
         components={{
+          pre: PreBlock,
           code: CodeBlock
         }}
       >
