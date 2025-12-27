@@ -12,9 +12,21 @@ export const Login: React.FC<Props> = ({ onLogin }) => {
   const [error, setError] = useState('');
   const navigate = useNavigate();
 
+  // Get credentials from environment variables
+  const env = (import.meta as any).env;
+  const ADMIN_USERNAME = env.VITE_ADMIN_USERNAME;
+  const ADMIN_PASSWORD = env.VITE_ADMIN_PASSWORD;
+
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
-    if (username === 'Eray' && password === 'Eray0714e1234567') {
+
+    // Safety check: ensure env vars are actually set
+    if (!ADMIN_USERNAME || !ADMIN_PASSWORD) {
+      setError('系统配置错误：未在 .env 中设置管理员账号信息');
+      return;
+    }
+
+    if (username === ADMIN_USERNAME && password === ADMIN_PASSWORD) {
       onLogin();
       navigate('/admin');
     } else {
@@ -30,7 +42,7 @@ export const Login: React.FC<Props> = ({ onLogin }) => {
             <Lock size={24} />
           </div>
         </div>
-        
+
         <h2 className="text-2xl font-bold text-center text-gray-900 dark:text-white mb-2">管理员登录</h2>
         <p className="text-center text-gray-500 dark:text-gray-400 mb-8 text-sm">请输入凭证以访问后台</p>
 
