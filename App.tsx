@@ -6,6 +6,7 @@ import { Blog } from './pages/Blog';
 import { ArticleDetail } from './pages/ArticleDetail';
 import { Login } from './pages/Login';
 import { AdminDashboard } from './pages/admin/AdminDashboard';
+import { SearchPage } from './pages/Search';
 import { StorageService } from './services/storage';
 
 const App: React.FC = () => {
@@ -62,6 +63,7 @@ const App: React.FC = () => {
           <Route index element={<Home />} />
           <Route path="blog" element={<Blog />} />
           <Route path="blog/:id" element={<ArticleDetail />} />
+          <Route path="search" element={<SearchPage />} />
           <Route path="login" element={isAuthenticated ? <Navigate to="/admin" /> : <Login onLogin={handleLogin} />} />
           <Route path="admin" element={isAuthenticated ? <AdminDashboard /> : <Navigate to="/login" />} />
           <Route path="*" element={<Navigate to="/" />} />
