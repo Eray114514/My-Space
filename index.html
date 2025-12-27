@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="https://api.iconify.design/lucide:terminal.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Eray's Space</title>
+    <!-- 关键修复：添加 plugins=typography 以支持 Markdown 排版 -->
+    <script src="https://cdn.tailwindcss.com?plugins=typography"></script>
+    <script>
+      tailwind.config = {
+        darkMode: 'class',
+        theme: {
+          extend: {
+            fontFamily: {
+              sans: ['Inter', 'Noto Sans SC', 'sans-serif'],
+              serif: ['Merriweather', 'Noto Serif SC', 'serif'],
+            },
+            colors: {
+              background: "var(--background)",
+              foreground: "var(--foreground)",
+            }
+          }
+        }
+      }
+    </script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Noto+Sans+SC:wght@300;400;500;700&family=Merriweather:ital,wght@0,300;0,400;0,700;1,400&family=Noto+Serif+SC:wght@300;400;700&display=swap" rel="stylesheet">
+    <style>
+      /* Custom Scrollbar */
+      ::-webkit-scrollbar {
+        width: 8px;
+        height: 8px;
+      }
+      ::-webkit-scrollbar-track {
+        background: transparent;
+      }
+      ::-webkit-scrollbar-thumb {
+        background: #a1a1aa;
+        border-radius: 4px;
+      }
+      .dark ::-webkit-scrollbar-thumb {
+        background: #52525b;
+      }
+      ::-webkit-scrollbar-thumb:hover {
+        background: #71717a;
+      }
+
+      /* GitHub Alert Styles */
+      .markdown-alert {
+        padding: 0.5rem 1rem;
+        margin-bottom: 1rem;
+        border-left: 0.25rem solid;
+        border-radius: 0.25rem;
+        font-size: 0.9em;
+      }
+      .markdown-alert-title {
+        display: flex;
+        align-items: center;
+        font-weight: 600;
+        margin-bottom: 0.25rem;
+      }
+      /* 关键修复：强制 SVG 图标填充颜色继承父元素文字颜色 */
+      .markdown-alert-title svg {
+        fill: currentColor;
+        margin-right: 0.5rem;
+      }
+
+      /* Note */
+      .markdown-alert-note { border-color: #0969da; background-color: #f0f7ff; color: #1f2328; }
+      .markdown-alert-note .markdown-alert-title { color: #0969da; }
+      .dark .markdown-alert-note { background-color: #0d1117; color: #e6edf3; border-color: #1f6feb; }
+      .dark .markdown-alert-note .markdown-alert-title { color: #1f6feb; }
+      
+      /* Tip */
+      .markdown-alert-tip { border-color: #1a7f37; background-color: #f0fff4; color: #1f2328; }
+      .markdown-alert-tip .markdown-alert-title { color: #1a7f37; }
+      .dark .markdown-alert-tip { background-color: #0d1117; color: #e6edf3; border-color: #238636; }
+      .dark .markdown-alert-tip .markdown-alert-title { color: #238636; }
+      
+      /* Important */
+      .markdown-alert-important { border-color: #8250df; background-color: #f8f0fc; color: #1f2328; }
+      .markdown-alert-important .markdown-alert-title { color: #8250df; }
+      .dark .markdown-alert-important { background-color: #0d1117; color: #e6edf3; border-color: #8957e5; }
+      .dark .markdown-alert-important .markdown-alert-title { color: #8957e5; }
+      
+      /* Warning */
+      .markdown-alert-warning { border-color: #9a6700; background-color: #fff8c5; color: #1f2328; }
+      .markdown-alert-warning .markdown-alert-title { color: #9a6700; }
+      .dark .markdown-alert-warning { background-color: #0d1117; color: #e6edf3; border-color: #9e6a03; }
+      .dark .markdown-alert-warning .markdown-alert-title { color: #9e6a03; }
+      
+      /* Caution */
+      .markdown-alert-caution { border-color: #d03544; background-color: #ffebe9; color: #1f2328; }
+      .markdown-alert-caution .markdown-alert-title { color: #d03544; }
+      .dark .markdown-alert-caution { background-color: #0d1117; color: #e6edf3; border-color: #da3633; }
+      .dark .markdown-alert-caution .markdown-alert-title { color: #da3633; }
+    </style>
+  <script type="importmap">
+{
+  "imports": {
+    "react-dom/": "https://esm.sh/react-dom@^19.2.3/",
+    "@neondatabase/serverless": "https://esm.sh/@neondatabase/serverless@^1.0.2",
+    "react/": "https://esm.sh/react@^19.2.3/",
+    "remark-gfm": "https://esm.sh/remark-gfm@^4.0.1",
+    "lucide-react": "https://esm.sh/lucide-react@^0.562.0",
+    "@vitejs/plugin-react": "https://esm.sh/@vitejs/plugin-react@^5.1.2",
+    "vite": "https://esm.sh/vite@^7.3.0",
+    "remark-github-blockquote-alert": "https://esm.sh/remark-github-blockquote-alert@^2.0.1",
+    "react": "https://esm.sh/react@^19.2.3",
+    "react-markdown": "https://esm.sh/react-markdown@^10.1.0",
+    "react-router-dom": "https://esm.sh/react-router-dom@^7.11.0",
+    "react-syntax-highlighter": "https://esm.sh/react-syntax-highlighter@^16.1.0",
+    "react-syntax-highlighter/": "https://esm.sh/react-syntax-highlighter@^16.1.0/",
+    "@google/genai": "https://esm.sh/@google/genai@^1.34.0",
+    "openai": "https://esm.sh/openai@^6.15.0"
+  }
+}
+</script>
+<link rel="stylesheet" href="/index.css">
+</head>
+  <body class="bg-gray-50 text-gray-900 dark:bg-neutral-950 dark:text-gray-100 transition-colors duration-300">
+    <div id="root"></div>
+    <script type="module" src="/index.tsx"></script>
+  </body>
+</html>
