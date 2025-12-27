@@ -25,13 +25,13 @@ export const AIService = {
    * @param onChunk Callback function to receive stream chunks
    */
   generateSummaryStream: async (content: string, provider: AIProvider, onChunk: (text: string) => void) => {
-    
+
     const systemInstruction = "你是一个专业的个人博客编辑助手。请根据用户提供的 Markdown 文章内容，生成一段简洁、优雅、有吸引力的中文摘要（Summary）。要求：\n1. 字数控制在 60-120 字之间。\n2. 语气平和、知性、高级，符合个人博客的调性。\n3. 直接输出摘要内容，不要包含“好的”、“这是摘要”等任何开场白或结束语。";
 
     try {
       if (provider === 'gemini') {
         if (!env.VITE_GOOGLE_API_KEY) {
-             throw new Error("请先在 .env 文件中配置 VITE_GOOGLE_API_KEY");
+          throw new Error("请先在 .env 文件中配置 VITE_GOOGLE_API_KEY");
         }
         const response = await geminiClient.models.generateContentStream({
           model: "gemini-3-flash-preview",
@@ -49,24 +49,24 @@ export const AIService = {
         }
       } else if (provider === 'deepseek') {
         if (!deepseekClient.apiKey) {
-           throw new Error("请先在 .env 文件中配置 VITE_DEEPSEEK_API_KEY");
+          throw new Error("请先在 .env 文件中配置 VITE_DEEPSEEK_API_KEY");
         }
-        
+
         const stream = await deepseekClient.chat.completions.create({
-            messages: [
-              { role: "system", content: systemInstruction },
-              { role: "user", content: content }
-            ],
-            model: "deepseek-chat",
-            stream: true,
-            temperature: 1.3,
+          messages: [
+            { role: "system", content: systemInstruction },
+            { role: "user", content: content }
+          ],
+          model: "deepseek-chat",
+          stream: true,
+          temperature: 1.3,
         });
 
         for await (const chunk of stream) {
-            const content = chunk.choices[0]?.delta?.content || '';
-            if (content) {
-              onChunk(content);
-            }
+          const content = chunk.choices[0]?.delta?.content || '';
+          if (content) {
+            onChunk(content);
+          }
         }
       }
     } catch (error) {
@@ -85,7 +85,7 @@ export const AIService = {
   generateTags: async (title: string, content: string, existingTags: string[], provider: AIProvider): Promise<string[]> => {
     const isAdding = existingTags.length > 0;
     const count = isAdding ? 1 : 2;
-    
+
     // 严格的系统指令，要求只返回 JSON 数组
     const systemInstruction = `你是一个专业的博客标签生成器。
     请根据文章标题和内容，生成 ${count} 个最相关的技术或主题标签。
@@ -93,50 +93,50 @@ export const AIService = {
     标签应简洁精准（例如："React", "Web Design", "Life"）。
     必须只返回一个纯 JSON 字符串数组，例如：["Tag1", "Tag2"]。
     不要返回任何 markdown 格式（如 \`\`\`json），不要有任何解释文字。`;
-    
+
     const userPrompt = `标题：${title}\n内容摘要：${content.substring(0, 500)}`;
 
     let responseText = '';
 
     try {
-        if (provider === 'gemini') {
-            const response = await geminiClient.models.generateContent({
-                model: "gemini-3-flash-preview",
-                contents: userPrompt,
-                config: {
-                    systemInstruction: systemInstruction,
-                    temperature: 0.7,
-                }
-            });
-            responseText = response.text || '[]';
-        } else {
-             const response = await deepseekClient.chat.completions.create({
-                messages: [
-                  { role: "system", content: systemInstruction },
-                  { role: "user", content: userPrompt }
-                ],
-                model: "deepseek-chat",
-                temperature: 0.7,
-            });
-            responseText = response.choices[0]?.message?.content || '[]';
-        }
+      if (provider === 'gemini') {
+        const response = await geminiClient.models.generateContent({
+          model: "gemini-3-flash-preview",
+          contents: userPrompt,
+          config: {
+            systemInstruction: systemInstruction,
+            temperature: 0.7,
+          }
+        });
+        responseText = response.text || '[]';
+      } else {
+        const response = await deepseekClient.chat.completions.create({
+          messages: [
+            { role: "system", content: systemInstruction },
+            { role: "user", content: userPrompt }
+          ],
+          model: "deepseek-chat",
+          temperature: 0.7,
+        });
+        responseText = response.choices[0]?.message?.content || '[]';
+      }
 
-        // 清理可能存在的 markdown 标记
-        responseText = responseText.replace(/```json/g, '').replace(/```/g, '').trim();
-        
-        try {
-            const tags = JSON.parse(responseText);
-            if (Array.isArray(tags)) {
-                return tags.map(t => String(t));
-            }
-        } catch (e) {
-            console.error("Failed to parse AI tags response", responseText);
+      // 清理可能存在的 markdown 标记
+      responseText = responseText.replace(/```json/g, '').replace(/```/g, '').trim();
+
+      try {
+        const tags = JSON.parse(responseText);
+        if (Array.isArray(tags)) {
+          return tags.map(t => String(t));
         }
-        return [];
+      } catch (e) {
+        console.error("Failed to parse AI tags response", responseText);
+      }
+      return [];
 
     } catch (e) {
-        console.error("AI Tag Generation Failed", e);
-        return [];
+      console.error("AI Tag Generation Failed", e);
+      return [];
     }
   },
 
@@ -144,44 +144,55 @@ export const AIService = {
    * Recommend an icon from the list based on project info
    */
   recommendIcon: async (title: string, description: string, availableIcons: string[], provider: AIProvider): Promise<string | null> => {
-    const systemInstruction = `你是一个UI设计师。我将提供一个项目名称和描述，以及一个可用的图标名称列表。
-    请从列表中选择最符合该项目的一个图标名称。
+    // 将数组转为字符串，方便 AI 读取
+    const iconsString = availableIcons.join(',');
+
+    const systemInstruction = `你是一个UI设计师。请从我提供的【图标列表】中，严格选择一个最能代表用户项目名称和描述的图标名称。
+
+    【图标列表】：
+    ${iconsString}
     
-    可用图标列表：
-    ${availableIcons.join(', ')}
-    
-    规则：
-    1. 只返回一个图标名称（String）。
-    2. 不要返回任何Markdown格式、标点符号或解释。
-    3. 如果没有完美匹配，请选择最抽象或通用的相关图标（如 Globe, Layout, Box, Star）。`;
+    重要规则：
+    1. 你必须只输出列表中的某一个单词。
+    2. 严禁编造列表中不存在的单词（例如：绝对不要输出 "Tool" 如果它不在列表中）。
+    3. 严禁输出任何标点符号、Markdown标记或解释性文字。
+    4. 如果没有完美匹配，请选择最接近的通用图标（如 Globe, Layout, Box, Star）。
+    5. 直接输出单词本身。`;
 
     const userPrompt = `项目名称：${title}\n描述：${description}`;
     let result = '';
 
     try {
-        if (provider === 'gemini') {
-            const response = await geminiClient.models.generateContent({
-                model: "gemini-3-flash-preview",
-                contents: userPrompt,
-                config: { systemInstruction: systemInstruction, temperature: 0.1 }
-            });
-            result = response.text || '';
-        } else {
-             const response = await deepseekClient.chat.completions.create({
-                messages: [
-                  { role: "system", content: systemInstruction },
-                  { role: "user", content: userPrompt }
-                ],
-                model: "deepseek-chat",
-                temperature: 0.1,
-            });
-            result = response.choices[0]?.message?.content || '';
-        }
-        const cleaned = result.trim().replace(/['"`.]/g, '');
-        return availableIcons.includes(cleaned) ? cleaned : null;
+      if (provider === 'gemini') {
+        const response = await geminiClient.models.generateContent({
+          model: "gemini-3-flash-preview",
+          contents: userPrompt,
+          config: { systemInstruction: systemInstruction, temperature: 0.1 }
+        });
+        result = response.text || '';
+      } else {
+        const response = await deepseekClient.chat.completions.create({
+          messages: [
+            { role: "system", content: systemInstruction },
+            { role: "user", content: userPrompt }
+          ],
+          model: "deepseek-chat",
+          temperature: 0.1,
+        });
+        result = response.choices[0]?.message?.content || '';
+      }
+
+      // 强力清洗：去除空格、换行、句号、引号、Markdown代码块
+      const cleaned = result.trim()
+        .replace(/['"`.]/g, '')
+        .replace(/```/g, '')
+        .replace(/\n/g, '')
+        .split(' ')[0]; // 只取第一个词
+
+      return cleaned;
     } catch (e) {
-        console.error("Recommend Icon Failed", e);
-        return null;
+      console.error("Recommend Icon Failed", e);
+      return null;
     }
   },
 
@@ -189,55 +200,70 @@ export const AIService = {
    * Generate an SVG icon
    */
   generateSVGIcon: async (title: string, description: string, provider: AIProvider): Promise<string> => {
-      const systemInstruction = `你是一个SVG图标生成专家。请根据用户的项目名称和描述，编写一个简洁、现代、线条风格（Outline style）的 SVG 图标代码。
+    const systemInstruction = `你是一个 SVG 代码生成器。请根据项目描述，生成一个现代、简约、Outline 风格的 SVG 图标代码。
       
-      技术要求：
-      1. viewBox="0 0 24 24"。
-      2. 使用 stroke="currentColor"，fill="none"，stroke-width="2"，stroke-linecap="round"，stroke-linejoin="round"。
-      3. 不要包含 XML 声明或 DOCTYPE。
-      4. 只返回 <svg>...</svg> 代码块本身。
-      5. 不要使用Markdown代码块标记（不要使用 \`\`\`xml 或 \`\`\`svg）。
-      6. 代码要非常精简，不要有多余的注释。`;
-      
-      const userPrompt = `项目名称：${title}\n描述：${description}\n请设计一个抽象且具象结合的图标。`;
-      let result = '';
+      技术约束：
+      1. 必须包含 viewBox="0 0 24 24"。
+      2. 必须设置 stroke="currentColor", fill="none", stroke-width="2", stroke-linecap="round", stroke-linejoin="round"。
+      3. 仅返回 <svg>...</svg> 标签及其内容。
+      4. 严禁包含 <?xml ...?> 声明或 <!DOCTYPE ...>。
+      5. 严禁使用 markdown 代码块标记（如 \`\`\`xml 或 \`\`\`svg）。不要有任何文字解释。
+      6. 确保代码是有效的 SVG，可以直接嵌入 HTML。`;
 
-      try {
-        if (provider === 'gemini') {
-            const response = await geminiClient.models.generateContent({
-                model: "gemini-3-flash-preview",
-                contents: userPrompt,
-                config: { systemInstruction: systemInstruction, temperature: 0.8 }
-            });
-            result = response.text || '';
-        } else {
-             const response = await deepseekClient.chat.completions.create({
-                messages: [
-                  { role: "system", content: systemInstruction },
-                  { role: "user", content: userPrompt }
-                ],
-                model: "deepseek-chat",
-                temperature: 0.8,
-            });
-            result = response.choices[0]?.message?.content || '';
+    const userPrompt = `项目名称：${title}\n描述：${description}\n设计要求：抽象、极简、高科技感。`;
+    let result = '';
+
+    try {
+      if (provider === 'gemini') {
+        const response = await geminiClient.models.generateContent({
+          model: "gemini-3-flash-preview",
+          contents: userPrompt,
+          config: { systemInstruction: systemInstruction, temperature: 0.7 }
+        });
+        result = response.text || '';
+      } else {
+        const response = await deepseekClient.chat.completions.create({
+          messages: [
+            { role: "system", content: systemInstruction },
+            { role: "user", content: userPrompt }
+          ],
+          model: "deepseek-chat",
+          temperature: 0.7,
+        });
+        result = response.choices[0]?.message?.content || '';
+      }
+
+      // Cleanup response
+      let svg = result.trim();
+
+      // 移除 markdown 代码块
+      if (svg.includes('```')) {
+        svg = svg.replace(/```(xml|svg)?/g, '').replace(/```/g, '');
+      }
+
+      // 移除可能的 XML 声明
+      svg = svg.replace(/<\?xml.*?\?>/g, '');
+
+      // 提取 <svg> 到 </svg> 之间的内容
+      const svgStart = svg.indexOf('<svg');
+      const svgEnd = svg.lastIndexOf('</svg>');
+
+      if (svgStart !== -1 && svgEnd !== -1) {
+        return svg.substring(svgStart, svgEnd + 6);
+      }
+
+      // 如果没有找到完整的 svg 标签，尝试返回清理后的字符串（如果它看起来像SVG）
+      if (svg.includes('path') || svg.includes('circle') || svg.includes('rect')) {
+        if (!svg.startsWith('<svg')) {
+          return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${svg}</svg>`;
         }
-        
-        // Cleanup response
-        let svg = result.trim();
-        if (svg.startsWith('```')) {
-            svg = svg.replace(/^```(xml|svg)?\n/, '').replace(/\n```$/, '');
-        }
-        const svgStart = svg.indexOf('<svg');
-        const svgEnd = svg.lastIndexOf('</svg>');
-        
-        if (svgStart !== -1 && svgEnd !== -1) {
-            return svg.substring(svgStart, svgEnd + 6);
-        }
-        return '';
+      }
+
+      return '';
 
     } catch (e) {
-        console.error("Generate SVG Failed", e);
-        return '';
+      console.error("Generate SVG Failed", e);
+      return '';
     }
   }
 };
