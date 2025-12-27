@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Lock, ArrowRight } from 'lucide-react';
+import { Lock, ArrowRight, Check } from 'lucide-react';
 
 interface Props {
   onLogin: () => void;
@@ -9,6 +9,7 @@ interface Props {
 export const Login: React.FC<Props> = ({ onLogin }) => {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
+  const [rememberMe, setRememberMe] = useState(false);
   const [error, setError] = useState('');
   const navigate = useNavigate();
 
@@ -19,7 +20,7 @@ export const Login: React.FC<Props> = ({ onLogin }) => {
 
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     // Safety check: ensure env vars are actually set
     if (!ADMIN_USERNAME || !ADMIN_PASSWORD) {
       setError('系统配置错误：未在 .env 中设置管理员账号信息');
@@ -27,6 +28,11 @@ export const Login: React.FC<Props> = ({ onLogin }) => {
     }
 
     if (username === ADMIN_USERNAME && password === ADMIN_PASSWORD) {
+      if (rememberMe) {
+        localStorage.setItem('eray_session', 'active');
+      } else {
+        sessionStorage.setItem('eray_session', 'active');
+      }
       onLogin();
       navigate('/admin');
     } else {
@@ -42,7 +48,7 @@ export const Login: React.FC<Props> = ({ onLogin }) => {
             <Lock size={24} />
           </div>
         </div>
-        
+
         <h2 className="text-2xl font-bold text-center text-gray-900 dark:text-white mb-2">管理员登录</h2>
         <p className="text-center text-gray-500 dark:text-gray-400 mb-8 text-sm">请输入凭证以访问后台</p>
 
@@ -64,6 +70,21 @@ export const Login: React.FC<Props> = ({ onLogin }) => {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
             />
+          </div>
+
+          <div className="flex items-center">
+            <label className="flex items-center gap-2 cursor-pointer group">
+              <div className={`w-4 h-4 rounded border flex items-center justify-center transition-colors ${rememberMe ? 'bg-indigo-600 border-indigo-600' : 'bg-white dark:bg-neutral-800 border-gray-300 dark:border-neutral-600 group-hover:border-indigo-400'}`}>
+                {rememberMe && <Check size={10} className="text-white" />}
+              </div>
+              <input
+                type="checkbox"
+                className="hidden"
+                checked={rememberMe}
+                onChange={(e) => setRememberMe(e.target.checked)}
+              />
+              <span className="text-sm text-gray-600 dark:text-gray-400 select-none">记住我</span>
+            </label>
           </div>
 
           {error && (
