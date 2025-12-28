@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom';
-import { Moon, Sun, Lock, LogOut, Menu, X, LayoutGrid, FileText, Search } from 'lucide-react';
+import { Moon, Sun, Lock, LogOut, Menu, X, LayoutGrid, FileText, Search, MessageSquare } from 'lucide-react';
 
 interface Props {
   isAuthenticated: boolean;
@@ -27,6 +27,7 @@ export const Layout: React.FC<Props> = ({ isAuthenticated, onLogout, isDarkMode,
   const navLinks = [
     { name: '主页', path: '/', icon: LayoutGrid },
     { name: '文章', path: '/blog', icon: FileText },
+    { name: 'AI 聊天', path: '/chat', icon: MessageSquare },
   ];
 
   return (
@@ -34,7 +35,7 @@ export const Layout: React.FC<Props> = ({ isAuthenticated, onLogout, isDarkMode,
       <header className="fixed top-0 left-0 right-0 z-50 bg-white/80 dark:bg-neutral-950/80 backdrop-blur-md border-b border-gray-200 dark:border-neutral-800 transition-colors duration-300">
         <div className="max-w-5xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
           {/* Logo */}
-          <div 
+          <div
             className="flex items-center gap-2 font-bold text-xl tracking-tighter cursor-pointer"
             onClick={() => navigate('/')}
           >
@@ -51,33 +52,31 @@ export const Layout: React.FC<Props> = ({ isAuthenticated, onLogout, isDarkMode,
                 key={link.path}
                 to={link.path}
                 className={({ isActive }) =>
-                  `text-sm font-medium transition-colors hover:text-indigo-600 dark:hover:text-indigo-400 ${
-                    isActive ? 'text-indigo-600 dark:text-indigo-400' : 'text-gray-600 dark:text-gray-400'
+                  `text-sm font-medium transition-colors hover:text-indigo-600 dark:hover:text-indigo-400 ${isActive ? 'text-indigo-600 dark:text-indigo-400' : 'text-gray-600 dark:text-gray-400'
                   }`
                 }
               >
                 {link.name}
               </NavLink>
             ))}
-            
+
             {isAuthenticated && (
-               <NavLink
-               to="/admin"
-               className={({ isActive }) =>
-                 `text-sm font-medium transition-colors hover:text-indigo-600 dark:hover:text-indigo-400 ${
-                   isActive ? 'text-indigo-600 dark:text-indigo-400' : 'text-gray-600 dark:text-gray-400'
-                 }`
-               }
-             >
-               管理后台
-             </NavLink>
+              <NavLink
+                to="/admin"
+                className={({ isActive }) =>
+                  `text-sm font-medium transition-colors hover:text-indigo-600 dark:hover:text-indigo-400 ${isActive ? 'text-indigo-600 dark:text-indigo-400' : 'text-gray-600 dark:text-gray-400'
+                  }`
+                }
+              >
+                管理后台
+              </NavLink>
             )}
           </nav>
 
           {/* Actions */}
           <div className="hidden md:flex items-center gap-4">
-             {/* Search Button */}
-             <button
+            {/* Search Button */}
+            <button
               onClick={() => navigate('/search')}
               className="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-neutral-800 text-gray-600 dark:text-gray-400 transition-colors"
               aria-label="Search"
@@ -126,25 +125,23 @@ export const Layout: React.FC<Props> = ({ isAuthenticated, onLogout, isDarkMode,
       {isMobileMenuOpen && (
         <div className="fixed inset-0 z-40 bg-white dark:bg-neutral-950 pt-20 px-6 md:hidden animate-in fade-in slide-in-from-top-10 duration-200">
           <nav className="flex flex-col gap-6 text-lg">
-             <NavLink
-                to="/search"
-                className={({ isActive }) =>
-                  `flex items-center gap-3 py-2 border-b border-gray-100 dark:border-neutral-800 ${
-                    isActive ? 'text-indigo-600 dark:text-indigo-400' : 'text-gray-600 dark:text-gray-400'
-                  }`
-                }
-              >
-                <Search size={20} />
-                搜索
-              </NavLink>
+            <NavLink
+              to="/search"
+              className={({ isActive }) =>
+                `flex items-center gap-3 py-2 border-b border-gray-100 dark:border-neutral-800 ${isActive ? 'text-indigo-600 dark:text-indigo-400' : 'text-gray-600 dark:text-gray-400'
+                }`
+              }
+            >
+              <Search size={20} />
+              搜索
+            </NavLink>
 
             {navLinks.map((link) => (
               <NavLink
                 key={link.path}
                 to={link.path}
                 className={({ isActive }) =>
-                  `flex items-center gap-3 py-2 border-b border-gray-100 dark:border-neutral-800 ${
-                    isActive ? 'text-indigo-600 dark:text-indigo-400' : 'text-gray-600 dark:text-gray-400'
+                  `flex items-center gap-3 py-2 border-b border-gray-100 dark:border-neutral-800 ${isActive ? 'text-indigo-600 dark:text-indigo-400' : 'text-gray-600 dark:text-gray-400'
                   }`
                 }
               >
@@ -153,21 +150,20 @@ export const Layout: React.FC<Props> = ({ isAuthenticated, onLogout, isDarkMode,
               </NavLink>
             ))}
             {isAuthenticated && (
-               <NavLink
-               to="/admin"
-               className={({ isActive }) =>
-                 `flex items-center gap-3 py-2 border-b border-gray-100 dark:border-neutral-800 ${
-                   isActive ? 'text-indigo-600 dark:text-indigo-400' : 'text-gray-600 dark:text-gray-400'
-                 }`
-               }
-             >
-               <Lock size={20} />
-               管理后台
-             </NavLink>
+              <NavLink
+                to="/admin"
+                className={({ isActive }) =>
+                  `flex items-center gap-3 py-2 border-b border-gray-100 dark:border-neutral-800 ${isActive ? 'text-indigo-600 dark:text-indigo-400' : 'text-gray-600 dark:text-gray-400'
+                  }`
+                }
+              >
+                <Lock size={20} />
+                管理后台
+              </NavLink>
             )}
             <div className="flex items-center justify-between mt-4">
-               <span className="text-gray-500">外观模式</span>
-               <button
+              <span className="text-gray-500">外观模式</span>
+              <button
                 onClick={toggleTheme}
                 className="p-2 rounded-full bg-gray-100 dark:bg-neutral-800"
               >
