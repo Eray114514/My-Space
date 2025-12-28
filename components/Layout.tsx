@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { Moon, Sun, Lock, LogOut, Menu, X, LayoutGrid, FileText, Search } from 'lucide-react';
-import { StorageService } from '../services/storage';
 
 interface Props {
   isAuthenticated: boolean;
@@ -15,6 +14,11 @@ export const Layout: React.FC<Props> = ({ isAuthenticated, onLogout, isDarkMode,
   const location = useLocation();
   const navigate = useNavigate();
 
+  // Get dynamic branding from env
+  const env = (import.meta as any).env;
+  const adminName = env.ADMIN_USERNAME || 'Eray';
+  const logoLetter = adminName.charAt(0).toUpperCase();
+
   // Close mobile menu on route change
   useEffect(() => {
     setIsMobileMenuOpen(false);
@@ -23,10 +27,6 @@ export const Layout: React.FC<Props> = ({ isAuthenticated, onLogout, isDarkMode,
   const navLinks = [
     { name: '主页', path: '/', icon: LayoutGrid },
     { name: '文章', path: '/blog', icon: FileText },
-  ];
-
-  const adminLinks = [
-    { name: '管理后台', path: '/admin' },
   ];
 
   return (
@@ -38,9 +38,9 @@ export const Layout: React.FC<Props> = ({ isAuthenticated, onLogout, isDarkMode,
             className="flex items-center gap-2 font-bold text-xl tracking-tighter cursor-pointer"
             onClick={() => navigate('/')}
           >
-            <div className="w-8 h-8 bg-indigo-600 rounded-lg flex items-center justify-center text-white">E</div>
+            <div className="w-8 h-8 bg-indigo-600 rounded-lg flex items-center justify-center text-white">{logoLetter}</div>
             <span className="bg-clip-text text-transparent bg-gradient-to-r from-gray-900 to-gray-600 dark:from-white dark:to-gray-400">
-              Eray
+              {adminName}
             </span>
           </div>
 
@@ -184,7 +184,7 @@ export const Layout: React.FC<Props> = ({ isAuthenticated, onLogout, isDarkMode,
       </main>
 
       <footer className="py-8 border-t border-gray-200 dark:border-neutral-800 text-center text-sm text-gray-500 dark:text-neutral-500">
-        <p>&copy; {new Date().getFullYear()} Eray. Built with simplicity.</p>
+        <p>&copy; {new Date().getFullYear()} {adminName}. Built with simplicity.</p>
       </footer>
     </div>
   );

@@ -2,19 +2,25 @@ import { Article, Project } from '../types';
 import { neon } from '@neondatabase/serverless';
 import { AIModelKey, AI_MODELS } from './ai';
 
-const DATABASE_URL = (import.meta as any).env.VITE_DATABASE_URL;
+const DATABASE_URL = (import.meta as any).env.DATABASE_URL;
 
 if (!DATABASE_URL) {
-  console.warn("VITE_DATABASE_URL is not defined in environment variables.");
+  console.warn("DATABASE_URL is not defined in environment variables.");
 }
 
 const sql = neon(DATABASE_URL || '');
 
-const THEME_KEY = 'eray_theme';
-const AI_PROVIDER_KEY = 'eray_ai_provider_v2'; // Changed key to avoid conflict with old string values
+// Refactored keys for brand agnosticism
+const THEME_KEY = 'my_theme'; 
+
+// Database Setting Keys
+const SETTING_GENERAL_AI = 'general_ai_model';
+const SETTING_SVG_AI = 'svg_ai_model';
 
 let articlesCache: Article[] | null = null;
 let projectsCache: Project[] | null = null;
+// Simple cache for settings to avoid db hits on every render
+let settingsCache: Record<string, string> | null = null;
 
 const safeParseJSON = (jsonString: string | null) => {
     if (!jsonString) return [];
@@ -48,6 +54,14 @@ export const StorageService = {
           preset_icon TEXT
         );
       `;
+      // New Table for cross-device settings
+      await sql`
+        CREATE TABLE IF NOT EXISTS settings (
+          key TEXT PRIMARY KEY,
+          value TEXT
+        );
+      `;
+
       try { await sql`ALTER TABLE projects ADD COLUMN image_base64 TEXT`; } catch (e) {}
       try { await sql`ALTER TABLE projects ADD COLUMN custom_svg TEXT`; } catch (e) {}
     } catch (error) {
@@ -55,6 +69,65 @@ export const StorageService = {
       throw error;
     }
   },
+
+  // --- Settings (Cross-Device) ---
+  
+  getSystemSetting: async (key: string, defaultValue: string): Promise<string> => {
+      if (!DATABASE_URL) return defaultValue;
+      if (settingsCache && settingsCache[key]) return settingsCache[key];
+
+      try {
+          const rows = await sql`SELECT value FROM settings WHERE key = ${key}`;
+          if (rows.length > 0) {
+              if (!settingsCache) settingsCache = {};
+              settingsCache[key] = rows[0].value;
+              return rows[0].value;
+          }
+          return defaultValue;
+      } catch (e) {
+          console.error(`Error fetching setting ${key}`, e);
+          return defaultValue;
+      }
+  },
+
+  saveSystemSetting: async (key: string, value: string): Promise<void> => {
+      if (!DATABASE_URL) return;
+      try {
+          await sql`
+            INSERT INTO settings (key, value) VALUES (${key}, ${value})
+            ON CONFLICT (key) DO UPDATE SET value = EXCLUDED.value
+          `;
+          if (!settingsCache) settingsCache = {};
+          settingsCache[key] = value;
+      } catch (e) {
+          console.error(`Error saving setting ${key}`, e);
+      }
+  },
+
+  // Specific helpers for AI config
+  getGeneralAIModel: async (): Promise<AIModelKey> => {
+      const val = await StorageService.getSystemSetting(SETTING_GENERAL_AI, 'deepseek-chat');
+      // Validate existence
+      if (val in AI_MODELS) return val as AIModelKey;
+      return 'deepseek-chat';
+  },
+
+  saveGeneralAIModel: async (model: AIModelKey) => {
+      await StorageService.saveSystemSetting(SETTING_GENERAL_AI, model);
+  },
+
+  getSvgAIModel: async (): Promise<AIModelKey> => {
+      const val = await StorageService.getSystemSetting(SETTING_SVG_AI, 'deepseek-reasoner');
+      if (val in AI_MODELS) return val as AIModelKey;
+      return 'deepseek-reasoner'; // Reasoners are better for SVG code
+  },
+
+  saveSvgAIModel: async (model: AIModelKey) => {
+      await StorageService.saveSystemSetting(SETTING_SVG_AI, model);
+  },
+
+
+  // --- Articles ---
 
   getArticles: async (forceRefresh = false): Promise<Article[]> => {
     if (!DATABASE_URL) return [];
@@ -124,6 +197,8 @@ export const StorageService = {
     articlesCache = null; // Invalidate cache
   },
 
+  // --- Projects ---
+
   getProjects: async (forceRefresh = false): Promise<Project[]> => {
     if (!DATABASE_URL) return [];
     if (projectsCache && !forceRefresh) return projectsCache;
@@ -171,6 +246,8 @@ export const StorageService = {
     projectsCache = null; // Invalidate cache
   },
 
+  // --- Theme (Local is fine for theme to avoid FOUC, but kept strict to requirements) ---
+
   getTheme: (): 'light' | 'dark' => {
     const stored = localStorage.getItem(THEME_KEY);
     if (stored === 'light' || stored === 'dark') return stored;
@@ -179,16 +256,5 @@ export const StorageService = {
 
   saveTheme: (theme: 'light' | 'dark') => {
     localStorage.setItem(THEME_KEY, theme);
-  },
-
-  getAIProvider: (): AIModelKey => {
-      const stored = localStorage.getItem(AI_PROVIDER_KEY);
-      // Validate if stored key still exists in our models
-      if (stored && stored in AI_MODELS) return stored as AIModelKey;
-      return 'deepseek-chat'; // Default
-  },
-
-  saveAIProvider: (provider: AIModelKey) => {
-      localStorage.setItem(AI_PROVIDER_KEY, provider);
   }
 };

@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useMemo } from 'react';
 import { StorageService } from '../../services/storage';
 import { AIService, AIModelKey, AI_MODELS } from '../../services/ai';
-import { Plus, Trash2, Edit2, Save, Globe, Search, X, Settings, Sparkles, Loader2, BrainCircuit, Wand2, DownloadCloud, Layout, Zap, Bot, Box } from 'lucide-react';
+import { Plus, Trash2, Edit2, Save, Globe, Search, X, Settings, Sparkles, Loader2, BrainCircuit, Wand2, DownloadCloud, Layout, Zap, Bot, Box, CheckCircle } from 'lucide-react';
 import { Article, Project } from '../../types';
 import * as Icons from 'lucide-react';
 import { MarkdownRenderer } from '../../components/MarkdownRenderer';
@@ -16,6 +16,97 @@ const CURATED_ICONS = [
   'Activity', 'Zap', 'Battery', 'Wifi', 'Signal', 'Map', 'MapPin', 'Compass', 'Navigation', 'Flag', 'Target', 'Award', 'Star', 'Heart', 'ThumbsUp',
   'Calendar', 'Clock', 'Timer', 'Sun', 'Moon', 'CloudRain', 'Wind', 'Umbrella', 'Coffee', 'Beer', 'Pizza', 'Gift', 'Shield', 'Lock', 'Unlock', 'Key'
 ];
+
+// Helper to get unique providers
+const PROVIDERS = Array.from(new Set(Object.values(AI_MODELS).map(m => m.provider)));
+const PROVIDER_NAMES: Record<string, string> = {
+  'deepseek': 'DeepSeek',
+  'gemini': 'Google Gemini',
+  'openrouter': 'OpenRouter'
+};
+const PROVIDER_ICONS: Record<string, any> = {
+  'deepseek': BrainCircuit,
+  'gemini': Sparkles,
+  'openrouter': Box
+};
+
+// --- Model Selector Component ---
+const ModelSelector: React.FC<{
+  label: string;
+  description: string;
+  value: AIModelKey;
+  onChange: (key: AIModelKey) => void;
+}> = ({ label, description, value, onChange }) => {
+  const [selectedProvider, setSelectedProvider] = useState<string>(
+    AI_MODELS[value]?.provider || 'deepseek'
+  );
+
+  const filteredModels = useMemo(() => {
+    return Object.entries(AI_MODELS)
+      .filter(([_, model]) => model.provider === selectedProvider);
+  }, [selectedProvider]);
+
+  return (
+    <div className="bg-white dark:bg-neutral-900 border border-gray-200 dark:border-neutral-800 rounded-xl p-6">
+      <div className="mb-4">
+        <h4 className="text-base font-bold text-gray-900 dark:text-white flex items-center gap-2">
+          {label}
+          <span className="text-xs font-normal text-gray-500 bg-gray-100 dark:bg-neutral-800 px-2 py-0.5 rounded-full">当前: {AI_MODELS[value]?.name}</span>
+        </h4>
+        <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">{description}</p>
+      </div>
+
+      {/* 1. Provider Tabs */}
+      <div className="flex gap-2 mb-4 overflow-x-auto pb-1">
+        {PROVIDERS.map(p => {
+          const Icon = PROVIDER_ICONS[p] || Bot;
+          const isActive = selectedProvider === p;
+          return (
+            <button
+              key={p}
+              onClick={() => setSelectedProvider(p)}
+              className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium whitespace-nowrap transition-colors border ${
+                isActive 
+                  ? 'bg-indigo-50 border-indigo-200 text-indigo-700 dark:bg-indigo-900/20 dark:border-indigo-800 dark:text-indigo-400' 
+                  : 'bg-gray-50 border-transparent text-gray-600 hover:bg-gray-100 dark:bg-neutral-800 dark:text-gray-400 dark:hover:bg-neutral-700'
+              }`}
+            >
+              <Icon size={16} />
+              {PROVIDER_NAMES[p] || p}
+            </button>
+          )
+        })}
+      </div>
+
+      {/* 2. Model List */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+        {filteredModels.map(([key, model]) => {
+          const isSelected = value === key;
+          return (
+            <button
+              key={key}
+              onClick={() => onChange(key as AIModelKey)}
+              className={`relative text-left p-3 rounded-lg border-2 transition-all ${
+                isSelected 
+                  ? 'border-indigo-600 bg-indigo-50/50 dark:border-indigo-500 dark:bg-indigo-900/10' 
+                  : 'border-gray-100 bg-white hover:border-gray-300 dark:border-neutral-800 dark:bg-neutral-900 dark:hover:border-neutral-700'
+              }`}
+            >
+              <div className="flex justify-between items-start">
+                <div>
+                   <div className="font-semibold text-sm text-gray-900 dark:text-white">{model.name}</div>
+                   <div className="text-xs text-gray-500 dark:text-gray-400 mt-1 line-clamp-2">{model.description}</div>
+                </div>
+                {isSelected && <CheckCircle size={18} className="text-indigo-600 dark:text-indigo-400 shrink-0" />}
+              </div>
+            </button>
+          );
+        })}
+      </div>
+    </div>
+  );
+};
+
 
 // Subcomponents
 const IconPicker: React.FC<{
@@ -80,7 +171,8 @@ const ProjectEditor: React.FC<{
   onSave: (p: Project) => void;
   onCancel: () => void;
   defaultAiProvider: AIModelKey;
-}> = ({ project, onSave, onCancel, defaultAiProvider }) => {
+  defaultSvgProvider: AIModelKey;
+}> = ({ project, onSave, onCancel, defaultAiProvider, defaultSvgProvider }) => {
   const [formData, setFormData] = useState<Project>(
     project || {
       id: '',
@@ -98,9 +190,6 @@ const ProjectEditor: React.FC<{
   const [recommendingIcon, setRecommendingIcon] = useState(false);
   const [generatingSvg, setGeneratingSvg] = useState(false);
   
-  // Independent model selector for SVG generation, defaults to DeepSeek Reasoner for better logic
-  const [svgModelKey, setSvgModelKey] = useState<AIModelKey>('deepseek-reasoner');
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setSaving(true);
@@ -180,7 +269,8 @@ const ProjectEditor: React.FC<{
     setGeneratingSvg(true);
     
     try {
-        const svgCode = await AIService.generateSVGIcon(formData.title, formData.description, svgModelKey);
+        // Use global setting passed from parent
+        const svgCode = await AIService.generateSVGIcon(formData.title, formData.description, defaultSvgProvider);
         if (svgCode && svgCode.trim().startsWith('<svg')) {
             setFormData(prev => ({ ...prev, customSvg: svgCode, iconType: 'generated' }));
         } else {
@@ -250,18 +340,6 @@ const ProjectEditor: React.FC<{
                  {/* 3. Generated */}
                  {formData.iconType === 'generated' && (
                      <div className="flex flex-col items-center gap-4 w-full">
-                         <div className="flex items-center gap-2 mb-2 w-full max-w-xs">
-                             <label className="text-xs text-gray-500 shrink-0">生成模型</label>
-                             <select 
-                                value={svgModelKey} 
-                                onChange={(e) => setSvgModelKey(e.target.value as AIModelKey)}
-                                className="text-xs bg-white dark:bg-neutral-700 border border-gray-200 dark:border-neutral-600 rounded px-2 py-1 flex-1 outline-none"
-                             >
-                                {Object.entries(AI_MODELS).map(([key, model]) => (
-                                    <option key={key} value={key}>{model.name}</option>
-                                ))}
-                             </select>
-                         </div>
                          
                          <div className="w-16 h-16 bg-white dark:bg-neutral-800 rounded-xl flex items-center justify-center shadow-sm border border-gray-100 dark:border-neutral-700 text-indigo-600 dark:text-indigo-400 p-3 overflow-hidden">
                             {formData.customSvg ? (
@@ -269,6 +347,11 @@ const ProjectEditor: React.FC<{
                             ) : (
                                 <Wand2 className="text-gray-300" size={32} />
                             )}
+                         </div>
+
+                         <div className="text-xs text-gray-500 dark:text-gray-400 flex flex-col items-center">
+                            <span>使用全局配置模型:</span>
+                            <span className="font-semibold text-indigo-600 dark:text-indigo-400">{AI_MODELS[defaultSvgProvider]?.shortName || 'Unknown'}</span>
                          </div>
                          
                          <button type="button" onClick={handleGenerateSvg} disabled={generatingSvg} className="flex items-center gap-2 px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg text-xs font-medium transition-colors">
@@ -390,7 +473,11 @@ export const AdminDashboard: React.FC = () => {
   const [articles, setArticles] = useState<Article[]>([]);
   const [projects, setProjects] = useState<Project[]>([]);
   const [loading, setLoading] = useState(true);
-  const [aiProvider, setAiProvider] = useState<AIModelKey>('deepseek-chat');
+  
+  // Two state variables for models
+  const [generalAiProvider, setGeneralAiProvider] = useState<AIModelKey>('deepseek-chat');
+  const [svgAiProvider, setSvgAiProvider] = useState<AIModelKey>('deepseek-reasoner');
+
   const [isEditingProject, setIsEditingProject] = useState(false);
   const [currentProject, setCurrentProject] = useState<Project | undefined>(undefined);
   const [isEditingArticle, setIsEditingArticle] = useState(false);
@@ -402,7 +489,9 @@ export const AdminDashboard: React.FC = () => {
         await StorageService.initDB(); 
         setArticles(await StorageService.getArticles());
         setProjects(await StorageService.getProjects());
-        setAiProvider(StorageService.getAIProvider());
+        // Load Settings from DB
+        setGeneralAiProvider(await StorageService.getGeneralAIModel());
+        setSvgAiProvider(await StorageService.getSvgAIModel());
     } catch (e) {
         console.error("Failed to load admin data", e);
     } finally {
@@ -412,10 +501,15 @@ export const AdminDashboard: React.FC = () => {
 
   useEffect(() => { loadData(); }, []);
 
-  const handleProviderChange = (provider: AIModelKey) => {
-      setAiProvider(provider);
-      StorageService.saveAIProvider(provider);
+  const handleGeneralProviderChange = async (model: AIModelKey) => {
+      setGeneralAiProvider(model);
+      await StorageService.saveGeneralAIModel(model);
   };
+
+  const handleSvgProviderChange = async (model: AIModelKey) => {
+    setSvgAiProvider(model);
+    await StorageService.saveSvgAIModel(model);
+};
 
   const handleSaveArticle = async (article: Article) => {
     try {
@@ -523,41 +617,29 @@ export const AdminDashboard: React.FC = () => {
       {tab === 'settings' && (
           <div className="bg-white dark:bg-neutral-900 border border-gray-200 dark:border-neutral-800 rounded-2xl overflow-hidden shadow-sm">
              <div className="p-5 border-b border-gray-100 dark:border-neutral-800 bg-gray-50/50 dark:bg-neutral-900/50"><h3 className="font-semibold dark:text-white">系统设置</h3></div>
-             <div className="p-6 max-w-2xl">
-                 <div className="space-y-6">
-                     <div>
-                         <label className="text-sm font-medium text-gray-900 dark:text-white mb-4 block">默认 AI 模型</label>
-                         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                             {/* Grouped Model Selection */}
-                             {Object.entries(AI_MODELS).map(([key, model]) => {
-                                 let icon = <BrainCircuit size={18} className="text-blue-600" />;
-                                 if (model.provider === 'gemini') icon = <Sparkles size={18} className="text-yellow-600" />;
-                                 if (model.provider === 'openrouter') icon = <Box size={18} className="text-purple-600" />;
-                                 
-                                 const isSelected = aiProvider === key;
+             <div className="p-6 max-w-2xl space-y-8">
+                 
+                 {/* 1. General AI Selection */}
+                 <ModelSelector 
+                    label="全局 AI 写作模型"
+                    description="用于文章摘要生成、自动打标签等文本任务。"
+                    value={generalAiProvider}
+                    onChange={handleGeneralProviderChange}
+                 />
 
-                                 return (
-                                     <button 
-                                        key={key} 
-                                        onClick={() => handleProviderChange(key as AIModelKey)} 
-                                        className={`relative p-4 rounded-xl border-2 text-left transition-all flex flex-col gap-2 ${isSelected ? 'border-indigo-600 bg-indigo-50 dark:bg-indigo-900/20' : 'border-gray-100 dark:border-neutral-800 bg-white dark:bg-neutral-900 hover:border-gray-300 dark:hover:border-neutral-700'}`}
-                                     >
-                                         <div className="flex items-center justify-between w-full">
-                                            <span className="font-bold text-gray-900 dark:text-white flex items-center gap-2 text-sm">{icon} {model.shortName}</span>
-                                            {isSelected && <div className="w-2 h-2 rounded-full bg-indigo-600 shrink-0"></div>}
-                                         </div>
-                                         <p className="text-[10px] text-gray-500 dark:text-gray-400 leading-tight">{model.description}</p>
-                                     </button>
-                                 );
-                             })}
-                         </div>
-                     </div>
-                 </div>
+                 {/* 2. SVG AI Selection */}
+                 <ModelSelector 
+                    label="图标绘制 AI 模型"
+                    description="专用于生成 SVG 图标代码。建议选择 DeepSeek Reasoner (R1) 或逻辑能力较强的模型。"
+                    value={svgAiProvider}
+                    onChange={handleSvgProviderChange}
+                 />
+                 
              </div>
           </div>
       )}
-      {isEditingProject && <ProjectEditor project={currentProject} onSave={handleSaveProject} onCancel={() => setIsEditingProject(false)} defaultAiProvider={aiProvider} />}
-      {isEditingArticle && <ArticleEditor article={currentArticle} onSave={handleSaveArticle} onCancel={() => setIsEditingArticle(false)} defaultAIProvider={aiProvider} />}
+      {isEditingProject && <ProjectEditor project={currentProject} onSave={handleSaveProject} onCancel={() => setIsEditingProject(false)} defaultAiProvider={generalAiProvider} defaultSvgProvider={svgAiProvider} />}
+      {isEditingArticle && <ArticleEditor article={currentArticle} onSave={handleSaveArticle} onCancel={() => setIsEditingArticle(false)} defaultAIProvider={generalAiProvider} />}
     </div>
   );
 };

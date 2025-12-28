@@ -10,6 +10,10 @@ export const Home: React.FC = () => {
   const [recentArticles, setRecentArticles] = useState<Article[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
+  // Get username from env
+  const env = (import.meta as any).env;
+  const adminName = env.ADMIN_USERNAME || 'Eray';
+
   useEffect(() => {
     const fetchData = async () => {
         try {
@@ -102,7 +106,7 @@ export const Home: React.FC = () => {
       {/* Hero Section */}
       <section className="space-y-6 py-10">
         <h1 className="text-4xl sm:text-5xl font-extrabold tracking-tight text-gray-900 dark:text-white">
-          你好，我是 <span className="text-indigo-600 dark:text-indigo-400">Eray</span>
+          你好，我是 <span className="text-indigo-600 dark:text-indigo-400">{adminName}</span>
         </h1>
         <p className="text-xl text-gray-600 dark:text-gray-300 max-w-2xl leading-relaxed">
           这里是我的数字花园。我热爱极简设计与高效代码，在这里分享我的思考，并展示我搭建的各种有趣服务。

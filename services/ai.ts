@@ -6,24 +6,25 @@ const env = (import.meta as any).env;
 // --- Clients ---
 
 // 1. Google Gemini
-const geminiClient = new GoogleGenAI({ apiKey: env.VITE_GOOGLE_API_KEY });
+// Renamed from VITE_GOOGLE_API_KEY to GEMINI_API_KEY
+const geminiClient = new GoogleGenAI({ apiKey: env.GEMINI_API_KEY });
 
 // 2. DeepSeek Official
 // 使用 placeholder 防止在没有 key 时初始化报错，实际调用时会检查
 const deepseekClient = new OpenAI({
   baseURL: 'https://api.deepseek.com',
-  apiKey: env.VITE_DEEPSEEK_API_KEY || 'sk-placeholder', 
+  apiKey: env.DEEPSEEK_API_KEY || 'sk-placeholder', 
   dangerouslyAllowBrowser: true
 });
 
 // 3. OpenRouter (New)
 const openRouterClient = new OpenAI({
   baseURL: 'https://openrouter.ai/api/v1',
-  apiKey: env.VITE_OPENROUTER_API_KEY || 'sk-placeholder',
+  apiKey: env.OPENROUTER_API_KEY || 'sk-placeholder',
   dangerouslyAllowBrowser: true,
   defaultHeaders: {
     "HTTP-Referer": typeof window !== 'undefined' ? window.location.origin : '',
-    "X-Title": "Eray Space",
+    "X-Title": "My Space", // Updated branding
   }
 });
 
@@ -81,7 +82,7 @@ const executeAIRequest = async (modelKey: AIModelKey, systemPrompt: string, user
 
   // 1. Gemini Handling
   if (config.provider === 'gemini') {
-    if (!env.VITE_GOOGLE_API_KEY) throw new Error("请在 .env 设置 VITE_GOOGLE_API_KEY");
+    if (!env.GEMINI_API_KEY) throw new Error("请在 .env 设置 GEMINI_API_KEY");
     
     // Streaming
     if (streamCallback) {
@@ -115,12 +116,12 @@ const executeAIRequest = async (modelKey: AIModelKey, systemPrompt: string, user
   let apiKey = '';
   
   if (config.provider === 'deepseek') {
-      apiKey = env.VITE_DEEPSEEK_API_KEY;
-      if (!apiKey) throw new Error("请在 .env 设置 VITE_DEEPSEEK_API_KEY");
+      apiKey = env.DEEPSEEK_API_KEY;
+      if (!apiKey) throw new Error("请在 .env 设置 DEEPSEEK_API_KEY");
       client = deepseekClient;
   } else {
-      apiKey = env.VITE_OPENROUTER_API_KEY;
-      if (!apiKey) throw new Error("请在 .env 设置 VITE_OPENROUTER_API_KEY");
+      apiKey = env.OPENROUTER_API_KEY;
+      if (!apiKey) throw new Error("请在 .env 设置 OPENROUTER_API_KEY");
       client = openRouterClient;
   }
 

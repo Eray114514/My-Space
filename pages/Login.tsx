@@ -15,23 +15,23 @@ export const Login: React.FC<Props> = ({ onLogin }) => {
 
   // Get credentials from environment variables
   const env = (import.meta as any).env;
-  const ADMIN_USERNAME = env.VITE_ADMIN_USERNAME;
-  const ADMIN_PASSWORD = env.VITE_ADMIN_PASSWORD;
+  const ADMIN_USERNAME = env.ADMIN_USERNAME || 'Eray'; // Fallback to Eray if not set
+  const ADMIN_PASSWORD = env.ADMIN_PASSWORD;
 
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
-
+    
     // Safety check: ensure env vars are actually set
-    if (!ADMIN_USERNAME || !ADMIN_PASSWORD) {
-      setError('系统配置错误：未在 .env 中设置管理员账号信息');
+    if (!ADMIN_PASSWORD) {
+      setError('系统配置错误：未在 .env 中设置管理员密码');
       return;
     }
 
     if (username === ADMIN_USERNAME && password === ADMIN_PASSWORD) {
       if (rememberMe) {
-        localStorage.setItem('eray_session', 'active');
+        localStorage.setItem('my_session', 'active');
       } else {
-        sessionStorage.setItem('eray_session', 'active');
+        sessionStorage.setItem('my_session', 'active');
       }
       onLogin();
       navigate('/admin');
@@ -48,7 +48,7 @@ export const Login: React.FC<Props> = ({ onLogin }) => {
             <Lock size={24} />
           </div>
         </div>
-
+        
         <h2 className="text-2xl font-bold text-center text-gray-900 dark:text-white mb-2">管理员登录</h2>
         <p className="text-center text-gray-500 dark:text-gray-400 mb-8 text-sm">请输入凭证以访问后台</p>
 
@@ -77,8 +77,8 @@ export const Login: React.FC<Props> = ({ onLogin }) => {
               <div className={`w-4 h-4 rounded border flex items-center justify-center transition-colors ${rememberMe ? 'bg-indigo-600 border-indigo-600' : 'bg-white dark:bg-neutral-800 border-gray-300 dark:border-neutral-600 group-hover:border-indigo-400'}`}>
                 {rememberMe && <Check size={10} className="text-white" />}
               </div>
-              <input
-                type="checkbox"
+              <input 
+                type="checkbox" 
                 className="hidden"
                 checked={rememberMe}
                 onChange={(e) => setRememberMe(e.target.checked)}

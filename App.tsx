@@ -11,7 +11,7 @@ import { StorageService } from './services/storage';
 
 const App: React.FC = () => {
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
-
+  
   // 关键修复：直接在初始化时读取 Storage，防止 useEffect 异步覆盖导致每次刷新重置为浅色
   const [isDarkMode, setIsDarkMode] = useState<boolean>(() => {
     return StorageService.getTheme() === 'dark';
@@ -19,7 +19,8 @@ const App: React.FC = () => {
 
   useEffect(() => {
     // Check both session (tab only) and local (remember me) storage
-    const session = sessionStorage.getItem('eray_session') || localStorage.getItem('eray_session');
+    // Updated key to 'my_session'
+    const session = sessionStorage.getItem('my_session') || localStorage.getItem('my_session');
     if (session === 'active') {
       setIsAuthenticated(true);
     }
@@ -41,8 +42,8 @@ const App: React.FC = () => {
   };
 
   const handleLogout = () => {
-    sessionStorage.removeItem('eray_session');
-    localStorage.removeItem('eray_session');
+    sessionStorage.removeItem('my_session');
+    localStorage.removeItem('my_session');
     setIsAuthenticated(false);
   };
 
@@ -54,9 +55,9 @@ const App: React.FC = () => {
     <HashRouter>
       <Routes>
         <Route path="/" element={
-          <Layout
-            isAuthenticated={isAuthenticated}
-            onLogout={handleLogout}
+          <Layout 
+            isAuthenticated={isAuthenticated} 
+            onLogout={handleLogout} 
             isDarkMode={isDarkMode}
             toggleTheme={toggleTheme}
           />
