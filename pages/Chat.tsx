@@ -1,14 +1,15 @@
 import React, { useState, useRef, useEffect, useMemo } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { Send, Bot, User, Trash2, StopCircle, Sparkles, ChevronDown, Plus, MessageSquare, Edit2, Copy, RotateCcw, Save, Settings, FileText } from 'lucide-react';
+import { Send, Bot, User, Trash2, StopCircle, Sparkles, ChevronDown, Plus, MessageSquare, Edit2, Copy, RotateCcw, Save, Settings, FileText, Hash, X } from 'lucide-react';
 import { AIService, AI_MODELS, AIModelKey } from '../services/ai';
 import { StorageService, ChatSession, ChatMessage } from '../services/storage';
 import { MarkdownRenderer } from '../components/MarkdownRenderer';
+import { Article } from '../types';
 
 const DEFAULT_SYSTEM_PROMPT = "你是一个智能助手，名字叫 My AI。请用简洁、优雅的 Markdown 格式回答用户的问题。";
 
 export const Chat: React.FC = () => {
-  const [searchParams] = useSearchParams();
+  const [searchParams, setSearchParams] = useSearchParams();
   const articleId = searchParams.get('articleId');
 
   // State
@@ -20,12 +21,14 @@ export const Chat: React.FC = () => {
   const [systemPrompt, setSystemPrompt] = useState(DEFAULT_SYSTEM_PROMPT);
   const [isSystemPromptOpen, setIsSystemPromptOpen] = useState(false);
 
+  // Article References
+  const [availableArticles, setAvailableArticles] = useState<Article[]>([]);
+  const [attachedArticles, setAttachedArticles] = useState<Article[]>([]);
+  const [isArticlePickerOpen, setIsArticlePickerOpen] = useState(false);
+
   // Model
   const [selectedModel, setSelectedModel] = useState<AIModelKey | null>(null);
   const [isModelMenuOpen, setIsModelMenuOpen] = useState(false);
-
-  // Context
-  const [contextArticleTitle, setContextArticleTitle] = useState<string | null>(null);
 
   // Edit Mode
   const [editingMessageId, setEditingMessageId] = useState<string | null>(null);
@@ -43,7 +46,7 @@ export const Chat: React.FC = () => {
 
   // --- Initialization ---
 
-  // 1. Load Model
+  // 1. Load Model Config & Articles
   const availableModels = useMemo(() => {
     if (Object.keys(AI_MODELS).length === 0) return [];
     return Object.entries(AI_MODELS).filter(([_, model]) => {
@@ -61,116 +64,91 @@ export const Chat: React.FC = () => {
     }
   }, [availableModels, selectedModel]);
 
-  // 2. Load History List
   useEffect(() => {
-    const loadSessions = async () => {
+    const initData = async () => {
+      const articles = await StorageService.getArticles();
+      setAvailableArticles(articles.filter(a => a.isPublished));
       const list = await StorageService.getChatSessions(isAdmin);
       setSessions(list);
     };
-    loadSessions();
+    initData();
   }, [isAdmin]);
 
-  // 3. Handle Article Context (New Session from Article)
+  // 2. Handle Entry from Article (Lazy Initialization)
   useEffect(() => {
-    const initContext = async () => {
-      if (articleId && !currentSessionId) {
-        const article = await StorageService.getArticleById(articleId);
-        if (article) {
-          setContextArticleTitle(article.title);
-          setSystemPrompt(`${DEFAULT_SYSTEM_PROMPT}\n\n你正在根据以下文章回答用户的问题：\n\n标题：${article.title}\n内容：\n${article.content.substring(0, 8000)}... (截取部分)`);
-          createNewSession(`关于 "${article.title}" 的讨论`, article.id);
-          setIsSystemPromptOpen(true); // Let user see the context
+    const handleArticleEntry = async () => {
+      if (articleId) {
+        // Check if we are already in a session that matches this context to avoid reset
+        // (Simplification: If user navigates via URL with articleId, we treat it as starting fresh context)
+
+        if (!currentSessionId) {
+          const article = await StorageService.getArticleById(articleId);
+          if (article) {
+            // Don't create session in DB yet. Just setup UI state.
+            setAttachedArticles([article]);
+            // setIsSystemPromptOpen(true); // Disabled auto-expand as requested
+
+            // Remove param from URL to prevent re-triggering on refresh but keep state
+            // setSearchParams({}, { replace: true }); 
+            // actually keeping it might be better for "link sharing" logic, but user said "don't save history before sending"
+          }
         }
       }
     };
-    initContext();
+    handleArticleEntry();
   }, [articleId]);
 
-  // 4. Load Messages when Session Changes
-  // Critical Fix: Removed 'sessions' from dependency array to prevent race condition clearing messages when title updates
+  // 3. Load Messages when Session Changes
   useEffect(() => {
     const loadMessages = async () => {
       if (currentSessionId) {
         const msgs = await StorageService.getChatMessages(currentSessionId, isAdmin);
         setMessages(msgs);
 
-        // Find session details from current state without triggering re-run on every session update
         const session = sessions.find(s => s.id === currentSessionId);
         if (session) {
           setSystemPrompt(session.systemPrompt || DEFAULT_SYSTEM_PROMPT);
-          if (session.articleContextId) {
-            const article = await StorageService.getArticleById(session.articleContextId);
-            setContextArticleTitle(article ? article.title : null);
-          } else {
-            setContextArticleTitle(null);
-          }
+          // Clear attached articles when switching sessions to avoid confusion, 
+          // unless we parse them from history (complex), strictly, references are per-turn or system prompt embedded.
+          // For now, we reset attached articles on session switch.
+          setAttachedArticles([]);
         }
       } else {
-        setMessages([]);
-        setSystemPrompt(DEFAULT_SYSTEM_PROMPT);
-        setContextArticleTitle(null);
+        // Reset for new session
+        if (!articleId) {
+          setMessages([]);
+          setSystemPrompt(DEFAULT_SYSTEM_PROMPT);
+          setAttachedArticles([]);
+        }
       }
     };
     loadMessages();
-  }, [currentSessionId, isAdmin]); // Removed 'sessions' dependency
+  }, [currentSessionId, isAdmin, sessions]); // Added sessions to dependency to ensure we find the object
 
   // --- Core Logic ---
 
-  const createNewSession = async (title = '新对话', articleId?: string) => {
+  const createNewSession = async (firstMessageContent: string) => {
     const newId = Date.now().toString();
+
+    // Auto-generate title
+    const title = firstMessageContent.slice(0, 30) + (firstMessageContent.length > 30 ? '...' : '');
+
     const session: ChatSession = {
       id: newId,
-      title,
+      title: title || '新对话',
       systemPrompt: systemPrompt,
-      articleContextId: articleId,
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString()
     };
-    // Optimistic update
+
     setSessions(prev => [session, ...prev]);
     setCurrentSessionId(newId);
-    setMessages([]);
     await StorageService.saveChatSession(session, [], isAdmin);
     return newId;
   };
 
-  const updateCurrentSession = async (sessionId: string, newMessages: ChatMessage[]) => {
-    if (!sessionId) return;
-    const session = sessions.find(s => s.id === sessionId);
-    // We might not find the session immediately if it was just created in this render cycle,
-    // but for updating titles on existing sessions, it should be there.
-
-    let updatedSession = session ? { ...session } : null;
-
-    // If we can't find it in state (rare race condition), we construct a partial one or skip title update
-    // But saving messages is critical.
-
-    if (updatedSession) {
-      updatedSession.updatedAt = new Date().toISOString();
-      updatedSession.systemPrompt = systemPrompt;
-
-      // Auto-title for first message if title is default
-      if (updatedSession.title === '新对话' && newMessages.length > 0) {
-        const firstUserMsg = newMessages.find(m => m.role === 'user');
-        if (firstUserMsg) {
-          updatedSession.title = firstUserMsg.content.slice(0, 20) + (firstUserMsg.content.length > 20 ? '...' : '');
-        }
-      }
-
-      // Save to DB first
-      await StorageService.saveChatSession(updatedSession, newMessages, isAdmin);
-
-      // Then update state (this triggers re-render, but thanks to fixed useEffect, won't clear messages)
-      setSessions(prev => prev.map(s => s.id === sessionId ? updatedSession! : s));
-    } else {
-      // Fallback just save messages if session object missing in state
-      // (Should not happen often with optimistic updates)
-    }
-  };
-
   /**
    * Internal function to stream AI response based on a given history.
-   * Fix: Added targetSessionId parameter to ensure we use the correct ID even if state hasn't updated yet.
    */
   const triggerAIResponse = async (history: ChatMessage[], targetSessionId: string) => {
     if (!selectedModel || !targetSessionId) return;
@@ -189,12 +167,13 @@ export const Chat: React.FC = () => {
       createdAt: new Date().toISOString()
     };
 
-    // Update UI with placeholder
     const messagesWithPlaceholder = [...history, aiMsgPlaceholder];
     setMessages(messagesWithPlaceholder);
 
-    // Prepare API Payload
+    // Construct API History
     const apiHistory = history.map(m => ({ role: m.role as 'user' | 'assistant', content: m.content }));
+
+    // Inject System Prompt
     apiHistory.unshift({ role: 'system' as any, content: systemPrompt });
 
     let fullResponse = '';
@@ -219,9 +198,15 @@ export const Chat: React.FC = () => {
       // Final save
       const finalAiMsg = { ...aiMsgPlaceholder, content: fullResponse };
       const finalHistory = [...history, finalAiMsg];
-
       setMessages(finalHistory);
-      await updateCurrentSession(targetSessionId, finalHistory);
+
+      // Update Session Last Updated
+      const session = sessions.find(s => s.id === targetSessionId);
+      if (session) {
+        const updatedSession = { ...session, updatedAt: new Date().toISOString() };
+        setSessions(prev => prev.map(s => s.id === targetSessionId ? updatedSession : s));
+        await StorageService.saveChatSession(updatedSession, finalHistory, isAdmin);
+      }
 
     } catch (error: any) {
       setMessages(prev => {
@@ -239,12 +224,21 @@ export const Chat: React.FC = () => {
   };
 
   const handleSend = async () => {
-    if (!input.trim() || isLoading) return;
+    if ((!input.trim() && attachedArticles.length === 0) || isLoading) return;
 
     let activeSessionId = currentSessionId;
+    let isNewSession = false;
 
     if (!activeSessionId) {
-      activeSessionId = await createNewSession();
+      activeSessionId = await createNewSession(input || "新对话");
+      isNewSession = true;
+    }
+
+    // Construct Content with References
+    let finalContent = input;
+    if (attachedArticles.length > 0) {
+      const refs = attachedArticles.map(a => `\n\n---\n引用文章标题：${a.title}\n文章摘要：${a.summary}\n文章正文：\n${a.content}\n---`).join('');
+      finalContent = `${input}\n${refs}`;
     }
 
     // 1. Add User Message
@@ -252,16 +246,16 @@ export const Chat: React.FC = () => {
       id: Date.now().toString(),
       sessionId: activeSessionId!,
       role: 'user',
-      content: input,
+      content: finalContent,
       createdAt: new Date().toISOString()
     };
 
-    // Optimistic UI update for user message
     const nextMessages = [...messages, userMsg];
     setMessages(nextMessages);
     setInput('');
+    setAttachedArticles([]); // Clear references after sending
 
-    // 2. Trigger AI (Must pass activeSessionId explicitly because state might not have updated)
+    // 2. Trigger AI
     await triggerAIResponse(nextMessages, activeSessionId!);
   };
 
@@ -277,60 +271,48 @@ export const Chat: React.FC = () => {
     }
   };
 
-  // --- Message Actions ---
+  // --- Article Picker Logic ---
 
-  const handleCopy = (content: string) => {
-    navigator.clipboard.writeText(content);
+  const handleInputChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    const val = e.target.value;
+    setInput(val);
+    if (val.endsWith('#')) {
+      setIsArticlePickerOpen(true);
+    }
   };
 
-  const handleRegenerate = (index: number) => {
-    if (index <= 0 || !currentSessionId) return;
-    const historyToKeep = messages.slice(0, index);
-    triggerAIResponse(historyToKeep, currentSessionId);
-  };
-
-  const handleEditUserMessage = (index: number) => {
-    setEditingMessageId(messages[index].id);
-    setEditContent(messages[index].content);
-  };
-
-  const submitEdit = (index: number) => {
-    if (!currentSessionId) return;
-    // Keep everything before this message
-    const historyPrefix = messages.slice(0, index);
-
-    // Create modified user message
-    const modifiedMsg = { ...messages[index], content: editContent };
-
-    // New history base
-    const newHistory = [...historyPrefix, modifiedMsg];
-
-    setEditingMessageId(null);
-
-    // Trigger AI with this new history
-    triggerAIResponse(newHistory, currentSessionId);
+  const addArticleReference = (article: Article) => {
+    if (!attachedArticles.find(a => a.id === article.id)) {
+      setAttachedArticles([...attachedArticles, article]);
+    }
+    setIsArticlePickerOpen(false);
+    // Remove the trailing '#' if it exists
+    if (input.endsWith('#')) {
+      setInput(input.slice(0, -1));
+    }
+    textareaRef.current?.focus();
   };
 
   // --- UI Helpers ---
 
   const scrollToBottom = () => {
     if (scrollContainerRef.current) {
-      const { scrollHeight, clientHeight } = scrollContainerRef.current;
-      scrollContainerRef.current.scrollTo({ top: scrollHeight - clientHeight, behavior: 'smooth' });
+      scrollContainerRef.current.scrollTo({ top: scrollContainerRef.current.scrollHeight, behavior: 'smooth' });
     }
   };
-  useEffect(() => { scrollToBottom(); }, [messages, editingMessageId]);
+
+  useEffect(() => { scrollToBottom(); }, [messages]);
 
   if (availableModels.length === 0) return <div className="p-10 text-center text-gray-400">Loading Configuration...</div>;
 
   return (
-    <div className="flex h-[calc(100vh-6rem)] max-w-6xl mx-auto gap-4 animate-in fade-in duration-500">
+    <div className="flex h-full max-w-full mx-auto gap-0 animate-in fade-in duration-500 relative">
 
-      {/* Sidebar (History) */}
-      <div className="hidden md:flex flex-col w-64 liquid-glass rounded-3xl overflow-hidden shadow-lg h-full">
-        <div className="p-4 border-b border-gray-200/50 dark:border-white/5 flex items-center justify-between bg-white/30 dark:bg-white/5 backdrop-blur-md">
+      {/* Sidebar (History) - Hidden on mobile unless opened (TODO: Add mobile toggle) */}
+      <div className="hidden md:flex flex-col w-64 border-r border-gray-200/50 dark:border-white/5 bg-white/50 dark:bg-black/20 backdrop-blur-md h-full shrink-0">
+        <div className="p-4 flex items-center justify-between">
           <span className="font-bold text-gray-700 dark:text-gray-200 text-sm">历史对话</span>
-          <button onClick={() => { setCurrentSessionId(null); setMessages([]); setSystemPrompt(DEFAULT_SYSTEM_PROMPT); setContextArticleTitle(null); }} className="p-1.5 rounded-full hover:bg-white/50 dark:hover:bg-white/10 transition-colors text-indigo-600 dark:text-indigo-400">
+          <button onClick={() => { setCurrentSessionId(null); setMessages([]); setSystemPrompt(DEFAULT_SYSTEM_PROMPT); setAttachedArticles([]); }} className="p-1.5 rounded-full hover:bg-white/50 dark:hover:bg-white/10 transition-colors text-indigo-600 dark:text-indigo-400">
             <Plus size={18} />
           </button>
         </div>
@@ -346,7 +328,6 @@ export const Chat: React.FC = () => {
             >
               <div className="text-sm font-medium truncate pr-6">{session.title}</div>
               <div className="text-[10px] opacity-60 mt-1 flex items-center gap-1">
-                {session.articleContextId && <FileText size={10} />}
                 {new Date(session.updatedAt).toLocaleDateString()}
               </div>
               <button
@@ -357,15 +338,14 @@ export const Chat: React.FC = () => {
               </button>
             </div>
           ))}
-          {sessions.length === 0 && <div className="text-center text-xs text-gray-400 mt-10">暂无历史记录</div>}
         </div>
       </div>
 
-      {/* Main Chat Area */}
-      <div className="flex-1 flex flex-col liquid-glass rounded-3xl overflow-hidden shadow-xl h-full relative">
+      {/* Main Chat Area - Full Height, Flex Col */}
+      <div className="flex-1 flex flex-col h-full relative bg-white/30 dark:bg-black/10 backdrop-blur-sm">
 
-        {/* Header */}
-        <div className="h-14 px-4 sm:px-6 border-b border-gray-200/50 dark:border-white/5 flex items-center justify-between bg-white/40 dark:bg-white/5 backdrop-blur-md shrink-0 z-20">
+        {/* Top Bar (Model & System) */}
+        <div className="h-14 px-4 border-b border-gray-200/50 dark:border-white/5 flex items-center justify-between bg-white/40 dark:bg-white/5 backdrop-blur-md z-20 shrink-0">
           <div className="flex items-center gap-3">
             <div className="relative">
               <button onClick={() => setIsModelMenuOpen(!isModelMenuOpen)} className="flex items-center gap-2 text-sm font-bold text-gray-700 dark:text-gray-200 hover:bg-black/5 dark:hover:bg-white/10 px-3 py-1.5 rounded-full transition-colors">
@@ -375,7 +355,7 @@ export const Chat: React.FC = () => {
                 <ChevronDown size={14} className="opacity-50" />
               </button>
               {isModelMenuOpen && (
-                <div className="absolute top-full left-0 mt-2 w-56 liquid-glass-high rounded-2xl shadow-xl overflow-hidden py-2 animate-in fade-in zoom-in-95 duration-200">
+                <div className="absolute top-full left-0 mt-2 w-56 liquid-glass-high rounded-2xl shadow-xl overflow-hidden py-2 animate-in fade-in zoom-in-95 duration-200 z-50">
                   {availableModels.map(([key, model]) => (
                     <button key={key} onClick={() => { setSelectedModel(key as AIModelKey); setIsModelMenuOpen(false); }} className={`w-full text-left px-4 py-2 text-xs font-medium ${selectedModel === key ? 'bg-indigo-50 dark:bg-indigo-900/20 text-indigo-600 dark:text-indigo-400' : 'text-gray-600 dark:text-gray-300 hover:bg-black/5 dark:hover:bg-white/5'}`}>
                       {/* @ts-ignore */}
@@ -385,11 +365,6 @@ export const Chat: React.FC = () => {
                 </div>
               )}
             </div>
-            {contextArticleTitle && (
-              <span className="hidden sm:flex items-center gap-1 text-xs text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-900/20 px-2 py-0.5 rounded-full border border-indigo-100 dark:border-indigo-800/30 truncate max-w-[200px]">
-                <FileText size={10} /> 引用: {contextArticleTitle}
-              </span>
-            )}
           </div>
 
           <div className="flex items-center gap-2">
@@ -399,9 +374,9 @@ export const Chat: React.FC = () => {
           </div>
         </div>
 
-        {/* System Prompt Panel */}
+        {/* System Prompt Panel (Expandable) */}
         {isSystemPromptOpen && (
-          <div className="px-6 py-4 bg-gray-50/80 dark:bg-black/20 border-b border-gray-200/50 dark:border-white/5 animate-in slide-in-from-top-2 duration-300">
+          <div className="px-6 py-4 bg-gray-50/90 dark:bg-[#0a0a0a]/90 border-b border-gray-200/50 dark:border-white/5 animate-in slide-in-from-top-2 duration-300 shrink-0 backdrop-blur-sm z-10">
             <label className="text-xs font-bold text-gray-500 mb-2 block">系统提示词 / 角色设定</label>
             <textarea
               value={systemPrompt}
@@ -409,23 +384,23 @@ export const Chat: React.FC = () => {
               className="w-full h-24 bg-white dark:bg-white/5 border border-gray-200 dark:border-white/10 rounded-xl p-3 text-xs text-gray-700 dark:text-gray-300 outline-none focus:border-indigo-500 transition-colors resize-none font-mono"
               placeholder="定义 AI 的行为..."
             />
-            <div className="flex justify-end mt-2">
-              <button onClick={() => setIsSystemPromptOpen(false)} className="text-xs text-indigo-600 hover:underline">收起面板</button>
-            </div>
           </div>
         )}
 
-        {/* Messages List */}
-        <div ref={scrollContainerRef} className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-8 scroll-smooth scrollbar-hide">
-          {messages.length === 0 && !contextArticleTitle && (
+        {/* Messages Area */}
+        <div
+          ref={scrollContainerRef}
+          className="flex-1 overflow-y-auto p-4 sm:p-10 pb-40 space-y-8 scroll-smooth"
+        >
+          {messages.length === 0 && attachedArticles.length === 0 && (
             <div className="h-full flex flex-col items-center justify-center text-gray-400 opacity-50 space-y-4">
               <Bot size={48} strokeWidth={1} />
-              <p className="font-light">开始一段新的对话...</p>
+              <p className="font-light">与我交谈，或引用文章开始讨论...</p>
             </div>
           )}
 
           {messages.map((msg, index) => (
-            <div key={index} className={`group flex gap-4 ${msg.role === 'user' ? 'flex-row-reverse' : ''}`}>
+            <div key={index} className={`group flex gap-4 max-w-4xl mx-auto ${msg.role === 'user' ? 'flex-row-reverse' : ''}`}>
               {/* Avatar */}
               <div className={`w-9 h-9 rounded-full flex items-center justify-center shrink-0 shadow-sm border border-white/20 dark:border-white/5 mt-1 ${msg.role === 'user'
                   ? 'bg-gradient-to-br from-indigo-500 to-violet-600 text-white'
@@ -434,87 +409,92 @@ export const Chat: React.FC = () => {
                 {msg.role === 'user' ? <User size={16} /> : <Bot size={18} />}
               </div>
 
-              {/* Content Area */}
+              {/* Content */}
               <div className={`max-w-[85%] sm:max-w-[75%] min-w-0 flex flex-col ${msg.role === 'user' ? 'items-end' : 'items-start'}`}>
-
-                {/* Edit Mode for User */}
-                {editingMessageId === msg.id ? (
-                  <div className="w-full bg-white dark:bg-white/10 rounded-2xl border border-indigo-500 p-3 shadow-lg animate-in zoom-in-95 duration-200 min-w-[300px]">
-                    <textarea
-                      value={editContent}
-                      onChange={e => setEditContent(e.target.value)}
-                      className="w-full bg-transparent border-none outline-none text-sm text-gray-800 dark:text-gray-100 resize-none h-24 mb-2"
-                    />
-                    <div className="flex justify-end gap-2">
-                      <button onClick={() => setEditingMessageId(null)} className="px-3 py-1 rounded-md text-xs text-gray-500 hover:bg-black/5">取消</button>
-                      <button onClick={() => submitEdit(index)} className="px-3 py-1 rounded-md text-xs bg-indigo-600 text-white shadow-sm">保存并重新生成</button>
+                <div className={`px-5 py-3.5 shadow-sm text-[15px] leading-7 relative group/bubble ${msg.role === 'user'
+                    ? 'bg-indigo-600 text-white rounded-[1.5rem] rounded-tr-sm'
+                    : 'bg-white/80 dark:bg-[#1a1a1a] text-gray-800 dark:text-gray-100 rounded-[1.5rem] rounded-tl-sm border border-white/30 dark:border-white/5'
+                  }`}>
+                  {msg.role === 'user' ? (
+                    <p className="whitespace-pre-wrap">{msg.content}</p>
+                  ) : (
+                    <div className="markdown-chat">
+                      <MarkdownRenderer content={msg.content || 'Thinking...'} />
                     </div>
-                  </div>
-                ) : (
-                  <div className={`px-5 py-3.5 shadow-sm text-[15px] leading-7 relative group/bubble ${msg.role === 'user'
-                      ? 'bg-indigo-600 text-white rounded-[1.5rem] rounded-tr-sm'
-                      : 'bg-white/60 dark:bg-white/5 text-gray-800 dark:text-gray-100 rounded-[1.5rem] rounded-tl-sm border border-white/30 dark:border-white/5'
-                    }`}>
-                    {msg.role === 'user' ? (
-                      <p className="whitespace-pre-wrap">{msg.content}</p>
-                    ) : (
-                      <div className="markdown-chat">
-                        <MarkdownRenderer content={msg.content || 'Thinking...'} />
-                      </div>
-                    )}
-                  </div>
-                )}
-
-                {/* Actions Bar (Hover) */}
-                {!editingMessageId && !isLoading && (
-                  <div className={`flex items-center gap-1 mt-1 opacity-0 group-hover:opacity-100 transition-opacity ${msg.role === 'user' ? 'flex-row-reverse' : ''}`}>
-                    <button onClick={() => handleCopy(msg.content)} className="p-1.5 rounded-full text-gray-400 hover:text-indigo-600 hover:bg-black/5 dark:hover:bg-white/10 transition-colors" title="复制"><Copy size={12} /></button>
-
-                    {msg.role === 'user' && (
-                      <button onClick={() => handleEditUserMessage(index)} className="p-1.5 rounded-full text-gray-400 hover:text-indigo-600 hover:bg-black/5 dark:hover:bg-white/10 transition-colors" title="编辑"><Edit2 size={12} /></button>
-                    )}
-
-                    {msg.role === 'assistant' && (
-                      <button onClick={() => handleRegenerate(index)} className="p-1.5 rounded-full text-gray-400 hover:text-indigo-600 hover:bg-black/5 dark:hover:bg-white/10 transition-colors" title="重新生成"><RotateCcw size={12} /></button>
-                    )}
-                  </div>
-                )}
+                  )}
+                </div>
               </div>
             </div>
           ))}
         </div>
 
-        {/* Input Area */}
-        <div className="p-4 sm:p-6 bg-white/40 dark:bg-white/5 backdrop-blur-md border-t border-white/20 dark:border-white/5">
-          <div className="bg-white dark:bg-black/20 rounded-[1.5rem] shadow-inner border border-gray-200/50 dark:border-white/10 flex items-end p-2 gap-2 focus-within:ring-2 focus-within:ring-indigo-500/30 transition-all">
-            <textarea
-              ref={textareaRef}
-              value={input}
-              onChange={(e) => {
-                setInput(e.target.value);
-                e.target.style.height = 'auto';
-                e.target.style.height = `${Math.min(e.target.scrollHeight, 120)}px`;
-              }}
-              onKeyDown={(e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSend(); } }}
-              placeholder={isLoading ? "AI 正在思考..." : "输入消息..."}
-              disabled={isLoading}
-              className="flex-1 bg-transparent border-none outline-none px-4 py-3 min-h-[48px] max-h-[120px] resize-none text-sm text-gray-900 dark:text-white placeholder-gray-400"
-              rows={1}
-            />
-            <button
-              onClick={() => handleSend()}
-              disabled={!input.trim() || isLoading}
-              className={`p-2.5 rounded-full mb-1 transition-all ${!input.trim() || isLoading
-                  ? 'text-gray-300 bg-transparent'
-                  : 'bg-indigo-600 text-white shadow-lg shadow-indigo-500/30 hover:scale-105 active:scale-95'
-                }`}
-            >
-              {isLoading ? <StopCircle size={18} className="animate-pulse" /> : <Send size={18} />}
-            </button>
-          </div>
-          <div className="text-center text-[10px] text-gray-400 mt-2 font-light">
-            {/* Footer text */}
-            AI 生成内容可能包含错误，请注意甄别。
+        {/* Bottom Input Area (Fixed) */}
+        <div className="absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-white via-white to-transparent dark:from-black dark:via-black dark:to-transparent pt-10 pb-6 z-30">
+          <div className="max-w-4xl mx-auto space-y-3">
+
+            {/* Attached Context Tags */}
+            {attachedArticles.length > 0 && (
+              <div className="flex flex-wrap gap-2 animate-in slide-in-from-bottom-2">
+                {attachedArticles.map(a => (
+                  <div key={a.id} className="flex items-center gap-2 bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-300 px-3 py-1 rounded-full text-xs font-medium border border-indigo-100 dark:border-indigo-800/50 shadow-sm">
+                    <FileText size={12} />
+                    <span className="truncate max-w-[150px]">{a.title}</span>
+                    <button onClick={() => setAttachedArticles(prev => prev.filter(item => item.id !== a.id))} className="hover:text-red-500 ml-1"><X size={12} /></button>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {/* Article Picker Popover */}
+            {isArticlePickerOpen && (
+              <div className="absolute bottom-full left-4 sm:left-auto mb-2 w-72 liquid-glass-high rounded-xl shadow-2xl overflow-hidden animate-in fade-in slide-in-from-bottom-2 border border-indigo-100 dark:border-indigo-900/50">
+                <div className="p-2 border-b border-gray-100 dark:border-white/5 text-xs text-gray-500 font-bold bg-gray-50 dark:bg-white/5">选择引用文章</div>
+                <div className="max-h-48 overflow-y-auto">
+                  {availableArticles.map(article => (
+                    <button
+                      key={article.id}
+                      onClick={() => addArticleReference(article)}
+                      className="w-full text-left px-4 py-2 text-sm hover:bg-indigo-50 dark:hover:bg-indigo-900/20 text-gray-700 dark:text-gray-200 truncate transition-colors"
+                    >
+                      {article.title}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Input Box */}
+            <div className="bg-white dark:bg-[#1a1a1a] rounded-[1.5rem] shadow-xl border border-gray-200/80 dark:border-white/10 flex items-end p-2 gap-2 focus-within:ring-2 focus-within:ring-indigo-500/30 transition-all">
+
+              <button
+                onClick={() => setIsArticlePickerOpen(!isArticlePickerOpen)}
+                className={`p-2.5 rounded-full mb-1 transition-colors ${attachedArticles.length > 0 ? 'text-indigo-600 bg-indigo-50 dark:bg-indigo-900/20' : 'text-gray-400 hover:bg-gray-100 dark:hover:bg-white/10'}`}
+                title="引用文章 (#)"
+              >
+                <Hash size={18} />
+              </button>
+
+              <textarea
+                ref={textareaRef}
+                value={input}
+                onChange={handleInputChange}
+                onKeyDown={(e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSend(); } }}
+                placeholder={isLoading ? "AI 正在思考..." : "输入消息... (输入 # 引用文章)"}
+                disabled={isLoading}
+                className="flex-1 bg-transparent border-none outline-none px-2 py-3 min-h-[48px] max-h-[160px] resize-none text-sm text-gray-900 dark:text-white placeholder-gray-400"
+                rows={1}
+              />
+              <button
+                onClick={() => handleSend()}
+                disabled={(!input.trim() && attachedArticles.length === 0) || isLoading}
+                className={`p-2.5 rounded-full mb-1 transition-all ${(!input.trim() && attachedArticles.length === 0) || isLoading
+                    ? 'text-gray-300 bg-transparent'
+                    : 'bg-indigo-600 text-white shadow-lg shadow-indigo-500/30 hover:scale-105 active:scale-95'
+                  }`}
+              >
+                {isLoading ? <StopCircle size={18} className="animate-pulse" /> : <Send size={18} />}
+              </button>
+            </div>
           </div>
         </div>
       </div>
