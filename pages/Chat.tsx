@@ -87,12 +87,14 @@ export const Chat: React.FC = () => {
   }, [articleId]);
 
   // 4. Load Messages when Session Changes
+  // Critical Fix: Removed 'sessions' from dependency array to prevent race condition clearing messages when title updates
   useEffect(() => {
     const loadMessages = async () => {
       if (currentSessionId) {
         const msgs = await StorageService.getChatMessages(currentSessionId, isAdmin);
         setMessages(msgs);
 
+        // Find session details from current state without triggering re-run on every session update
         const session = sessions.find(s => s.id === currentSessionId);
         if (session) {
           setSystemPrompt(session.systemPrompt || DEFAULT_SYSTEM_PROMPT);
@@ -110,7 +112,7 @@ export const Chat: React.FC = () => {
       }
     };
     loadMessages();
-  }, [currentSessionId, sessions, isAdmin]);
+  }, [currentSessionId, isAdmin]); // Removed 'sessions' dependency
 
   // --- Core Logic ---
 
@@ -124,38 +126,54 @@ export const Chat: React.FC = () => {
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString()
     };
+    // Optimistic update
     setSessions(prev => [session, ...prev]);
     setCurrentSessionId(newId);
-    setMessages([]); // Clear view
+    setMessages([]);
     await StorageService.saveChatSession(session, [], isAdmin);
     return newId;
   };
 
-  const updateCurrentSession = async (newMessages: ChatMessage[]) => {
-    if (!currentSessionId) return;
-    const session = sessions.find(s => s.id === currentSessionId);
-    if (!session) return;
+  const updateCurrentSession = async (sessionId: string, newMessages: ChatMessage[]) => {
+    if (!sessionId) return;
+    const session = sessions.find(s => s.id === sessionId);
+    // We might not find the session immediately if it was just created in this render cycle,
+    // but for updating titles on existing sessions, it should be there.
 
-    // Auto-title for first message
-    let updatedSession = { ...session, updatedAt: new Date().toISOString(), systemPrompt };
-    if (session.title === '新对话' && newMessages.length > 0) {
-      const firstUserMsg = newMessages.find(m => m.role === 'user');
-      if (firstUserMsg) {
-        updatedSession.title = firstUserMsg.content.slice(0, 20) + (firstUserMsg.content.length > 20 ? '...' : '');
+    let updatedSession = session ? { ...session } : null;
+
+    // If we can't find it in state (rare race condition), we construct a partial one or skip title update
+    // But saving messages is critical.
+
+    if (updatedSession) {
+      updatedSession.updatedAt = new Date().toISOString();
+      updatedSession.systemPrompt = systemPrompt;
+
+      // Auto-title for first message if title is default
+      if (updatedSession.title === '新对话' && newMessages.length > 0) {
+        const firstUserMsg = newMessages.find(m => m.role === 'user');
+        if (firstUserMsg) {
+          updatedSession.title = firstUserMsg.content.slice(0, 20) + (firstUserMsg.content.length > 20 ? '...' : '');
+        }
       }
-    }
 
-    setSessions(prev => prev.map(s => s.id === currentSessionId ? updatedSession : s));
-    await StorageService.saveChatSession(updatedSession, newMessages, isAdmin);
+      // Save to DB first
+      await StorageService.saveChatSession(updatedSession, newMessages, isAdmin);
+
+      // Then update state (this triggers re-render, but thanks to fixed useEffect, won't clear messages)
+      setSessions(prev => prev.map(s => s.id === sessionId ? updatedSession! : s));
+    } else {
+      // Fallback just save messages if session object missing in state
+      // (Should not happen often with optimistic updates)
+    }
   };
 
   /**
    * Internal function to stream AI response based on a given history.
-   * DOES NOT add the user message (it assumes user message is already in history).
-   * It appends the AI message placeholder and streams content.
+   * Fix: Added targetSessionId parameter to ensure we use the correct ID even if state hasn't updated yet.
    */
-  const triggerAIResponse = async (history: ChatMessage[]) => {
-    if (!selectedModel || !currentSessionId) return;
+  const triggerAIResponse = async (history: ChatMessage[], targetSessionId: string) => {
+    if (!selectedModel || !targetSessionId) return;
 
     setIsLoading(true);
     if (abortControllerRef.current) abortControllerRef.current.abort();
@@ -165,7 +183,7 @@ export const Chat: React.FC = () => {
     const aiMsgId = (Date.now() + 1).toString();
     const aiMsgPlaceholder: ChatMessage = {
       id: aiMsgId,
-      sessionId: currentSessionId,
+      sessionId: targetSessionId,
       role: 'assistant',
       content: '',
       createdAt: new Date().toISOString()
@@ -203,7 +221,7 @@ export const Chat: React.FC = () => {
       const finalHistory = [...history, finalAiMsg];
 
       setMessages(finalHistory);
-      await updateCurrentSession(finalHistory);
+      await updateCurrentSession(targetSessionId, finalHistory);
 
     } catch (error: any) {
       setMessages(prev => {
@@ -227,8 +245,6 @@ export const Chat: React.FC = () => {
 
     if (!activeSessionId) {
       activeSessionId = await createNewSession();
-      // Wait for React state update frame or assume it works
-      // We use the variable activeSessionId to ensure we have it
     }
 
     // 1. Add User Message
@@ -245,8 +261,8 @@ export const Chat: React.FC = () => {
     setMessages(nextMessages);
     setInput('');
 
-    // 2. Trigger AI
-    await triggerAIResponse(nextMessages);
+    // 2. Trigger AI (Must pass activeSessionId explicitly because state might not have updated)
+    await triggerAIResponse(nextMessages, activeSessionId!);
   };
 
   const handleDeleteSession = async (e: React.MouseEvent, id: string) => {
@@ -268,14 +284,9 @@ export const Chat: React.FC = () => {
   };
 
   const handleRegenerate = (index: number) => {
-    // Fix: Don't remove the user message.
-    // If index is the AI response, index-1 is the user message.
-    // We want to keep everything UP TO index (exclusive), which includes the user message.
-    if (index <= 0) return;
+    if (index <= 0 || !currentSessionId) return;
     const historyToKeep = messages.slice(0, index);
-
-    // We do NOT add a new user message. We just re-trigger AI based on existing history.
-    triggerAIResponse(historyToKeep);
+    triggerAIResponse(historyToKeep, currentSessionId);
   };
 
   const handleEditUserMessage = (index: number) => {
@@ -284,6 +295,7 @@ export const Chat: React.FC = () => {
   };
 
   const submitEdit = (index: number) => {
+    if (!currentSessionId) return;
     // Keep everything before this message
     const historyPrefix = messages.slice(0, index);
 
@@ -296,7 +308,7 @@ export const Chat: React.FC = () => {
     setEditingMessageId(null);
 
     // Trigger AI with this new history
-    triggerAIResponse(newHistory);
+    triggerAIResponse(newHistory, currentSessionId);
   };
 
   // --- UI Helpers ---

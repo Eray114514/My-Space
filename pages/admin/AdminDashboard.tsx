@@ -1,4 +1,5 @@
 import React, { useEffect, useState, useMemo } from 'react';
+import { createPortal } from 'react-dom';
 import { StorageService } from '../../services/storage';
 import { AIService, AIModelKey, AI_MODELS } from '../../services/ai';
 import { Plus, Trash2, Edit2, Save, Globe, Search, X, Settings, Sparkles, Loader2, BrainCircuit, Wand2, DownloadCloud, Layout, Zap, Bot, Box, CheckCircle } from 'lucide-react';
@@ -279,8 +280,9 @@ const ProjectEditor: React.FC<{
     }
   };
 
-  return (
-    <div className="fixed inset-0 z-[60] bg-black/40 backdrop-blur-lg flex items-center justify-center p-4 animate-in fade-in duration-300">
+  return createPortal(
+    // Using Portal to break out of any stacking context (like main's z-0) and ensure it covers navbar
+    <div className="fixed inset-0 z-[9999] bg-[#f8f9fa]/90 dark:bg-[#050505]/90 backdrop-blur-xl flex items-center justify-center p-4 animate-in fade-in duration-300">
       <div className="liquid-glass-high w-full max-w-lg rounded-3xl shadow-2xl p-8 max-h-[90vh] overflow-y-auto">
         <h3 className="text-2xl font-bold mb-6 dark:text-white">{project ? '编辑导航' : '新增导航'}</h3>
         <form onSubmit={handleSubmit} className="space-y-5">
@@ -374,7 +376,8 @@ const ProjectEditor: React.FC<{
           </div>
         </form>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 };
 
@@ -432,9 +435,9 @@ const ArticleEditor: React.FC<{
     }
   };
 
-  return (
-    // Changed z-index to 100 to cover navbar, improved background
-    <div className="fixed inset-0 z-[100] bg-[#f8f9fa] dark:bg-[#050505] flex flex-col animate-in fade-in zoom-in-95 duration-300">
+  return createPortal(
+    // Using Portal to ensure full screen editor covers everything including navbar
+    <div className="fixed inset-0 z-[9999] bg-[#f8f9fa] dark:bg-[#050505] flex flex-col animate-in fade-in zoom-in-95 duration-300">
       {/* Embedded Liquid Ambient Background for Editor */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none z-0 opacity-50">
         <div className="absolute -top-[10%] -left-[10%] w-[60vw] h-[60vw] max-w-[800px] max-h-[800px] bg-indigo-300/30 dark:bg-indigo-600/20 rounded-full mix-blend-multiply dark:mix-blend-screen filter blur-[100px]" />
@@ -480,7 +483,8 @@ const ArticleEditor: React.FC<{
           </div>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 };
 
