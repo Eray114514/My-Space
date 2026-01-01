@@ -27,6 +27,23 @@ const safeParseJSON = (jsonString: string | null) => {
     try { return JSON.parse(jsonString); } catch (e) { console.error("JSON Parse error", e); return []; }
 }
 
+export interface ChatSession {
+    id: string;
+    title: string;
+    systemPrompt?: string;
+    articleContextId?: string; // Optional: Linked article ID
+    createdAt: string;
+    updatedAt: string;
+}
+
+export interface ChatMessage {
+    id: string;
+    sessionId: string;
+    role: 'user' | 'assistant' | 'system';
+    content: string;
+    createdAt: string;
+}
+
 export const StorageService = {
   
   initDB: async () => {
@@ -59,6 +76,27 @@ export const StorageService = {
         CREATE TABLE IF NOT EXISTS settings (
           key TEXT PRIMARY KEY,
           value TEXT
+        );
+      `;
+      
+      // --- Chat Tables ---
+      await sql`
+        CREATE TABLE IF NOT EXISTS chat_sessions (
+          id TEXT PRIMARY KEY,
+          title TEXT,
+          system_prompt TEXT,
+          article_context_id TEXT,
+          created_at TEXT,
+          updated_at TEXT
+        );
+      `;
+      await sql`
+        CREATE TABLE IF NOT EXISTS chat_messages (
+          id TEXT PRIMARY KEY,
+          session_id TEXT REFERENCES chat_sessions(id) ON DELETE CASCADE,
+          role TEXT,
+          content TEXT,
+          created_at TEXT
         );
       `;
 
@@ -244,6 +282,106 @@ export const StorageService = {
     if (!DATABASE_URL) return;
     await sql`DELETE FROM projects WHERE id = ${id}`;
     projectsCache = null; // Invalidate cache
+  },
+
+  // --- Chat History Management (Unified API) ---
+
+  getChatSessions: async (isAdmin: boolean): Promise<ChatSession[]> => {
+      if (isAdmin && DATABASE_URL) {
+          try {
+              const rows = await sql`SELECT id, title, system_prompt, article_context_id, created_at, updated_at FROM chat_sessions ORDER BY updated_at DESC`;
+              return rows.map(r => ({
+                  id: r.id,
+                  title: r.title,
+                  systemPrompt: r.system_prompt,
+                  articleContextId: r.article_context_id,
+                  createdAt: r.created_at,
+                  updatedAt: r.updated_at
+              }));
+          } catch (e) { console.error("DB Chat Session Error", e); return []; }
+      } else {
+          // Local Storage
+          const localData = localStorage.getItem('guest_chat_sessions');
+          return localData ? JSON.parse(localData) : [];
+      }
+  },
+
+  getChatMessages: async (sessionId: string, isAdmin: boolean): Promise<ChatMessage[]> => {
+      if (isAdmin && DATABASE_URL) {
+          try {
+              const rows = await sql`SELECT * FROM chat_messages WHERE session_id = ${sessionId} ORDER BY created_at ASC`;
+              return rows.map(r => ({
+                  id: r.id,
+                  sessionId: r.session_id,
+                  role: r.role,
+                  content: r.content,
+                  createdAt: r.created_at
+              }));
+          } catch (e) { return []; }
+      } else {
+          const localData = localStorage.getItem(`guest_chat_messages_${sessionId}`);
+          return localData ? JSON.parse(localData) : [];
+      }
+  },
+
+  saveChatSession: async (session: ChatSession, messages: ChatMessage[], isAdmin: boolean): Promise<void> => {
+      if (isAdmin && DATABASE_URL) {
+          try {
+              // Upsert Session
+              await sql`
+                INSERT INTO chat_sessions (id, title, system_prompt, article_context_id, created_at, updated_at)
+                VALUES (${session.id}, ${session.title}, ${session.systemPrompt || null}, ${session.articleContextId || null}, ${session.createdAt}, ${session.updatedAt})
+                ON CONFLICT (id) DO UPDATE SET
+                  title = EXCLUDED.title,
+                  system_prompt = EXCLUDED.system_prompt,
+                  updated_at = EXCLUDED.updated_at
+              `;
+              
+              // Upsert Messages (Naive implementation: Delete all and re-insert is safer for sync if modifying history often, but expensive. 
+              // Better: Upsert each. For "rollback" (truncation), we need to explicitely delete.)
+              
+              // 1. Delete messages in DB that are NOT in the current messages array (handling rollbacks)
+              const msgIds = messages.map(m => m.id);
+              if (msgIds.length > 0) {
+                 // Postgres requires special handling for array inclusion in some drivers, looping is safer for small counts
+                 // Fixed: Used ANY operator for array parameter instead of invalid template tag usage
+                 await sql`DELETE FROM chat_messages WHERE session_id = ${session.id} AND NOT (id = ANY(${msgIds}))`;
+              } else {
+                 await sql`DELETE FROM chat_messages WHERE session_id = ${session.id}`;
+              }
+
+              // 2. Upsert current messages
+              for (const msg of messages) {
+                  await sql`
+                    INSERT INTO chat_messages (id, session_id, role, content, created_at)
+                    VALUES (${msg.id}, ${session.id}, ${msg.role}, ${msg.content}, ${msg.createdAt})
+                    ON CONFLICT (id) DO UPDATE SET content = EXCLUDED.content
+                  `;
+              }
+          } catch (e) { console.error("Save chat db error", e); }
+      } else {
+          // Local Storage logic
+          const sessions = await StorageService.getChatSessions(false);
+          const existingIndex = sessions.findIndex(s => s.id === session.id);
+          if (existingIndex >= 0) {
+              sessions[existingIndex] = session;
+          } else {
+              sessions.unshift(session);
+          }
+          localStorage.setItem('guest_chat_sessions', JSON.stringify(sessions));
+          localStorage.setItem(`guest_chat_messages_${session.id}`, JSON.stringify(messages));
+      }
+  },
+
+  deleteChatSession: async (sessionId: string, isAdmin: boolean): Promise<void> => {
+      if (isAdmin && DATABASE_URL) {
+          await sql`DELETE FROM chat_sessions WHERE id = ${sessionId}`;
+      } else {
+          const sessions = await StorageService.getChatSessions(false);
+          const newSessions = sessions.filter(s => s.id !== sessionId);
+          localStorage.setItem('guest_chat_sessions', JSON.stringify(newSessions));
+          localStorage.removeItem(`guest_chat_messages_${sessionId}`);
+      }
   },
 
   // --- Theme (Local is fine for theme to avoid FOUC, but kept strict to requirements) ---

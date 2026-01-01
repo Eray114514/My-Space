@@ -1,14 +1,15 @@
 import React, { useEffect, useState } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import { useParams, Link, useNavigate } from 'react-router-dom';
 import { StorageService } from '../services/storage';
 import { Article } from '../types';
 import { MarkdownRenderer } from '../components/MarkdownRenderer';
-import { ArrowLeft, Calendar, Tag } from 'lucide-react';
+import { ArrowLeft, Calendar, Tag, MessageSquare } from 'lucide-react';
 
 export const ArticleDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const [article, setArticle] = useState<Article | null>(null);
   const [loading, setLoading] = useState(true);
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchArticle = async () => {
@@ -29,7 +30,7 @@ export const ArticleDetail: React.FC = () => {
   if (!article) return <div className="py-20 text-center">文章未找到</div>;
 
   return (
-    <article className="max-w-3xl mx-auto py-10 animate-in fade-in duration-500">
+    <article className="max-w-3xl mx-auto py-10 animate-in fade-in duration-500 relative">
       <Link to="/blog" className="inline-flex items-center text-sm font-medium text-gray-500 hover:text-indigo-600 mb-8 transition-colors px-3 py-1.5 rounded-full hover:bg-white/50 dark:hover:bg-white/10">
         <ArrowLeft size={16} className="mr-2" />
         返回列表
@@ -58,6 +59,15 @@ export const ArticleDetail: React.FC = () => {
 
         <MarkdownRenderer content={article.content} />
       </div>
+
+      {/* Floating Chat Button */}
+      <button
+        onClick={() => navigate(`/chat?articleId=${article.id}`)}
+        className="fixed bottom-8 right-8 z-50 flex items-center gap-2 px-5 py-3 bg-indigo-600 hover:bg-indigo-700 text-white rounded-full shadow-2xl shadow-indigo-500/40 transition-all hover:scale-105 active:scale-95 font-bold"
+      >
+        <MessageSquare size={20} />
+        <span className="hidden sm:inline">对此文章提问</span>
+      </button>
     </article>
   );
 };

@@ -1,38 +1,58 @@
 import React, { useState, useRef, useEffect, useMemo } from 'react';
-import { Send, Bot, User, Trash2, StopCircle, Sparkles, ChevronDown } from 'lucide-react';
+import { useSearchParams } from 'react-router-dom';
+import { Send, Bot, User, Trash2, StopCircle, Sparkles, ChevronDown, Plus, MessageSquare, Edit2, Copy, RotateCcw, Save, Settings, FileText } from 'lucide-react';
 import { AIService, AI_MODELS, AIModelKey } from '../services/ai';
+import { StorageService, ChatSession, ChatMessage } from '../services/storage';
 import { MarkdownRenderer } from '../components/MarkdownRenderer';
 
-interface Message {
-  role: 'user' | 'assistant';
-  content: string;
-}
+const DEFAULT_SYSTEM_PROMPT = "你是一个智能助手，名字叫 My AI。请用简洁、优雅的 Markdown 格式回答用户的问题。";
 
 export const Chat: React.FC = () => {
-  const [messages, setMessages] = useState<Message[]>([
-    { role: 'assistant', content: '你好！我是你的 AI 助手。' }
-  ]);
+  const [searchParams] = useSearchParams();
+  const articleId = searchParams.get('articleId');
+
+  // State
+  const [sessions, setSessions] = useState<ChatSession[]>([]);
+  const [currentSessionId, setCurrentSessionId] = useState<string | null>(null);
+  const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [systemPrompt, setSystemPrompt] = useState(DEFAULT_SYSTEM_PROMPT);
+  const [isSystemPromptOpen, setIsSystemPromptOpen] = useState(false);
+
+  // Model
   const [selectedModel, setSelectedModel] = useState<AIModelKey | null>(null);
   const [isModelMenuOpen, setIsModelMenuOpen] = useState(false);
 
+  // Context
+  const [contextArticleTitle, setContextArticleTitle] = useState<string | null>(null);
+
+  // Edit Mode
+  const [editingMessageId, setEditingMessageId] = useState<string | null>(null);
+  const [editContent, setEditContent] = useState('');
+
+  // Refs
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const abortControllerRef = useRef<AbortController | null>(null);
 
-  const isAuthenticated = useMemo(() => {
+  // Check Auth
+  const isAdmin = useMemo(() => {
     return localStorage.getItem('my_session') === 'active' || sessionStorage.getItem('my_session') === 'active';
   }, []);
 
+  // --- Initialization ---
+
+  // 1. Load Model
   const availableModels = useMemo(() => {
     if (Object.keys(AI_MODELS).length === 0) return [];
     return Object.entries(AI_MODELS).filter(([_, model]) => {
       // @ts-ignore
-      if (isAuthenticated) return true;
+      if (isAdmin) return true;
       // @ts-ignore
       return model.isFree;
     });
-  }, [isAuthenticated]);
+  }, [isAdmin]);
 
   useEffect(() => {
     if (!selectedModel && availableModels.length > 0) {
@@ -41,189 +61,441 @@ export const Chat: React.FC = () => {
     }
   }, [availableModels, selectedModel]);
 
-  const scrollToBottom = () => {
-    if (scrollContainerRef.current) {
-      const { scrollHeight, clientHeight } = scrollContainerRef.current;
-      scrollContainerRef.current.scrollTo({
-        top: scrollHeight - clientHeight,
-        behavior: 'smooth',
-      });
-    }
+  // 2. Load History List
+  useEffect(() => {
+    const loadSessions = async () => {
+      const list = await StorageService.getChatSessions(isAdmin);
+      setSessions(list);
+    };
+    loadSessions();
+  }, [isAdmin]);
+
+  // 3. Handle Article Context (New Session from Article)
+  useEffect(() => {
+    const initContext = async () => {
+      if (articleId && !currentSessionId) {
+        const article = await StorageService.getArticleById(articleId);
+        if (article) {
+          setContextArticleTitle(article.title);
+          setSystemPrompt(`${DEFAULT_SYSTEM_PROMPT}\n\n你正在根据以下文章回答用户的问题：\n\n标题：${article.title}\n内容：\n${article.content.substring(0, 8000)}... (截取部分)`);
+          createNewSession(`关于 "${article.title}" 的讨论`, article.id);
+          setIsSystemPromptOpen(true); // Let user see the context
+        }
+      }
+    };
+    initContext();
+  }, [articleId]);
+
+  // 4. Load Messages when Session Changes
+  useEffect(() => {
+    const loadMessages = async () => {
+      if (currentSessionId) {
+        const msgs = await StorageService.getChatMessages(currentSessionId, isAdmin);
+        setMessages(msgs);
+
+        const session = sessions.find(s => s.id === currentSessionId);
+        if (session) {
+          setSystemPrompt(session.systemPrompt || DEFAULT_SYSTEM_PROMPT);
+          if (session.articleContextId) {
+            const article = await StorageService.getArticleById(session.articleContextId);
+            setContextArticleTitle(article ? article.title : null);
+          } else {
+            setContextArticleTitle(null);
+          }
+        }
+      } else {
+        setMessages([]);
+        setSystemPrompt(DEFAULT_SYSTEM_PROMPT);
+        setContextArticleTitle(null);
+      }
+    };
+    loadMessages();
+  }, [currentSessionId, sessions, isAdmin]);
+
+  // --- Core Logic ---
+
+  const createNewSession = async (title = '新对话', articleId?: string) => {
+    const newId = Date.now().toString();
+    const session: ChatSession = {
+      id: newId,
+      title,
+      systemPrompt: systemPrompt,
+      articleContextId: articleId,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString()
+    };
+    setSessions(prev => [session, ...prev]);
+    setCurrentSessionId(newId);
+    setMessages([]); // Clear view
+    await StorageService.saveChatSession(session, [], isAdmin);
+    return newId;
   };
 
-  useEffect(() => { scrollToBottom(); }, [messages]);
+  const updateCurrentSession = async (newMessages: ChatMessage[]) => {
+    if (!currentSessionId) return;
+    const session = sessions.find(s => s.id === currentSessionId);
+    if (!session) return;
 
-  useEffect(() => {
-    if (textareaRef.current) {
-      textareaRef.current.style.height = 'auto';
-      textareaRef.current.style.height = `${Math.min(textareaRef.current.scrollHeight, 150)}px`;
+    // Auto-title for first message
+    let updatedSession = { ...session, updatedAt: new Date().toISOString(), systemPrompt };
+    if (session.title === '新对话' && newMessages.length > 0) {
+      const firstUserMsg = newMessages.find(m => m.role === 'user');
+      if (firstUserMsg) {
+        updatedSession.title = firstUserMsg.content.slice(0, 20) + (firstUserMsg.content.length > 20 ? '...' : '');
+      }
     }
-  }, [input]);
 
-  const handleSend = async () => {
-    if (!input.trim() || isLoading || !selectedModel) return;
-    const userMsg = input.trim();
+    setSessions(prev => prev.map(s => s.id === currentSessionId ? updatedSession : s));
+    await StorageService.saveChatSession(updatedSession, newMessages, isAdmin);
+  };
+
+  const handleSend = async (overrideInput?: string, historyOverride?: ChatMessage[]) => {
+    const textToSend = overrideInput || input;
+    if (!textToSend.trim() || isLoading || !selectedModel) return;
+
+    // Abort previous if any (though UI blocks it)
+    if (abortControllerRef.current) abortControllerRef.current.abort();
+    abortControllerRef.current = new AbortController();
+
+    if (!currentSessionId) {
+      await createNewSession();
+      // Wait for state update - actually createNewSession returns ID, but React batching...
+      // For simplicity, we assume createNewSession sets state, but async save might be slow.
+      // We will just proceed optimistically.
+    }
+
+    // Determine context (Are we appending or forking?)
+    const currentMsgs = historyOverride || messages;
+
+    // User Message
+    const userMsg: ChatMessage = {
+      id: Date.now().toString(),
+      sessionId: currentSessionId || 'temp', // fix later
+      role: 'user',
+      content: textToSend,
+      createdAt: new Date().toISOString()
+    };
+
+    const nextMessages = [...currentMsgs, userMsg];
+    setMessages(nextMessages);
     setInput('');
-    if (textareaRef.current) textareaRef.current.style.height = 'auto';
-
-    const newHistory: Message[] = [...messages, { role: 'user', content: userMsg }];
-    setMessages(newHistory);
     setIsLoading(true);
-    setMessages(prev => [...prev, { role: 'assistant', content: '' }]);
+
+    // AI Placeholder
+    const aiMsgId = (Date.now() + 1).toString();
+    const aiMsgPlaceholder: ChatMessage = {
+      id: aiMsgId,
+      sessionId: currentSessionId || 'temp',
+      role: 'assistant',
+      content: '',
+      createdAt: new Date().toISOString()
+    };
+    setMessages([...nextMessages, aiMsgPlaceholder]);
+
+    // Prepare for API
+    const apiHistory = nextMessages.map(m => ({ role: m.role as 'user' | 'assistant', content: m.content }));
+    // Inject system prompt manually since we want to control it per session
+    // (Note: AIService.chatStream usually takes message history. We need to handle system prompt there too, 
+    // but the service has a hardcoded one. Let's fix the Service call to accept System Prompt if possible, 
+    // or just prepend it as a system message if the provider supports it. 
+    // *Correction*: The AIService.chatStream in previous file had a hardcoded system prompt. 
+    // We should prepend a system message to the history passed to AIService.chatStream.)
+
+    // Hack: Prepend system prompt to apiHistory
+    apiHistory.unshift({ role: 'system' as any, content: systemPrompt });
 
     let fullResponse = '';
     try {
       await AIService.chatStream(
-        newHistory,
+        apiHistory,
         selectedModel,
         (chunk) => {
           fullResponse += chunk;
           setMessages(prev => {
             const updated = [...prev];
-            updated[updated.length - 1] = { role: 'assistant', content: fullResponse };
+            const lastIdx = updated.findIndex(m => m.id === aiMsgId);
+            if (lastIdx !== -1) {
+              updated[lastIdx] = { ...updated[lastIdx], content: fullResponse };
+            }
             return updated;
           });
         }
       );
+
+      // Save after complete
+      const finalAiMsg = { ...aiMsgPlaceholder, content: fullResponse, sessionId: currentSessionId! }; // Ensure ID is correct
+      const finalHistory = [...nextMessages.map(m => ({ ...m, sessionId: currentSessionId! })), finalAiMsg]; // Sync IDs
+
+      setMessages(finalHistory);
+      await updateCurrentSession(finalHistory);
+
     } catch (error: any) {
       setMessages(prev => {
         const updated = [...prev];
-        updated[updated.length - 1] = { role: 'assistant', content: `**Error:** ${error.message || 'Failed to generate response.'}` };
+        const lastIdx = updated.findIndex(m => m.id === aiMsgId);
+        if (lastIdx !== -1) {
+          updated[lastIdx] = { ...updated[lastIdx], content: `**Error:** ${error.message}` };
+        }
         return updated;
       });
     } finally {
       setIsLoading(false);
+      abortControllerRef.current = null;
     }
   };
 
-  const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter' && !e.shiftKey) {
-      e.preventDefault();
-      handleSend();
+  const handleDeleteSession = async (e: React.MouseEvent, id: string) => {
+    e.stopPropagation();
+    if (window.confirm('确认删除此会话？')) {
+      await StorageService.deleteChatSession(id, isAdmin);
+      setSessions(prev => prev.filter(s => s.id !== id));
+      if (currentSessionId === id) {
+        setCurrentSessionId(null);
+        setMessages([]);
+      }
     }
   };
 
-  const clearChat = () => { setMessages([{ role: 'assistant', content: '对话已清除。' }]); };
-  // @ts-ignore
-  const currentModelConfig = selectedModel ? AI_MODELS[selectedModel] : null;
+  // --- Message Actions ---
 
-  if (availableModels.length === 0) {
-    return (
-      <div className="flex flex-col items-center justify-center h-[60vh] text-center space-y-4">
-        <div className="p-6 rounded-full liquid-glass shadow-lg">
-          <Sparkles size={32} className="text-gray-400" />
-        </div>
-        <p className="text-gray-500 font-medium">系统未配置可用的 AI 模型</p>
-      </div>
-    );
-  }
+  const handleCopy = (content: string) => {
+    navigator.clipboard.writeText(content);
+  };
+
+  const handleRegenerate = (index: number) => {
+    // Logic: Slice history up to index (exclusive), effectively deleting this AI response and anything after it.
+    // Then re-trigger send with the *previous* user message (which is at index - 1).
+    // Wait, handleSend expects new input.
+    // Better logic: Slice history up to index-1 (the user message triggering this).
+    // Then call handleSend with that user message content, and history override up to index-1.
+
+    if (index <= 0) return;
+    const previousUserMsg = messages[index - 1];
+    if (previousUserMsg.role !== 'user') return; // Should be user
+
+    const historyToKeep = messages.slice(0, index - 1);
+    handleSend(previousUserMsg.content, historyToKeep);
+  };
+
+  const handleEditUserMessage = (index: number) => {
+    setEditingMessageId(messages[index].id);
+    setEditContent(messages[index].content);
+  };
+
+  const submitEdit = (index: number) => {
+    // Logic: Slice history up to index (exclusive).
+    // Then call handleSend with NEW content.
+    const historyToKeep = messages.slice(0, index);
+    setEditingMessageId(null);
+    handleSend(editContent, historyToKeep);
+  };
+
+  // --- UI Helpers ---
+
+  const scrollToBottom = () => {
+    if (scrollContainerRef.current) {
+      const { scrollHeight, clientHeight } = scrollContainerRef.current;
+      scrollContainerRef.current.scrollTo({ top: scrollHeight - clientHeight, behavior: 'smooth' });
+    }
+  };
+  useEffect(() => { scrollToBottom(); }, [messages, editingMessageId]);
+
+  if (availableModels.length === 0) return <div className="p-10 text-center text-gray-400">Loading Configuration...</div>;
 
   return (
-    <div className="flex flex-col h-[calc(100vh-8rem)] max-w-4xl mx-auto animate-in fade-in duration-500 relative">
+    <div className="flex h-[calc(100vh-6rem)] max-w-6xl mx-auto gap-4 animate-in fade-in duration-500">
 
-      {/* Floating Glass Settings Bar */}
-      <div className="absolute top-0 left-0 right-0 z-20 flex items-center justify-between px-6 py-4 mx-4 sm:mx-0 mt-0 sm:mt-2 liquid-glass-high rounded-full shadow-lg">
-        <div className="relative">
-          <button
-            onClick={() => setIsModelMenuOpen(!isModelMenuOpen)}
-            className="flex items-center gap-2 px-4 py-1.5 rounded-full bg-black/5 dark:bg-white/10 hover:bg-black/10 dark:hover:bg-white/20 transition-all font-medium text-sm text-gray-800 dark:text-gray-100"
-          >
-            <Sparkles size={14} className="text-indigo-500" />
-            <span>{currentModelConfig?.shortName || 'Select Model'}</span>
-            <ChevronDown size={14} className="text-gray-400" />
+      {/* Sidebar (History) */}
+      <div className="hidden md:flex flex-col w-64 liquid-glass rounded-3xl overflow-hidden shadow-lg h-full">
+        <div className="p-4 border-b border-gray-200/50 dark:border-white/5 flex items-center justify-between bg-white/30 dark:bg-white/5 backdrop-blur-md">
+          <span className="font-bold text-gray-700 dark:text-gray-200 text-sm">历史对话</span>
+          <button onClick={() => { setCurrentSessionId(null); setMessages([]); setSystemPrompt(DEFAULT_SYSTEM_PROMPT); setContextArticleTitle(null); }} className="p-1.5 rounded-full hover:bg-white/50 dark:hover:bg-white/10 transition-colors text-indigo-600 dark:text-indigo-400">
+            <Plus size={18} />
           </button>
-
-          {isModelMenuOpen && (
-            <>
-              <div className="fixed inset-0 z-10" onClick={() => setIsModelMenuOpen(false)}></div>
-              <div className="absolute top-full left-0 mt-4 w-64 liquid-glass-high rounded-3xl shadow-2xl z-20 overflow-hidden py-3 animate-in fade-in zoom-in-95 duration-200">
-                <div className="px-5 py-2 text-xs font-bold text-gray-400 uppercase tracking-wider">
-                  {isAuthenticated ? 'All Models' : 'Free Models'}
-                </div>
-                {availableModels.map(([key, model]) => (
-                  <button
-                    key={key}
-                    onClick={() => { setSelectedModel(key as AIModelKey); setIsModelMenuOpen(false); }}
-                    // @ts-ignore
-                    className={`w-full text-left px-5 py-3 text-sm transition-colors flex items-center justify-between ${selectedModel === key ? 'bg-indigo-500/10 text-indigo-600 dark:text-indigo-400' : 'text-gray-700 dark:text-gray-300 hover:bg-black/5 dark:hover:bg-white/10'}`}
-                  >
-                    {/* @ts-ignore */}
-                    <span>{model.name}</span>
-                    {selectedModel === key && <div className="w-2 h-2 rounded-full bg-indigo-500 shadow-[0_0_10px_rgba(99,102,241,0.5)]"></div>}
-                  </button>
-                ))}
-              </div>
-            </>
-          )}
         </div>
-
-        <button
-          onClick={clearChat}
-          className="p-2 text-gray-400 hover:text-red-500 transition-colors rounded-full hover:bg-black/5 dark:hover:bg-white/10"
-        >
-          <Trash2 size={18} />
-        </button>
+        <div className="flex-1 overflow-y-auto p-3 space-y-2 custom-scrollbar">
+          {sessions.map(session => (
+            <div
+              key={session.id}
+              onClick={() => setCurrentSessionId(session.id)}
+              className={`group relative p-3 rounded-xl cursor-pointer transition-all border ${currentSessionId === session.id
+                  ? 'bg-indigo-500 text-white border-indigo-400 shadow-md'
+                  : 'hover:bg-white/40 dark:hover:bg-white/10 border-transparent text-gray-600 dark:text-gray-300'
+                }`}
+            >
+              <div className="text-sm font-medium truncate pr-6">{session.title}</div>
+              <div className="text-[10px] opacity-60 mt-1 flex items-center gap-1">
+                {session.articleContextId && <FileText size={10} />}
+                {new Date(session.updatedAt).toLocaleDateString()}
+              </div>
+              <button
+                onClick={(e) => handleDeleteSession(e, session.id)}
+                className={`absolute right-2 top-1/2 -translate-y-1/2 p-1.5 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity ${currentSessionId === session.id ? 'hover:bg-indigo-600 text-white' : 'hover:bg-red-100 text-gray-500 hover:text-red-500'}`}
+              >
+                <Trash2 size={14} />
+              </button>
+            </div>
+          ))}
+          {sessions.length === 0 && <div className="text-center text-xs text-gray-400 mt-10">暂无历史记录</div>}
+        </div>
       </div>
 
-      {/* Messages */}
-      <div
-        ref={scrollContainerRef}
-        className="flex-1 overflow-y-auto px-4 sm:px-0 space-y-8 pt-28 pb-6 scroll-smooth scrollbar-hide"
-      >
-        {messages.map((msg, index) => (
-          <div key={index} className={`flex gap-4 animate-in slide-in-from-bottom-4 duration-500 ${msg.role === 'user' ? 'flex-row-reverse' : ''}`}>
-            {/* Avatar */}
-            <div className={`w-10 h-10 rounded-full flex items-center justify-center shrink-0 mt-auto shadow-lg backdrop-blur-xl border border-white/20 dark:border-white/10 ${msg.role === 'user'
-                ? 'bg-gradient-to-br from-indigo-500 to-violet-600 text-white shadow-indigo-500/30'
-                : 'bg-white/40 dark:bg-white/5 text-gray-700 dark:text-gray-300'
-              }`}>
-              {msg.role === 'user' ? <User size={18} /> : <Bot size={20} />}
-            </div>
+      {/* Main Chat Area */}
+      <div className="flex-1 flex flex-col liquid-glass rounded-3xl overflow-hidden shadow-xl h-full relative">
 
-            {/* Bubble */}
-            <div className={`max-w-[85%] sm:max-w-[75%] px-6 py-4 shadow-lg backdrop-blur-2xl text-[15px] leading-7 border ${msg.role === 'user'
-                ? 'bg-indigo-600/80 dark:bg-indigo-600/60 text-white rounded-[1.5rem] rounded-tr-md border-indigo-400/30'
-                : 'liquid-glass text-gray-800 dark:text-gray-100 rounded-[1.5rem] rounded-tl-md'
-              }`}>
-              {msg.role === 'user' ? (
-                <p className="whitespace-pre-wrap">{msg.content}</p>
-              ) : (
-                <div className="markdown-chat">
-                  <MarkdownRenderer content={msg.content || 'Thinking...'} />
+        {/* Header */}
+        <div className="h-14 px-4 sm:px-6 border-b border-gray-200/50 dark:border-white/5 flex items-center justify-between bg-white/40 dark:bg-white/5 backdrop-blur-md shrink-0 z-20">
+          <div className="flex items-center gap-3">
+            <div className="relative">
+              <button onClick={() => setIsModelMenuOpen(!isModelMenuOpen)} className="flex items-center gap-2 text-sm font-bold text-gray-700 dark:text-gray-200 hover:bg-black/5 dark:hover:bg-white/10 px-3 py-1.5 rounded-full transition-colors">
+                <Sparkles size={14} className="text-indigo-500" />
+                {/* @ts-ignore */}
+                {selectedModel ? AI_MODELS[selectedModel]?.shortName : 'Loading...'}
+                <ChevronDown size={14} className="opacity-50" />
+              </button>
+              {isModelMenuOpen && (
+                <div className="absolute top-full left-0 mt-2 w-56 liquid-glass-high rounded-2xl shadow-xl overflow-hidden py-2 animate-in fade-in zoom-in-95 duration-200">
+                  {availableModels.map(([key, model]) => (
+                    <button key={key} onClick={() => { setSelectedModel(key as AIModelKey); setIsModelMenuOpen(false); }} className={`w-full text-left px-4 py-2 text-xs font-medium ${selectedModel === key ? 'bg-indigo-50 dark:bg-indigo-900/20 text-indigo-600 dark:text-indigo-400' : 'text-gray-600 dark:text-gray-300 hover:bg-black/5 dark:hover:bg-white/5'}`}>
+                      {/* @ts-ignore */}
+                      {model.name}
+                    </button>
+                  ))}
                 </div>
               )}
             </div>
+            {contextArticleTitle && (
+              <span className="hidden sm:flex items-center gap-1 text-xs text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-900/20 px-2 py-0.5 rounded-full border border-indigo-100 dark:border-indigo-800/30 truncate max-w-[200px]">
+                <FileText size={10} /> 引用: {contextArticleTitle}
+              </span>
+            )}
           </div>
-        ))}
-      </div>
 
-      {/* Input Capsule */}
-      <div className="mt-2 px-4 sm:px-0 pb-6 relative z-30">
-        <div className="liquid-glass-high rounded-[2.5rem] shadow-2xl dark:shadow-black/50 focus-within:ring-2 focus-within:ring-indigo-500/30 transition-all duration-300 flex items-end p-2 gap-3">
-          <textarea
-            ref={textareaRef}
-            value={input}
-            onChange={(e) => setInput(e.target.value)}
-            onKeyDown={handleKeyDown}
-            placeholder={isLoading ? "AI 正在思考..." : "Ask anything..."}
-            disabled={isLoading}
-            className="flex-1 bg-transparent border-none outline-none px-6 py-4 min-h-[56px] max-h-[160px] resize-none text-gray-900 dark:text-white placeholder-gray-500/60 text-lg"
-            rows={1}
-          />
-          <button
-            onClick={handleSend}
-            disabled={!input.trim() || isLoading}
-            className={`p-3.5 rounded-full transition-all duration-300 shrink-0 mb-1.5 ${!input.trim() || isLoading
-                ? 'text-gray-400 bg-transparent scale-95 opacity-50'
-                : 'bg-indigo-600 text-white shadow-lg shadow-indigo-500/40 hover:scale-110 active:scale-95'
-              }`}
-          >
-            {isLoading ? <StopCircle size={22} className="animate-pulse" /> : <Send size={22} className={input.trim() ? "translate-x-0.5" : ""} />}
-          </button>
+          <div className="flex items-center gap-2">
+            <button onClick={() => setIsSystemPromptOpen(!isSystemPromptOpen)} className={`p-2 rounded-full transition-colors ${isSystemPromptOpen ? 'bg-indigo-100 dark:bg-indigo-900/50 text-indigo-600' : 'text-gray-400 hover:text-gray-600 hover:bg-black/5 dark:hover:bg-white/10'}`} title="系统设定">
+              <Settings size={18} />
+            </button>
+          </div>
         </div>
-        <p className="text-center text-[10px] text-gray-400 mt-4 font-medium tracking-widest opacity-60 uppercase">
-          Liquid AI • 2025
-        </p>
+
+        {/* System Prompt Panel */}
+        {isSystemPromptOpen && (
+          <div className="px-6 py-4 bg-gray-50/80 dark:bg-black/20 border-b border-gray-200/50 dark:border-white/5 animate-in slide-in-from-top-2 duration-300">
+            <label className="text-xs font-bold text-gray-500 mb-2 block">系统提示词 / 角色设定</label>
+            <textarea
+              value={systemPrompt}
+              onChange={e => setSystemPrompt(e.target.value)}
+              className="w-full h-24 bg-white dark:bg-white/5 border border-gray-200 dark:border-white/10 rounded-xl p-3 text-xs text-gray-700 dark:text-gray-300 outline-none focus:border-indigo-500 transition-colors resize-none font-mono"
+              placeholder="定义 AI 的行为..."
+            />
+            <div className="flex justify-end mt-2">
+              <button onClick={() => setIsSystemPromptOpen(false)} className="text-xs text-indigo-600 hover:underline">收起面板</button>
+            </div>
+          </div>
+        )}
+
+        {/* Messages List */}
+        <div ref={scrollContainerRef} className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-8 scroll-smooth scrollbar-hide">
+          {messages.length === 0 && !contextArticleTitle && (
+            <div className="h-full flex flex-col items-center justify-center text-gray-400 opacity-50 space-y-4">
+              <Bot size={48} strokeWidth={1} />
+              <p className="font-light">开始一段新的对话...</p>
+            </div>
+          )}
+
+          {messages.map((msg, index) => (
+            <div key={index} className={`group flex gap-4 ${msg.role === 'user' ? 'flex-row-reverse' : ''}`}>
+              {/* Avatar */}
+              <div className={`w-9 h-9 rounded-full flex items-center justify-center shrink-0 shadow-sm border border-white/20 dark:border-white/5 mt-1 ${msg.role === 'user'
+                  ? 'bg-gradient-to-br from-indigo-500 to-violet-600 text-white'
+                  : 'bg-white/80 dark:bg-white/10 text-indigo-600 dark:text-indigo-300'
+                }`}>
+                {msg.role === 'user' ? <User size={16} /> : <Bot size={18} />}
+              </div>
+
+              {/* Content Area */}
+              <div className={`max-w-[85%] sm:max-w-[75%] min-w-0 flex flex-col ${msg.role === 'user' ? 'items-end' : 'items-start'}`}>
+
+                {/* Edit Mode for User */}
+                {editingMessageId === msg.id ? (
+                  <div className="w-full bg-white dark:bg-white/10 rounded-2xl border border-indigo-500 p-3 shadow-lg animate-in zoom-in-95 duration-200 min-w-[300px]">
+                    <textarea
+                      value={editContent}
+                      onChange={e => setEditContent(e.target.value)}
+                      className="w-full bg-transparent border-none outline-none text-sm text-gray-800 dark:text-gray-100 resize-none h-24 mb-2"
+                    />
+                    <div className="flex justify-end gap-2">
+                      <button onClick={() => setEditingMessageId(null)} className="px-3 py-1 rounded-md text-xs text-gray-500 hover:bg-black/5">取消</button>
+                      <button onClick={() => submitEdit(index)} className="px-3 py-1 rounded-md text-xs bg-indigo-600 text-white shadow-sm">保存并重新生成</button>
+                    </div>
+                  </div>
+                ) : (
+                  <div className={`px-5 py-3.5 shadow-sm text-[15px] leading-7 relative group/bubble ${msg.role === 'user'
+                      ? 'bg-indigo-600 text-white rounded-[1.5rem] rounded-tr-sm'
+                      : 'bg-white/60 dark:bg-white/5 text-gray-800 dark:text-gray-100 rounded-[1.5rem] rounded-tl-sm border border-white/30 dark:border-white/5'
+                    }`}>
+                    {msg.role === 'user' ? (
+                      <p className="whitespace-pre-wrap">{msg.content}</p>
+                    ) : (
+                      <div className="markdown-chat">
+                        <MarkdownRenderer content={msg.content || 'Thinking...'} />
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {/* Actions Bar (Hover) */}
+                {!editingMessageId && !isLoading && (
+                  <div className={`flex items-center gap-1 mt-1 opacity-0 group-hover:opacity-100 transition-opacity ${msg.role === 'user' ? 'flex-row-reverse' : ''}`}>
+                    <button onClick={() => handleCopy(msg.content)} className="p-1.5 rounded-full text-gray-400 hover:text-indigo-600 hover:bg-black/5 dark:hover:bg-white/10 transition-colors" title="复制"><Copy size={12} /></button>
+
+                    {msg.role === 'user' && (
+                      <button onClick={() => handleEditUserMessage(index)} className="p-1.5 rounded-full text-gray-400 hover:text-indigo-600 hover:bg-black/5 dark:hover:bg-white/10 transition-colors" title="编辑"><Edit2 size={12} /></button>
+                    )}
+
+                    {msg.role === 'assistant' && (
+                      <button onClick={() => handleRegenerate(index)} className="p-1.5 rounded-full text-gray-400 hover:text-indigo-600 hover:bg-black/5 dark:hover:bg-white/10 transition-colors" title="重新生成"><RotateCcw size={12} /></button>
+                    )}
+                  </div>
+                )}
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {/* Input Area */}
+        <div className="p-4 sm:p-6 bg-white/40 dark:bg-white/5 backdrop-blur-md border-t border-white/20 dark:border-white/5">
+          <div className="bg-white dark:bg-black/20 rounded-[1.5rem] shadow-inner border border-gray-200/50 dark:border-white/10 flex items-end p-2 gap-2 focus-within:ring-2 focus-within:ring-indigo-500/30 transition-all">
+            <textarea
+              ref={textareaRef}
+              value={input}
+              onChange={(e) => {
+                setInput(e.target.value);
+                e.target.style.height = 'auto';
+                e.target.style.height = `${Math.min(e.target.scrollHeight, 120)}px`;
+              }}
+              onKeyDown={(e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSend(); } }}
+              placeholder={isLoading ? "AI 正在思考..." : "输入消息..."}
+              disabled={isLoading}
+              className="flex-1 bg-transparent border-none outline-none px-4 py-3 min-h-[48px] max-h-[120px] resize-none text-sm text-gray-900 dark:text-white placeholder-gray-400"
+              rows={1}
+            />
+            <button
+              onClick={() => handleSend()}
+              disabled={!input.trim() || isLoading}
+              className={`p-2.5 rounded-full mb-1 transition-all ${!input.trim() || isLoading
+                  ? 'text-gray-300 bg-transparent'
+                  : 'bg-indigo-600 text-white shadow-lg shadow-indigo-500/30 hover:scale-105 active:scale-95'
+                }`}
+            >
+              {isLoading ? <StopCircle size={18} className="animate-pulse" /> : <Send size={18} />}
+            </button>
+          </div>
+          <div className="text-center text-[10px] text-gray-400 mt-2 font-light">
+            {/* Footer text */}
+            AI 生成内容可能包含错误，请注意甄别。
+          </div>
+        </div>
       </div>
     </div>
   );
