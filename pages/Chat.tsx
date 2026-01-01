@@ -2,7 +2,7 @@ import React, { useState, useRef, useEffect, useMemo } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import {
   Send, Bot, User, Trash2, StopCircle, Sparkles, ChevronDown, Plus,
-  Settings, FileText, Hash, X, ArrowLeft, Copy, RefreshCw, Edit2, Check, Save
+  Settings, FileText, Hash, X, ArrowLeft, Copy, RefreshCw, Edit2, Check, Save, Menu
 } from 'lucide-react';
 import { AIService, AI_MODELS, AIModelKey } from '../services/ai';
 import { StorageService, ChatSession, ChatMessage } from '../services/storage';
@@ -76,10 +76,13 @@ export const Chat: React.FC = () => {
 
   // UI State
   const [input, setInput] = useState('');
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(false); // AI Generating
+  const [isMessagesLoading, setIsMessagesLoading] = useState(false); // History Fetching
   const [systemPrompt, setSystemPrompt] = useState(DEFAULT_SYSTEM_PROMPT);
   const [isSystemPromptOpen, setIsSystemPromptOpen] = useState(false);
-  const [isSidebarOpen, setIsSidebarOpen] = useState(true); // Desktop default
+
+  // Responsive Sidebar
+  const [isSidebarOpen, setIsSidebarOpen] = useState(window.innerWidth > 768);
 
   // References
   const [availableArticles, setAvailableArticles] = useState<Article[]>([]);
@@ -93,6 +96,8 @@ export const Chat: React.FC = () => {
   // Edit Mode State
   const [editingMessageId, setEditingMessageId] = useState<string | null>(null);
   const [editContent, setEditContent] = useState('');
+  const [editContext, setEditContext] = useState<string | null>(null); // Stores the hidden context string
+  const [editContextTitle, setEditContextTitle] = useState<string | null>(null); // Stores title for UI
 
   // Refs
   const scrollEndRef = useRef<HTMLDivElement>(null);
@@ -123,6 +128,20 @@ export const Chat: React.FC = () => {
     }
   }, [availableModels, selectedModel]);
 
+  // Handle Resize for Sidebar
+  useEffect(() => {
+    const handleResize = () => {
+      if (window.innerWidth > 768) {
+        // On desktop, default to open if it was previously undefined, or keep current state
+        // Logic simplified: Just don't auto-close on resize to desktop
+      } else {
+        setIsSidebarOpen(false);
+      }
+    };
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
   useEffect(() => {
     const init = async () => {
       const articles = await StorageService.getArticles();
@@ -133,6 +152,7 @@ export const Chat: React.FC = () => {
     init();
   }, [isAdmin]);
 
+  // Load Context from URL
   useEffect(() => {
     const loadArticleContext = async () => {
       if (articleId && !currentSessionId) {
@@ -143,15 +163,27 @@ export const Chat: React.FC = () => {
     loadArticleContext();
   }, [articleId, currentSessionId]);
 
+  // Load Messages (Critical: Handle Race Conditions)
   useEffect(() => {
+    let isMounted = true;
     const loadMsgs = async () => {
       if (currentSessionId) {
-        const msgs = await StorageService.getChatMessages(currentSessionId, isAdmin);
-        setMessages(msgs);
-        const session = sessions.find(s => s.id === currentSessionId);
-        if (session) {
-          setSystemPrompt(session.systemPrompt || DEFAULT_SYSTEM_PROMPT);
-          setAttachedArticles([]);
+        setIsMessagesLoading(true);
+        setMessages([]); // Clear immediately to avoid showing wrong chat
+        try {
+          const msgs = await StorageService.getChatMessages(currentSessionId, isAdmin);
+          if (isMounted) {
+            setMessages(msgs);
+            const session = sessions.find(s => s.id === currentSessionId);
+            if (session) {
+              setSystemPrompt(session.systemPrompt || DEFAULT_SYSTEM_PROMPT);
+              setAttachedArticles([]);
+            }
+          }
+        } catch (e) {
+          console.error("Failed to load messages", e);
+        } finally {
+          if (isMounted) setIsMessagesLoading(false);
         }
       } else {
         setMessages([]);
@@ -159,14 +191,18 @@ export const Chat: React.FC = () => {
           setSystemPrompt(DEFAULT_SYSTEM_PROMPT);
           setAttachedArticles([]);
         }
+        setIsMessagesLoading(false);
       }
     };
     loadMsgs();
+    return () => { isMounted = false; };
   }, [currentSessionId, isAdmin, sessions, articleId]);
 
   useEffect(() => {
-    scrollEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [messages.length, isLoading, editingMessageId]);
+    if (!isMessagesLoading) {
+      scrollEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    }
+  }, [messages.length, isLoading, isMessagesLoading, editingMessageId]);
 
   // --- 2. Core Actions ---
 
@@ -193,7 +229,7 @@ export const Chat: React.FC = () => {
     if (abortControllerRef.current) abortControllerRef.current.abort();
     abortControllerRef.current = new AbortController();
 
-    const aiId = generateId(); // Use UUID to prevent collision
+    const aiId = generateId();
     const aiPlaceholder: ChatMessage = {
       id: aiId,
       sessionId,
@@ -234,7 +270,7 @@ export const Chat: React.FC = () => {
   };
 
   const handleSend = async () => {
-    if ((!input.trim() && attachedArticles.length === 0) || isLoading) return;
+    if ((!input.trim() && attachedArticles.length === 0) || isLoading || isMessagesLoading) return;
 
     let sessionId = currentSessionId;
     if (!sessionId) sessionId = await createNewSession(input || '新对话');
@@ -246,7 +282,7 @@ export const Chat: React.FC = () => {
     }
 
     const userMsg: ChatMessage = {
-      id: generateId(), // Use UUID
+      id: generateId(),
       sessionId,
       role: 'user',
       content,
@@ -262,18 +298,37 @@ export const Chat: React.FC = () => {
   };
 
   const handleRegenerate = async (msgIndex: number) => {
-    if (isLoading || !currentSessionId) return;
-    // Keep messages up to the one before the AI response we are regenerating
-    // Usually msgIndex is the index of the AI message
+    if (isLoading || !currentSessionId || isMessagesLoading) return;
     const historyToKeep = messages.slice(0, msgIndex);
     setMessages(historyToKeep);
     await executeAI(historyToKeep, currentSessionId);
   };
 
+  // --- Smart Edit Logic ---
+
   const handleEdit = (msg: ChatMessage) => {
     setEditingMessageId(msg.id);
-    // EDIT: Show raw content so user can delete the hidden context tags if they want
-    setEditContent(msg.content);
+
+    const regex = new RegExp(`${CONTEXT_TAG_START}([\\s\\S]*?)${CONTEXT_TAG_END}`, 'g');
+    const match = regex.exec(msg.content);
+
+    if (match) {
+      // Found hidden context, separate it
+      const fullContext = match[0];
+      const innerText = match[1];
+      const textOnly = msg.content.replace(fullContext, '').trim();
+
+      const titleMatch = innerText.match(/标题：(.*?)\n/);
+      const title = titleMatch ? titleMatch[1].trim() : '文章引用';
+
+      setEditContent(textOnly);
+      setEditContext(innerText); // Save inner content to restore later if not deleted
+      setEditContextTitle(title);
+    } else {
+      setEditContent(msg.content);
+      setEditContext(null);
+      setEditContextTitle(null);
+    }
   };
 
   const submitEdit = async () => {
@@ -282,19 +337,24 @@ export const Chat: React.FC = () => {
     const msgIndex = messages.findIndex(m => m.id === editingMessageId);
     if (msgIndex === -1) return;
 
-    // Keep messages before this one
     const historyPrefix = messages.slice(0, msgIndex);
 
-    // Create new message version
+    // Reconstruct content
+    let finalContent = editContent;
+    if (editContext) {
+      finalContent = `${editContent}\n\n${CONTEXT_TAG_START}${editContext}${CONTEXT_TAG_END}`;
+    }
+
     const updatedMsg: ChatMessage = {
       ...messages[msgIndex],
-      content: editContent,
+      content: finalContent,
       createdAt: new Date().toISOString()
     };
 
     const newHistory = [...historyPrefix, updatedMsg];
     setMessages(newHistory);
     setEditingMessageId(null);
+    setEditContext(null);
 
     await executeAI(newHistory, currentSessionId);
   };
@@ -347,24 +407,40 @@ export const Chat: React.FC = () => {
 
   // --- Render ---
 
-  if (availableModels.length === 0) return <div className="h-screen flex items-center justify-center text-gray-400">Loading Configuration...</div>;
+  if (availableModels.length === 0) return <div className="h-[100dvh] flex items-center justify-center text-gray-400">Loading Configuration...</div>;
 
   return (
-    <div className="flex h-screen w-full overflow-hidden bg-transparent">
+    <div className="flex h-[100dvh] w-full overflow-hidden bg-transparent relative">
 
-      {/* Sidebar (Glass) */}
-      <div className={`${isSidebarOpen ? 'w-72 translate-x-0' : 'w-0 -translate-x-full opacity-0'} transition-all duration-300 flex flex-col border-r border-white/10 bg-white/10 dark:bg-black/20 backdrop-blur-xl h-full shrink-0 overflow-hidden`}>
+      {/* Mobile Overlay for Sidebar */}
+      <div
+        className={`fixed inset-0 bg-black/50 backdrop-blur-sm z-40 transition-opacity duration-300 md:hidden ${isSidebarOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
+        onClick={() => setIsSidebarOpen(false)}
+      />
+
+      {/* Sidebar */}
+      <div className={`
+            fixed md:relative z-50 h-full shrink-0 transition-transform duration-300 ease-in-out
+            w-72 border-r border-white/10 bg-white/80 dark:bg-black/80 md:bg-white/10 md:dark:bg-black/20 backdrop-blur-xl flex flex-col
+            ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full md:w-0 md:-translate-x-full'}
+        `}>
         <div className="p-4 flex items-center justify-between border-b border-white/10">
           <button onClick={() => navigate('/')} className="flex items-center gap-2 text-sm font-bold text-gray-700 dark:text-gray-300 hover:opacity-70 transition-opacity">
             <ArrowLeft size={16} /> Home
           </button>
-          <button onClick={() => { setCurrentSessionId(null); setMessages([]); }} className="p-2 rounded-lg hover:bg-white/10 text-gray-700 dark:text-gray-300 transition-colors">
-            <Plus size={18} />
-          </button>
+          <div className="flex gap-2">
+            <button onClick={() => { setCurrentSessionId(null); setMessages([]); if (window.innerWidth < 768) setIsSidebarOpen(false); }} className="p-2 rounded-lg hover:bg-white/10 text-gray-700 dark:text-gray-300 transition-colors">
+              <Plus size={18} />
+            </button>
+            {/* Mobile Close Button */}
+            <button onClick={() => setIsSidebarOpen(false)} className="md:hidden p-2 text-gray-500">
+              <X size={18} />
+            </button>
+          </div>
         </div>
         <div className="flex-1 overflow-y-auto p-2 space-y-1 custom-scrollbar">
           {sessions.map(s => (
-            <div key={s.id} onClick={() => setCurrentSessionId(s.id)}
+            <div key={s.id} onClick={() => { setCurrentSessionId(s.id); if (window.innerWidth < 768) setIsSidebarOpen(false); }}
               className={`group relative p-3 rounded-xl cursor-pointer transition-all border ${currentSessionId === s.id ? 'bg-white/40 dark:bg-white/10 border-white/20 text-gray-900 dark:text-white shadow-sm' : 'border-transparent hover:bg-white/10 text-gray-600 dark:text-gray-400'}`}>
               <div className="text-sm font-medium truncate pr-6">{s.title}</div>
               <div className="text-[10px] opacity-50 mt-1">{new Date(s.updatedAt).toLocaleDateString()}</div>
@@ -380,16 +456,16 @@ export const Chat: React.FC = () => {
       <div className="flex-1 flex flex-col h-full min-w-0 relative">
 
         {/* Header */}
-        <header className="h-16 px-6 flex items-center justify-between border-b border-white/10 bg-white/5 dark:bg-black/5 backdrop-blur-md z-10 shrink-0">
+        <header className="h-14 md:h-16 px-4 md:px-6 flex items-center justify-between border-b border-white/10 bg-white/5 dark:bg-black/5 backdrop-blur-md z-10 shrink-0">
           <div className="flex items-center gap-4">
-            <button onClick={() => setIsSidebarOpen(!isSidebarOpen)} className="p-2 rounded-lg hover:bg-white/10 text-gray-600 dark:text-gray-300 transition-colors">
-              <ArrowLeft size={20} className={`transition-transform duration-300 ${isSidebarOpen ? '' : 'rotate-180'}`} />
+            <button onClick={() => setIsSidebarOpen(!isSidebarOpen)} className="p-2 -ml-2 rounded-lg hover:bg-white/10 text-gray-600 dark:text-gray-300 transition-colors">
+              {isSidebarOpen ? <ArrowLeft size={20} className="hidden md:block" /> : <Menu size={20} />}
             </button>
             <div className="relative">
               <button onClick={() => setIsModelMenuOpen(!isModelMenuOpen)} className="flex items-center gap-2 text-sm font-semibold text-gray-700 dark:text-gray-200 hover:bg-white/10 px-3 py-1.5 rounded-lg transition-colors">
                 <Sparkles size={16} className="text-indigo-500" />
                 {/* @ts-ignore */}
-                {selectedModel ? AI_MODELS[selectedModel]?.shortName : 'Loading...'}
+                <span className="truncate max-w-[100px] md:max-w-none">{selectedModel ? AI_MODELS[selectedModel]?.shortName : 'Loading...'}</span>
                 <ChevronDown size={14} className="opacity-50" />
               </button>
               {isModelMenuOpen && (
@@ -411,76 +487,96 @@ export const Chat: React.FC = () => {
 
         {/* System Prompt Panel */}
         {isSystemPromptOpen && (
-          <div className="px-6 py-4 bg-white/50 dark:bg-black/50 backdrop-blur-md border-b border-white/10 animate-in slide-in-from-top-2 z-10">
+          <div className="px-6 py-4 bg-white/50 dark:bg-zinc-900/50 backdrop-blur-md border-b border-white/10 animate-in slide-in-from-top-2 z-10">
             <label className="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase mb-2 block">System Prompt</label>
-            <textarea value={systemPrompt} onChange={e => setSystemPrompt(e.target.value)} className="w-full h-24 bg-transparent border border-white/20 dark:border-white/10 rounded-xl p-3 text-sm text-gray-800 dark:text-gray-100 outline-none focus:border-indigo-500 transition-colors resize-none" />
+            <textarea value={systemPrompt} onChange={e => setSystemPrompt(e.target.value)} className="w-full h-24 bg-white/40 dark:bg-black/20 border border-white/20 dark:border-white/10 rounded-xl p-3 text-sm text-gray-800 dark:text-gray-100 outline-none focus:border-indigo-500 transition-colors resize-none" />
           </div>
         )}
 
-        {/* Messages Area (The critical fix: flex-1 overflow-auto) */}
+        {/* Messages Area */}
         <div className="flex-1 overflow-y-auto p-4 sm:p-8 space-y-6 custom-scrollbar scroll-smooth">
-          {messages.length === 0 && attachedArticles.length === 0 && (
-            <div className="h-full flex flex-col items-center justify-center text-gray-400 space-y-4">
-              <div className="w-16 h-16 rounded-2xl bg-white/10 border border-white/10 flex items-center justify-center backdrop-blur-md">
-                <Bot size={32} />
-              </div>
-              <p className="font-light tracking-wide">How can I help you today?</p>
+          {isMessagesLoading ? (
+            <div className="h-full flex flex-col items-center justify-center text-gray-400 gap-2 animate-pulse">
+              <div className="w-8 h-8 rounded-full border-2 border-indigo-500 border-t-transparent animate-spin" />
+              <span className="text-xs font-medium">Syncing History...</span>
             </div>
-          )}
-
-          {messages.map((msg, index) => {
-            const isLast = index === messages.length - 1;
-            const isUser = msg.role === 'user';
-            const isEditing = editingMessageId === msg.id;
-
-            return (
-              <div key={msg.id} className={`group flex gap-4 max-w-4xl mx-auto ${isUser ? 'flex-row-reverse' : ''}`}>
-                <div className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 border border-white/10 shadow-sm ${isUser ? 'bg-indigo-600 text-white' : 'bg-white/40 dark:bg-white/10 text-indigo-500 backdrop-blur-md'}`}>
-                  {isUser ? <User size={18} /> : <Bot size={20} />}
+          ) : (
+            <>
+              {messages.length === 0 && attachedArticles.length === 0 && (
+                <div className="h-full flex flex-col items-center justify-center text-gray-400 space-y-4">
+                  <div className="w-16 h-16 rounded-2xl bg-white/10 border border-white/10 flex items-center justify-center backdrop-blur-md">
+                    <Bot size={32} />
+                  </div>
+                  <p className="font-light tracking-wide">How can I help you today?</p>
                 </div>
+              )}
 
-                <div className={`flex flex-col max-w-[85%] ${isUser ? 'items-end' : 'items-start'}`}>
-                  {isEditing ? (
-                    <div className="w-full min-w-[300px] liquid-glass-high rounded-2xl p-2 shadow-xl animate-in fade-in zoom-in-95 duration-200">
-                      <textarea
-                        value={editContent}
-                        onChange={e => setEditContent(e.target.value)}
-                        className="w-full bg-transparent outline-none text-[15px] resize-none mb-2 min-h-[100px] p-2 text-gray-800 dark:text-gray-100"
-                        autoFocus
-                      />
-                      <div className="flex justify-between items-center px-2 pb-1">
-                        <span className="text-[10px] text-gray-400">支持 Markdown / 可删除引用标签</span>
-                        <div className="flex justify-end gap-2">
-                          <button onClick={() => setEditingMessageId(null)} className="px-3 py-1.5 text-xs font-medium rounded-lg text-gray-500 hover:bg-black/5 dark:hover:bg-white/10 transition-colors">取消</button>
-                          <button onClick={submitEdit} className="px-4 py-1.5 text-xs font-bold bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 shadow-lg shadow-indigo-500/20 flex items-center gap-1.5">
-                            <Save size={12} /> 保存
-                          </button>
-                        </div>
-                      </div>
+              {messages.map((msg, index) => {
+                const isLast = index === messages.length - 1;
+                const isUser = msg.role === 'user';
+                const isEditing = editingMessageId === msg.id;
+
+                return (
+                  <div key={msg.id} className={`group flex gap-4 max-w-4xl mx-auto ${isUser ? 'flex-row-reverse' : ''}`}>
+                    <div className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 border border-white/10 shadow-sm ${isUser ? 'bg-indigo-600 text-white' : 'bg-white/40 dark:bg-white/10 text-indigo-500 backdrop-blur-md'}`}>
+                      {isUser ? <User size={18} /> : <Bot size={20} />}
                     </div>
-                  ) : (
-                    <>
-                      <div className={`px-5 py-3.5 shadow-sm text-[15px] leading-7 relative backdrop-blur-md border ${isUser
-                          ? 'bg-indigo-600/90 text-white rounded-2xl rounded-tr-sm border-indigo-500/50'
-                          : 'bg-white/60 dark:bg-black/40 text-gray-800 dark:text-gray-100 rounded-2xl rounded-tl-sm border-white/30 dark:border-white/10'
-                        }`}>
-                        {isUser ? <p className="whitespace-pre-wrap">{getDisplayContent(msg.content)}</p> : <MarkdownRenderer content={msg.content} />}
-                      </div>
-                      <MessageActions
-                        role={msg.role as any}
-                        content={msg.content}
-                        isLast={isLast}
-                        onCopy={() => handleCopy(msg.content)}
-                        onEdit={isUser ? () => handleEdit(msg) : undefined}
-                        onRegenerate={(isLast && !isUser) ? () => handleRegenerate(index) : undefined}
-                      />
-                    </>
-                  )}
-                </div>
-              </div>
-            );
-          })}
-          <div ref={scrollEndRef} className="h-4" />
+
+                    <div className={`flex flex-col max-w-[85%] ${isUser ? 'items-end' : 'items-start'}`}>
+                      {isEditing ? (
+                        <div className="w-full min-w-[300px] liquid-glass-high rounded-2xl p-2 shadow-xl animate-in fade-in zoom-in-95 duration-200">
+                          {/* Deletable Context Tag in Edit Mode */}
+                          {editContext && (
+                            <div className="mb-2 flex items-center gap-2 px-3 py-1.5 rounded-lg bg-indigo-50/50 dark:bg-indigo-500/10 border border-indigo-100 dark:border-indigo-500/20 text-xs font-medium text-indigo-600 dark:text-indigo-300">
+                              <FileText size={12} />
+                              <span className="truncate max-w-[200px]">{editContextTitle || '引用上下文'}</span>
+                              <button onClick={() => setEditContext(null)} className="ml-2 hover:text-red-500 p-0.5 rounded-full hover:bg-black/5 dark:hover:bg-white/10 transition-colors">
+                                <X size={12} />
+                              </button>
+                            </div>
+                          )}
+
+                          <textarea
+                            value={editContent}
+                            onChange={e => setEditContent(e.target.value)}
+                            className="w-full bg-transparent outline-none text-[15px] resize-none mb-2 min-h-[100px] p-2 text-gray-800 dark:text-gray-100"
+                            autoFocus
+                          />
+                          <div className="flex justify-between items-center px-2 pb-1 border-t border-black/5 dark:border-white/5 pt-2">
+                            <span className="text-[10px] text-gray-400">支持 Markdown</span>
+                            <div className="flex justify-end gap-2">
+                              <button onClick={() => setEditingMessageId(null)} className="px-3 py-1.5 text-xs font-medium rounded-lg text-gray-500 hover:bg-black/5 dark:hover:bg-white/10 transition-colors">取消</button>
+                              <button onClick={submitEdit} className="px-4 py-1.5 text-xs font-bold bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 shadow-lg shadow-indigo-500/20 flex items-center gap-1.5">
+                                <Save size={12} /> 保存
+                              </button>
+                            </div>
+                          </div>
+                        </div>
+                      ) : (
+                        <>
+                          <div className={`px-5 py-3.5 shadow-sm text-[15px] leading-7 relative backdrop-blur-md border ${isUser
+                              ? 'bg-indigo-600/90 text-white rounded-2xl rounded-tr-sm border-indigo-500/50'
+                              : 'bg-white/60 dark:bg-black/40 text-gray-800 dark:text-gray-100 rounded-2xl rounded-tl-sm border-white/30 dark:border-white/10'
+                            }`}>
+                            {isUser ? <p className="whitespace-pre-wrap">{getDisplayContent(msg.content)}</p> : <MarkdownRenderer content={msg.content} />}
+                          </div>
+                          <MessageActions
+                            role={msg.role as any}
+                            content={msg.content}
+                            isLast={isLast}
+                            onCopy={() => handleCopy(msg.content)}
+                            onEdit={isUser ? () => handleEdit(msg) : undefined}
+                            onRegenerate={(isLast && !isUser) ? () => handleRegenerate(index) : undefined}
+                          />
+                        </>
+                      )}
+                    </div>
+                  </div>
+                );
+              })}
+              <div ref={scrollEndRef} className="h-4" />
+            </>
+          )}
         </div>
 
         {/* Input Area (Fixed Bottom) */}
@@ -532,11 +628,11 @@ export const Chat: React.FC = () => {
                 onChange={(e) => { setInput(e.target.value); if (e.target.value.endsWith('#')) setIsArticlePickerOpen(true); }}
                 onKeyDown={(e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSend(); } }}
                 placeholder={isLoading ? "AI is thinking..." : "Send a message..."}
-                disabled={isLoading}
+                disabled={isLoading || isMessagesLoading}
                 className="flex-1 bg-transparent border-none outline-none py-3 max-h-[150px] min-h-[46px] resize-none text-[15px] text-gray-900 dark:text-white placeholder-gray-400/60"
                 rows={1}
               />
-              <button onClick={handleSend} disabled={(!input.trim() && attachedArticles.length === 0) || isLoading} className={`p-3 rounded-full h-[46px] w-[46px] flex items-center justify-center transition-all ${(!input.trim() && attachedArticles.length === 0) || isLoading ? 'text-gray-300 dark:text-gray-600' : 'bg-indigo-600 text-white shadow-lg shadow-indigo-500/30 hover:scale-105 active:scale-95'}`}>
+              <button onClick={handleSend} disabled={(!input.trim() && attachedArticles.length === 0) || isLoading || isMessagesLoading} className={`p-3 rounded-full h-[46px] w-[46px] flex items-center justify-center transition-all ${(!input.trim() && attachedArticles.length === 0) || isLoading || isMessagesLoading ? 'text-gray-300 dark:text-gray-600' : 'bg-indigo-600 text-white shadow-lg shadow-indigo-500/30 hover:scale-105 active:scale-95'}`}>
                 {isLoading ? <StopCircle size={20} className="animate-pulse" /> : <Send size={20} className="ml-0.5" />}
               </button>
             </div>
