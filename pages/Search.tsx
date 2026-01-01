@@ -1,12 +1,14 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { Link } from 'react-router-dom';
+import { useSearchParams, Link } from 'react-router-dom';
 import { StorageService } from '../services/storage';
 import { Article, Project } from '../types';
-import { Search, FileText, Layout, ExternalLink, Globe } from 'lucide-react';
+import { FileText, Layout, ExternalLink, Globe, Search as SearchIcon } from 'lucide-react';
 import * as Icons from 'lucide-react';
 
 export const SearchPage: React.FC = () => {
-  const [query, setQuery] = useState('');
+  const [searchParams] = useSearchParams();
+  const query = searchParams.get('q') || '';
+
   const [articles, setArticles] = useState<Article[]>([]);
   const [projects, setProjects] = useState<Project[]>([]);
   const [loading, setLoading] = useState(true);
@@ -60,25 +62,14 @@ export const SearchPage: React.FC = () => {
   }
 
   return (
-    <div className="max-w-3xl mx-auto py-10 animate-in fade-in duration-500 min-h-[60vh]">
-      <div className="relative mb-12">
-        <Search className="absolute left-6 top-1/2 -translate-y-1/2 text-gray-400 z-10" size={24} />
-        <input
-          autoFocus
-          type="text"
-          placeholder="搜索文章、网站..."
-          className="w-full pl-16 pr-6 py-5 liquid-glass-high rounded-full shadow-lg outline-none focus:ring-2 focus:ring-indigo-500/30 text-xl transition-all text-gray-900 dark:text-white placeholder-gray-400/70"
-          value={query}
-          onChange={e => setQuery(e.target.value)}
-        />
-      </div>
+    <div className="max-w-3xl mx-auto py-4 animate-in fade-in duration-500 min-h-[60vh]">
 
       {!query && (
         <div className="text-center text-gray-400 dark:text-neutral-600 mt-20 flex flex-col items-center gap-4">
           <div className="p-6 rounded-full bg-white/30 dark:bg-white/5 backdrop-blur-md">
-            <Search size={48} className="opacity-30" />
+            <SearchIcon size={48} className="opacity-30" />
           </div>
-          <p className="font-light tracking-wide">输入关键词开始探索</p>
+          <p className="font-light tracking-wide">请在顶部搜索框输入关键词</p>
         </div>
       )}
 
@@ -88,7 +79,7 @@ export const SearchPage: React.FC = () => {
         </div>
       )}
 
-      <div className="space-y-12">
+      <div className="space-y-12 mt-4">
         {results.projects.length > 0 && (
           <section>
             <h2 className="text-xl font-bold mb-6 flex items-center gap-2 text-gray-900 dark:text-white px-2">

@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect, useMemo } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
-import { Send, Bot, User, Trash2, StopCircle, Sparkles, ChevronDown, Plus, MessageSquare, Settings, FileText, Hash, X, History, ArrowLeft } from 'lucide-react';
+import { Send, Bot, User, Trash2, StopCircle, Sparkles, ChevronDown, Plus, Settings, FileText, Hash, X, History, ArrowLeft } from 'lucide-react';
 import { AIService, AI_MODELS, AIModelKey } from '../services/ai';
 import { StorageService, ChatSession, ChatMessage } from '../services/storage';
 import { MarkdownRenderer } from '../components/MarkdownRenderer';
@@ -11,7 +11,7 @@ const CONTEXT_TAG_START = "<hidden_context>";
 const CONTEXT_TAG_END = "</hidden_context>";
 
 export const Chat: React.FC = () => {
-  const [searchParams, setSearchParams] = useSearchParams();
+  const [searchParams] = useSearchParams();
   const articleId = searchParams.get('articleId');
   const navigate = useNavigate();
 
@@ -145,11 +145,10 @@ export const Chat: React.FC = () => {
     const messagesWithPlaceholder = [...history, aiMsgPlaceholder];
     setMessages(messagesWithPlaceholder);
 
-    // Clean history for API (Keep context tags so AI can see it)
+    // Clean history for API
     const apiHistory = history.map(m => ({
       role: m.role as 'user' | 'assistant',
       content: m.content
-      // Note: We are sending the full content including <hidden_context> to the AI
     }));
 
     apiHistory.unshift({ role: 'system' as any, content: systemPrompt });
@@ -212,7 +211,6 @@ export const Chat: React.FC = () => {
     // Append context using hidden tags
     if (attachedArticles.length > 0) {
       const refs = attachedArticles.map(a => `\n引用文章标题：${a.title}\n文章摘要：${a.summary}\n文章正文：\n${a.content}\n`).join('\n---\n');
-      // Wrap in hidden tags
       finalContent = `${input.trim()}\n\n${CONTEXT_TAG_START}\n${refs}\n${CONTEXT_TAG_END}`;
     }
 
@@ -232,13 +230,9 @@ export const Chat: React.FC = () => {
     await triggerAIResponse(nextMessages, activeSessionId!);
   };
 
-  // Helper to strip hidden context for display
   const getDisplayContent = (content: string) => {
-    // Regex to find content between tags
     const regex = new RegExp(`${CONTEXT_TAG_START}[\\s\\S]*?${CONTEXT_TAG_END}`, 'g');
     if (content.match(regex)) {
-      // You could extract the title here if you wanted to be fancy, 
-      // but for now just replacing the whole block with a badge
       const cleanContent = content.replace(regex, '').trim();
       return (
         <>
@@ -291,18 +285,18 @@ export const Chat: React.FC = () => {
   if (availableModels.length === 0) return <div className="p-10 text-center text-gray-400">Loading Configuration...</div>;
 
   return (
-    <div className="flex h-full w-full relative animate-in fade-in duration-500">
+    <div className="flex h-full w-full overflow-hidden animate-in fade-in duration-500 bg-[#f8f9fa] dark:bg-[#050505]">
 
-      {/* Sidebar (History) - Frosted Glass */}
-      <div className="hidden md:flex flex-col w-72 border-r border-white/20 dark:border-white/5 bg-white/10 dark:bg-black/20 backdrop-blur-xl h-full shrink-0">
-        <div className="p-5 flex items-center justify-between border-b border-white/10 dark:border-white/5 h-16 shrink-0">
-          <button onClick={() => navigate('/')} className="flex items-center gap-2 text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white transition-colors">
+      {/* Sidebar (History) */}
+      <div className="hidden md:flex flex-col w-72 border-r border-white/20 dark:border-white/5 bg-white/40 dark:bg-white/5 backdrop-blur-xl h-full shrink-0">
+        <div className="p-4 flex items-center justify-between border-b border-white/10 dark:border-white/5 h-16 shrink-0">
+          <button onClick={() => navigate('/')} className="flex items-center gap-2 px-2 py-1.5 rounded-lg text-gray-600 hover:bg-white/40 dark:text-gray-400 dark:hover:text-white dark:hover:bg-white/5 transition-colors">
             <ArrowLeft size={18} />
             <span className="font-bold text-sm">主页</span>
           </button>
           <button
             onClick={() => { setCurrentSessionId(null); setMessages([]); setSystemPrompt(DEFAULT_SYSTEM_PROMPT); setAttachedArticles([]); }}
-            className="p-2 rounded-lg bg-white/20 dark:bg-white/5 text-gray-700 dark:text-gray-200 hover:bg-white/40 dark:hover:bg-white/10 transition-colors"
+            className="p-2 rounded-lg bg-indigo-50 dark:bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 hover:bg-indigo-100 dark:hover:bg-indigo-500/20 transition-colors"
             title="新对话"
           >
             <Plus size={18} />
@@ -314,8 +308,8 @@ export const Chat: React.FC = () => {
               key={session.id}
               onClick={() => setCurrentSessionId(session.id)}
               className={`group relative p-3 rounded-xl cursor-pointer transition-all border ${currentSessionId === session.id
-                  ? 'bg-white/40 dark:bg-white/10 text-gray-900 dark:text-white border-white/20 shadow-sm backdrop-blur-md'
-                  : 'hover:bg-white/20 dark:hover:bg-white/5 border-transparent text-gray-600 dark:text-gray-400'
+                  ? 'bg-white dark:bg-white/10 text-gray-900 dark:text-white border-white/20 shadow-sm'
+                  : 'hover:bg-white/40 dark:hover:bg-white/5 border-transparent text-gray-600 dark:text-gray-400'
                 }`}
             >
               <div className="text-sm font-medium truncate pr-6">{session.title}</div>
@@ -333,18 +327,16 @@ export const Chat: React.FC = () => {
         </div>
       </div>
 
-      {/* Main Chat Area - Transparent to show liquid background */}
-      <div className="flex-1 flex flex-col h-full relative">
+      {/* Main Chat Area (Flex Column) */}
+      <div className="flex-1 flex flex-col h-full relative min-w-0">
 
-        {/* Header - Floating Glass Strip with Back Button */}
-        <header className="h-16 px-4 md:px-6 flex items-center justify-between z-20 shrink-0 border-b border-white/10 dark:border-white/5 bg-white/5 dark:bg-black/5 backdrop-blur-sm">
+        {/* 1. Header (Fixed Height) */}
+        <header className="h-16 px-4 md:px-6 flex items-center justify-between shrink-0 border-b border-white/10 dark:border-white/5 bg-white/30 dark:bg-white/5 backdrop-blur-md z-20">
           <div className="flex items-center gap-3">
-            {/* Mobile Back Button */}
             <button onClick={() => navigate('/')} className="md:hidden p-2 -ml-2 rounded-full text-gray-600 dark:text-gray-300 hover:bg-white/10">
               <ArrowLeft size={20} />
             </button>
 
-            {/* Model Selector */}
             <div className="relative">
               <button
                 onClick={() => setIsModelMenuOpen(!isModelMenuOpen)}
@@ -376,7 +368,6 @@ export const Chat: React.FC = () => {
             </div>
           </div>
 
-          {/* System Settings Toggle */}
           <button
             onClick={() => setIsSystemPromptOpen(!isSystemPromptOpen)}
             className={`p-2 rounded-lg transition-all ${isSystemPromptOpen ? 'bg-white/20 dark:bg-white/10 text-gray-900 dark:text-white' : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 hover:bg-white/10'}`}
@@ -385,7 +376,7 @@ export const Chat: React.FC = () => {
           </button>
         </header>
 
-        {/* System Prompt (Slide down) */}
+        {/* System Prompt (Conditional) */}
         {isSystemPromptOpen && (
           <div className="px-6 py-4 bg-white/80 dark:bg-black/80 backdrop-blur-md border-b border-white/10 animate-in slide-in-from-top-2 duration-300 shrink-0 z-10">
             <label className="text-xs font-bold text-gray-500 dark:text-gray-400 mb-2 block uppercase tracking-wide">System Prompt</label>
@@ -398,35 +389,35 @@ export const Chat: React.FC = () => {
           </div>
         )}
 
-        {/* Messages */}
+        {/* 2. Messages (Flex 1, Scrolls independently) */}
         <div
           ref={scrollContainerRef}
-          className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-6 scroll-smooth pb-32"
+          className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-6 scroll-smooth"
         >
           {messages.length === 0 && attachedArticles.length === 0 && (
-            <div className="h-full flex flex-col items-center justify-center text-gray-400 dark:text-gray-500 space-y-4">
-              <div className="w-16 h-16 rounded-3xl bg-white/20 dark:bg-white/5 border border-white/20 dark:border-white/5 flex items-center justify-center mb-2 backdrop-blur-sm">
+            <div className="h-full flex flex-col items-center justify-center text-gray-400 dark:text-gray-600 space-y-4 pb-20">
+              <div className="w-16 h-16 rounded-3xl bg-white/40 dark:bg-white/5 border border-white/20 dark:border-white/5 flex items-center justify-center mb-2 backdrop-blur-sm shadow-sm">
                 <Bot size={32} />
               </div>
-              <p className="font-light text-lg tracking-wide">Ready to chat.</p>
+              <p className="font-light text-lg tracking-wide opacity-80">Ready to chat.</p>
             </div>
           )}
 
           {messages.map((msg, index) => (
-            <div key={index} className={`flex gap-4 max-w-4xl mx-auto ${msg.role === 'user' ? 'flex-row-reverse' : ''}`}>
+            <div key={index} className={`flex gap-4 max-w-3xl mx-auto ${msg.role === 'user' ? 'flex-row-reverse' : ''}`}>
               {/* Avatar */}
               <div className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 shadow-sm mt-1 border border-white/10 ${msg.role === 'user'
                   ? 'bg-indigo-600 text-white shadow-indigo-500/20'
-                  : 'bg-white/40 dark:bg-white/10 text-indigo-500 backdrop-blur-md'
+                  : 'bg-white/60 dark:bg-white/10 text-indigo-500 backdrop-blur-md'
                 }`}>
                 {msg.role === 'user' ? <User size={16} /> : <Bot size={18} />}
               </div>
 
               {/* Bubble */}
               <div className={`max-w-[85%] sm:max-w-[75%] min-w-0 flex flex-col ${msg.role === 'user' ? 'items-end' : 'items-start'}`}>
-                <div className={`px-5 py-3 shadow-md text-[15px] leading-relaxed relative backdrop-blur-md border ${msg.role === 'user'
+                <div className={`px-5 py-3 shadow-sm text-[15px] leading-relaxed relative backdrop-blur-md border ${msg.role === 'user'
                     ? 'bg-indigo-600/90 text-white rounded-2xl rounded-tr-sm border-indigo-500/50'
-                    : 'bg-white/70 dark:bg-black/40 text-gray-800 dark:text-gray-200 rounded-2xl rounded-tl-sm border-white/30 dark:border-white/10'
+                    : 'bg-white/80 dark:bg-[#1a1a1a] text-gray-800 dark:text-gray-200 rounded-2xl rounded-tl-sm border-white/40 dark:border-white/10'
                   }`}>
                   {msg.role === 'user' ? (
                     <p>{getDisplayContent(msg.content)}</p>
@@ -441,15 +432,12 @@ export const Chat: React.FC = () => {
           ))}
         </div>
 
-        {/* Input Area (Fixed Bottom) */}
-        <div className="absolute bottom-0 left-0 right-0 z-30 flex justify-center w-full">
-          {/* Gradient Fade */}
-          <div className="absolute bottom-0 inset-x-0 h-32 bg-gradient-to-t from-white via-white/80 to-transparent dark:from-black dark:via-black/80 dark:to-transparent pointer-events-none" />
-
-          <div className="relative w-full max-w-4xl px-4 pb-6 pt-2 z-40">
+        {/* 3. Input Area (Shrink 0, Stuck to bottom) */}
+        <div className="shrink-0 p-4 pb-6 pt-2 z-30 bg-gradient-to-t from-[#f8f9fa] via-[#f8f9fa]/90 to-transparent dark:from-[#050505] dark:via-[#050505]/90 dark:to-transparent">
+          <div className="relative w-full max-w-3xl mx-auto">
             {/* Tags */}
             {attachedArticles.length > 0 && (
-              <div className="flex flex-wrap gap-2 animate-in slide-in-from-bottom-2 px-1 mb-2 relative z-50">
+              <div className="flex flex-wrap gap-2 animate-in slide-in-from-bottom-2 px-1 mb-2">
                 {attachedArticles.map(a => (
                   <div key={a.id} className="flex items-center gap-2 bg-indigo-50/90 dark:bg-indigo-900/40 text-indigo-600 dark:text-indigo-300 px-3 py-1.5 rounded-full text-xs font-medium border border-indigo-100 dark:border-indigo-800/50 backdrop-blur-md shadow-sm">
                     <FileText size={12} />
@@ -462,7 +450,7 @@ export const Chat: React.FC = () => {
 
             {/* Popover */}
             {isArticlePickerOpen && (
-              <div className="absolute bottom-full left-4 mb-2 w-72 bg-white/80 dark:bg-[#1a1a1a]/80 backdrop-blur-2xl rounded-2xl shadow-2xl overflow-hidden animate-in fade-in slide-in-from-bottom-2 border border-white/20 dark:border-white/10 z-50">
+              <div className="absolute bottom-full left-0 mb-2 w-72 bg-white/80 dark:bg-[#1a1a1a]/80 backdrop-blur-2xl rounded-2xl shadow-2xl overflow-hidden animate-in fade-in slide-in-from-bottom-2 border border-white/20 dark:border-white/10 z-50">
                 <div className="p-3 border-b border-white/10 text-xs text-gray-500 font-bold uppercase tracking-wider">Select Article</div>
                 <div className="max-h-56 overflow-y-auto custom-scrollbar p-1">
                   {availableArticles.map(article => (
@@ -480,7 +468,7 @@ export const Chat: React.FC = () => {
             )}
 
             {/* Main Input Capsule */}
-            <div className="relative bg-white/60 dark:bg-white/5 rounded-[2rem] shadow-lg border border-white/40 dark:border-white/10 focus-within:bg-white/80 dark:focus-within:bg-black/40 focus-within:border-indigo-500/30 focus-within:ring-4 focus-within:ring-indigo-500/10 transition-all flex items-end p-1.5 gap-1 backdrop-blur-xl">
+            <div className="relative bg-white dark:bg-white/5 rounded-[2rem] shadow-lg border border-gray-100 dark:border-white/10 focus-within:bg-white dark:focus-within:bg-black/40 focus-within:border-indigo-500/30 focus-within:ring-4 focus-within:ring-indigo-500/10 transition-all flex items-end p-1.5 gap-1">
 
               <button
                 onClick={() => setIsArticlePickerOpen(!isArticlePickerOpen)}

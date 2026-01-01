@@ -480,23 +480,24 @@ const ArticleEditor: React.FC<{
               onChange={e => setFormData({ ...formData, title: e.target.value })}
             />
 
-            {/* Summary Section */}
+            {/* Summary Section (with Button in Label Line) */}
             <div className="relative mb-8 group">
+              <div className="flex items-center justify-between mb-2">
+                <label className="text-sm font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide">文章摘要</label>
+                {/* AI Summary Button - Moved Outside */}
+                <button type="button" onClick={handleGenerateSummary} disabled={isGeneratingSummary} className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold rounded-lg shadow-sm border bg-white dark:bg-neutral-800 border-gray-200 dark:border-white/10 text-indigo-600 dark:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-900/30 transition-colors">
+                  {isGeneratingSummary ? <Loader2 size={12} className="animate-spin" /> : <Sparkles size={12} />}
+                  AI 生成
+                </button>
+              </div>
               <textarea
                 ref={summaryRef}
-                placeholder="输入摘要（或使用 AI 生成）..."
+                placeholder="输入摘要..."
                 className="w-full bg-white/60 dark:bg-black/20 border-l-4 border-gray-300 dark:border-white/20 rounded-r-lg outline-none resize-none px-4 py-3 text-gray-600 dark:text-gray-300 text-lg italic leading-relaxed focus:border-indigo-500 transition-all overflow-hidden"
                 rows={1}
                 value={formData.summary}
                 onChange={e => setFormData({ ...formData, summary: e.target.value })}
               />
-              {/* AI Summary Button */}
-              <div className="absolute right-2 bottom-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                <button type="button" onClick={handleGenerateSummary} disabled={isGeneratingSummary} className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold rounded-lg shadow-sm border bg-white dark:bg-neutral-800 border-gray-200 dark:border-white/10 text-indigo-600 dark:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-900/30 transition-colors">
-                  {isGeneratingSummary ? <Loader2 size={12} className="animate-spin" /> : <Sparkles size={12} />}
-                  AI 摘要
-                </button>
-              </div>
             </div>
 
             {/* Tags */}
