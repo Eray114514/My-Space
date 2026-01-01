@@ -433,8 +433,15 @@ const ArticleEditor: React.FC<{
   };
 
   return (
-    <div className="fixed inset-0 z-[60] bg-white/95 dark:bg-black/95 backdrop-blur-xl flex flex-col animate-in fade-in zoom-in-95 duration-300">
-      <div className="h-20 border-b border-gray-200/50 dark:border-white/10 flex items-center justify-between px-6 bg-white/50 dark:bg-black/50 backdrop-blur-md">
+    // Changed z-index to 100 to cover navbar, improved background
+    <div className="fixed inset-0 z-[100] bg-[#f8f9fa] dark:bg-[#050505] flex flex-col animate-in fade-in zoom-in-95 duration-300">
+      {/* Embedded Liquid Ambient Background for Editor */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none z-0 opacity-50">
+        <div className="absolute -top-[10%] -left-[10%] w-[60vw] h-[60vw] max-w-[800px] max-h-[800px] bg-indigo-300/30 dark:bg-indigo-600/20 rounded-full mix-blend-multiply dark:mix-blend-screen filter blur-[100px]" />
+        <div className="absolute -bottom-[10%] -right-[10%] w-[60vw] h-[60vw] max-w-[800px] max-h-[800px] bg-pink-300/30 dark:bg-purple-600/20 rounded-full mix-blend-multiply dark:mix-blend-screen filter blur-[100px]" />
+      </div>
+
+      <div className="h-20 border-b border-gray-200/50 dark:border-white/10 flex items-center justify-between px-6 bg-white/40 dark:bg-white/5 backdrop-blur-md relative z-10">
         <div className="flex items-center gap-4">
           <button onClick={onCancel} className="p-2 rounded-full hover:bg-black/5 dark:hover:bg-white/10 text-gray-500 hover:text-gray-800 dark:hover:text-white transition-colors"><X size={24} /></button>
           <h2 className="text-xl font-bold dark:text-white hidden sm:block">{article ? '编辑文章' : '写文章'}</h2>
@@ -444,8 +451,8 @@ const ArticleEditor: React.FC<{
           <button onClick={handleSubmit} disabled={saving} className="px-6 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-full flex items-center gap-2 shadow-lg shadow-indigo-500/30 transition-all hover:scale-105 active:scale-95 font-bold disabled:opacity-50"><Save size={18} /> {saving ? '保存中...' : '保存'}</button>
         </div>
       </div>
-      <div className="flex-1 flex flex-col md:flex-row overflow-hidden">
-        <div className="w-full md:w-1/2 flex flex-col border-b md:border-b-0 md:border-r border-gray-200/50 dark:border-white/10 bg-gray-50/50 dark:bg-white/5 p-6 overflow-y-auto">
+      <div className="flex-1 flex flex-col md:flex-row overflow-hidden relative z-10">
+        <div className="w-full md:w-1/2 flex flex-col border-b md:border-b-0 md:border-r border-gray-200/50 dark:border-white/10 bg-white/30 dark:bg-white/5 backdrop-blur-sm p-6 overflow-y-auto">
           <input placeholder="请输入标题..." className="text-3xl font-bold bg-transparent border-none outline-none mb-6 dark:text-white placeholder-gray-400/50" value={formData.title} onChange={e => setFormData({ ...formData, title: e.target.value })} />
 
           <div className="relative mb-6">
@@ -463,7 +470,7 @@ const ArticleEditor: React.FC<{
             <textarea className="w-full h-full bg-transparent border-none outline-none resize-none font-mono text-sm leading-relaxed dark:text-gray-200 p-0 placeholder-gray-400/50" placeholder="# 开始写作 (Markdown)..." value={formData.content} onChange={e => setFormData({ ...formData, content: e.target.value })} />
           </div>
         </div>
-        <div className="hidden md:block w-1/2 p-10 overflow-y-auto bg-white/30 dark:bg-black/20">
+        <div className="hidden md:block w-1/2 p-10 overflow-y-auto bg-white/40 dark:bg-white/5 backdrop-blur-md">
           <div className="max-w-2xl mx-auto">
             <div className="mb-10 pb-6 border-b border-gray-200/50 dark:border-white/10">
               <h1 className="text-4xl font-extrabold mb-4 text-gray-900 dark:text-white leading-tight">{formData.title || '无标题'}</h1>
