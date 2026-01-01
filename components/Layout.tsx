@@ -185,8 +185,8 @@ export const Layout: React.FC<Props> = ({ isAuthenticated, onLogout, isDarkMode,
       )}
 
       {/* Main Content */}
-      {/* If Chat page, remove constraints. Else use standard layout */}
-      <main className={`flex-1 pt-32 w-full relative z-0 ${isChatPage ? 'h-screen overflow-hidden pb-0 px-0' : 'pb-12 px-4 sm:px-6 max-w-5xl mx-auto'}`}>
+      {/* Adjusted padding for Chat page to pt-20 (80px) to clear navbar but not waste space */}
+      <main className={`flex-1 w-full relative z-0 ${isChatPage ? 'h-screen pt-20 overflow-hidden pb-0 px-0' : 'pt-32 pb-12 px-4 sm:px-6 max-w-5xl mx-auto'}`}>
         <Outlet />
       </main>
 
