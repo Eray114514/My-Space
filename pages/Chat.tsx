@@ -2,7 +2,7 @@ import React, { useState, useRef, useEffect, useMemo } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import {
   Send, Bot, User, Trash2, StopCircle, Sparkles, ChevronDown, Plus,
-  Settings, FileText, Hash, X, ArrowLeft, Copy, RefreshCw, Edit2, Check
+  Settings, FileText, Hash, X, ArrowLeft, Copy, RefreshCw, Edit2, Check, Save
 } from 'lucide-react';
 import { AIService, AI_MODELS, AIModelKey } from '../services/ai';
 import { StorageService, ChatSession, ChatMessage } from '../services/storage';
@@ -12,6 +12,14 @@ import { Article } from '../types';
 const DEFAULT_SYSTEM_PROMPT = "你是一个智能助手，名字叫 My AI。请用简洁、优雅的 Markdown 格式回答用户的问题。";
 const CONTEXT_TAG_START = "<hidden_context>";
 const CONTEXT_TAG_END = "</hidden_context>";
+
+// Helper for unique IDs
+const generateId = () => {
+  if (typeof crypto !== 'undefined' && crypto.randomUUID) {
+    return crypto.randomUUID();
+  }
+  return Date.now().toString() + Math.random().toString(36).substring(2);
+};
 
 // --- Types & Helper Components ---
 
@@ -158,12 +166,12 @@ export const Chat: React.FC = () => {
 
   useEffect(() => {
     scrollEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [messages.length, isLoading]);
+  }, [messages.length, isLoading, editingMessageId]);
 
   // --- 2. Core Actions ---
 
   const createNewSession = async (firstContent: string) => {
-    const newId = Date.now().toString();
+    const newId = generateId();
     const title = firstContent.slice(0, 20) + (firstContent.length > 20 ? '...' : '');
     const session: ChatSession = {
       id: newId,
@@ -185,7 +193,7 @@ export const Chat: React.FC = () => {
     if (abortControllerRef.current) abortControllerRef.current.abort();
     abortControllerRef.current = new AbortController();
 
-    const aiId = Date.now().toString();
+    const aiId = generateId(); // Use UUID to prevent collision
     const aiPlaceholder: ChatMessage = {
       id: aiId,
       sessionId,
@@ -238,7 +246,7 @@ export const Chat: React.FC = () => {
     }
 
     const userMsg: ChatMessage = {
-      id: Date.now().toString(),
+      id: generateId(), // Use UUID
       sessionId,
       role: 'user',
       content,
@@ -264,9 +272,8 @@ export const Chat: React.FC = () => {
 
   const handleEdit = (msg: ChatMessage) => {
     setEditingMessageId(msg.id);
-    // Remove hidden tags for editing
-    const cleanContent = msg.content.replace(new RegExp(`${CONTEXT_TAG_START}[\\s\\S]*?${CONTEXT_TAG_END}`, 'g'), '').trim();
-    setEditContent(cleanContent);
+    // EDIT: Show raw content so user can delete the hidden context tags if they want
+    setEditContent(msg.content);
   };
 
   const submitEdit = async () => {
@@ -281,7 +288,7 @@ export const Chat: React.FC = () => {
     // Create new message version
     const updatedMsg: ChatMessage = {
       ...messages[msgIndex],
-      content: editContent, // Note: We lose the article context if we just set text. For simplicity in this edit, we assume context is part of the flow or lost.
+      content: editContent,
       createdAt: new Date().toISOString()
     };
 
@@ -307,15 +314,25 @@ export const Chat: React.FC = () => {
   // --- 3. UI Helpers ---
 
   const getDisplayContent = (content: string) => {
-    const regex = new RegExp(`${CONTEXT_TAG_START}[\\s\\S]*?${CONTEXT_TAG_END}`, 'g');
-    if (content.match(regex)) {
-      const clean = content.replace(regex, '').trim();
+    const regex = new RegExp(`${CONTEXT_TAG_START}([\\s\\S]*?)${CONTEXT_TAG_END}`, 'g');
+    const match = regex.exec(content);
+
+    if (match) {
+      const fullContextBlock = match[0];
+      const innerText = match[1];
+      // Try to extract title
+      const titleMatch = innerText.match(/标题：(.*?)\n/);
+      const title = titleMatch ? titleMatch[1].trim() : '文章上下文';
+
+      const clean = content.replace(fullContextBlock, '').trim();
+
       return (
         <>
           {clean}
-          <div className="mt-2 inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-indigo-50/50 dark:bg-indigo-500/10 border border-indigo-100 dark:border-indigo-500/20 text-xs font-medium text-indigo-600 dark:text-indigo-300 select-none">
+          <div className="mt-3 inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-indigo-50/50 dark:bg-indigo-500/10 border border-indigo-100 dark:border-indigo-500/20 text-xs font-medium text-indigo-600 dark:text-indigo-300 select-none group/badge transition-all hover:bg-indigo-100/50 dark:hover:bg-indigo-500/20">
             <FileText size={12} />
-            引用了文章上下文
+            <span className="opacity-70">已引用:</span>
+            <span className="font-bold border-b border-indigo-500/30">{title}</span>
           </div>
         </>
       );
@@ -395,8 +412,8 @@ export const Chat: React.FC = () => {
         {/* System Prompt Panel */}
         {isSystemPromptOpen && (
           <div className="px-6 py-4 bg-white/50 dark:bg-black/50 backdrop-blur-md border-b border-white/10 animate-in slide-in-from-top-2 z-10">
-            <label className="text-xs font-bold text-gray-500 uppercase mb-2 block">System Prompt</label>
-            <textarea value={systemPrompt} onChange={e => setSystemPrompt(e.target.value)} className="w-full h-24 bg-transparent border border-white/20 rounded-xl p-3 text-sm outline-none focus:border-indigo-500 transition-colors resize-none" />
+            <label className="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase mb-2 block">System Prompt</label>
+            <textarea value={systemPrompt} onChange={e => setSystemPrompt(e.target.value)} className="w-full h-24 bg-transparent border border-white/20 dark:border-white/10 rounded-xl p-3 text-sm text-gray-800 dark:text-gray-100 outline-none focus:border-indigo-500 transition-colors resize-none" />
           </div>
         )}
 
@@ -424,16 +441,21 @@ export const Chat: React.FC = () => {
 
                 <div className={`flex flex-col max-w-[85%] ${isUser ? 'items-end' : 'items-start'}`}>
                   {isEditing ? (
-                    <div className="w-full min-w-[300px] bg-white dark:bg-neutral-800 rounded-xl border border-indigo-500 p-3 shadow-lg">
+                    <div className="w-full min-w-[300px] liquid-glass-high rounded-2xl p-2 shadow-xl animate-in fade-in zoom-in-95 duration-200">
                       <textarea
                         value={editContent}
                         onChange={e => setEditContent(e.target.value)}
-                        className="w-full bg-transparent outline-none text-sm resize-none mb-2 min-h-[80px]"
+                        className="w-full bg-transparent outline-none text-[15px] resize-none mb-2 min-h-[100px] p-2 text-gray-800 dark:text-gray-100"
                         autoFocus
                       />
-                      <div className="flex justify-end gap-2">
-                        <button onClick={() => setEditingMessageId(null)} className="px-3 py-1 text-xs rounded hover:bg-gray-100 dark:hover:bg-white/10">取消</button>
-                        <button onClick={submitEdit} className="px-3 py-1 text-xs bg-indigo-600 text-white rounded hover:bg-indigo-700">保存并提交</button>
+                      <div className="flex justify-between items-center px-2 pb-1">
+                        <span className="text-[10px] text-gray-400">支持 Markdown / 可删除引用标签</span>
+                        <div className="flex justify-end gap-2">
+                          <button onClick={() => setEditingMessageId(null)} className="px-3 py-1.5 text-xs font-medium rounded-lg text-gray-500 hover:bg-black/5 dark:hover:bg-white/10 transition-colors">取消</button>
+                          <button onClick={submitEdit} className="px-4 py-1.5 text-xs font-bold bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 shadow-lg shadow-indigo-500/20 flex items-center gap-1.5">
+                            <Save size={12} /> 保存
+                          </button>
+                        </div>
                       </div>
                     </div>
                   ) : (
@@ -477,10 +499,10 @@ export const Chat: React.FC = () => {
               </div>
             )}
 
-            {/* Article Picker */}
+            {/* Article Picker (Glass Design) */}
             {isArticlePickerOpen && (
-              <div className="absolute bottom-full left-0 mb-2 w-72 bg-white/70 dark:bg-black/70 backdrop-blur-2xl rounded-2xl shadow-2xl overflow-hidden border border-white/20 animate-in fade-in slide-in-from-bottom-2">
-                <div className="p-3 border-b border-white/10 text-xs font-bold text-gray-500">引用文章上下文</div>
+              <div className="absolute bottom-full left-0 mb-2 w-72 liquid-glass-high rounded-2xl shadow-2xl overflow-hidden animate-in fade-in slide-in-from-bottom-2 z-50">
+                <div className="p-3 border-b border-black/5 dark:border-white/5 text-xs font-bold text-gray-500 dark:text-gray-400">引用文章上下文</div>
                 <div className="max-h-56 overflow-y-auto custom-scrollbar p-1">
                   {availableArticles.map(article => (
                     <button key={article.id} onClick={() => {
@@ -488,8 +510,11 @@ export const Chat: React.FC = () => {
                       setIsArticlePickerOpen(false);
                       setInput(prev => prev.replace(/#$/, ''));
                       textareaRef.current?.focus();
-                    }} className="w-full text-left px-3 py-2 text-sm rounded-lg hover:bg-white/20 truncate transition-colors flex items-center gap-2 text-gray-700 dark:text-gray-200">
-                      <FileText size={14} className="opacity-50" /> {article.title}
+                    }} className="w-full text-left px-3 py-2.5 text-sm rounded-xl hover:bg-black/5 dark:hover:bg-white/10 truncate transition-colors flex items-center gap-2 text-gray-700 dark:text-gray-200 group">
+                      <div className="w-6 h-6 rounded-lg bg-indigo-50 dark:bg-indigo-500/10 flex items-center justify-center text-indigo-500 shrink-0">
+                        <FileText size={14} />
+                      </div>
+                      <span className="group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">{article.title}</span>
                     </button>
                   ))}
                 </div>
@@ -498,7 +523,7 @@ export const Chat: React.FC = () => {
 
             {/* Capsule */}
             <div className="bg-white/60 dark:bg-white/5 rounded-[2rem] shadow-lg border border-white/40 dark:border-white/10 backdrop-blur-xl flex items-end p-1.5 gap-2 transition-all focus-within:ring-2 focus-within:ring-indigo-500/20 focus-within:bg-white/80 dark:focus-within:bg-black/40">
-              <button onClick={() => setIsArticlePickerOpen(!isArticlePickerOpen)} className={`p-3 rounded-full h-[46px] w-[46px] flex items-center justify-center transition-colors ${attachedArticles.length > 0 ? 'bg-indigo-100 text-indigo-600' : 'text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 hover:bg-black/5'}`}>
+              <button onClick={() => setIsArticlePickerOpen(!isArticlePickerOpen)} className={`p-3 rounded-full h-[46px] w-[46px] flex items-center justify-center transition-colors ${attachedArticles.length > 0 ? 'bg-indigo-100 text-indigo-600' : 'text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 hover:bg-black/5 dark:hover:bg-white/10'}`}>
                 <Hash size={20} />
               </button>
               <textarea
