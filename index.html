@@ -1,131 +1,93 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
-
-<head>
-  <meta charset="UTF-8" />
-  <link rel="icon" type="image/svg+xml" href="https://api.iconify.design/lucide:terminal.svg" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>My Space</title>
-  <!-- 关键修复：添加 plugins=typography 以支持 Markdown 排版 -->
-  <script src="https://cdn.tailwindcss.com?plugins=typography"></script>
-  <script>
-    tailwind.config = {
-      darkMode: 'class',
-      theme: {
-        extend: {
-          fontFamily: {
-            sans: ['Inter', 'SF Pro Display', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'Roboto', 'sans-serif'],
-            serif: ['New York', 'Merriweather', 'serif'],
-          },
-          colors: {
-            background: "var(--background)",
-            foreground: "var(--foreground)",
-          },
-          // Removed CPU-intensive animations
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="https://api.iconify.design/lucide:terminal.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>My Space</title>
+    <!-- 关键修复：添加 plugins=typography 以支持 Markdown 排版 -->
+    <script src="https://cdn.tailwindcss.com?plugins=typography"></script>
+    <script>
+      tailwind.config = {
+        darkMode: 'class',
+        theme: {
+          extend: {
+            fontFamily: {
+              sans: ['Inter', 'SF Pro Display', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'Roboto', 'sans-serif'],
+              serif: ['New York', 'Merriweather', 'serif'],
+            },
+            colors: {
+              background: "var(--background)",
+              foreground: "var(--foreground)",
+            },
+            // Removed CPU-intensive animations
+          }
         }
       }
-    }
-  </script>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-  <style>
-    ::-webkit-scrollbar {
-      width: 6px;
-      height: 6px;
-    }
+    </script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+      ::-webkit-scrollbar {
+        width: 6px;
+        height: 6px;
+      }
+      ::-webkit-scrollbar-track { background: transparent; }
+      ::-webkit-scrollbar-thumb {
+        background: rgba(160, 160, 160, 0.3);
+        border-radius: 10px;
+      }
+      .dark ::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.15); }
+      ::-webkit-scrollbar-thumb:hover { background: rgba(160, 160, 160, 0.5); }
 
-    ::-webkit-scrollbar-track {
-      background: transparent;
-    }
+      /* --- Liquid Glass Design System --- */
+      
+      /* Standard Glass (Cards) - Increased Transparency */
+      .liquid-glass {
+        background: rgba(255, 255, 255, 0.4); /* Lower opacity for transparency */
+        backdrop-filter: blur(20px) saturate(120%);
+        -webkit-backdrop-filter: blur(20px) saturate(120%);
+        border: 1px solid rgba(255, 255, 255, 0.3);
+        box-shadow: 0 4px 30px rgba(0, 0, 0, 0.05);
+      }
+      
+      .dark .liquid-glass {
+        background: rgba(20, 20, 20, 0.4); /* Darker but transparent */
+        backdrop-filter: blur(20px) saturate(120%);
+        -webkit-backdrop-filter: blur(20px) saturate(120%);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        box-shadow: 0 4px 30px rgba(0, 0, 0, 0.3);
+      }
 
-    ::-webkit-scrollbar-thumb {
-      background: rgba(160, 160, 160, 0.3);
-      border-radius: 10px;
-    }
+      /* High Glass (Modals, Nav, Inputs) - Thicker but still transparent */
+      .liquid-glass-high {
+        background: rgba(255, 255, 255, 0.55);
+        backdrop-filter: blur(30px) saturate(150%);
+        -webkit-backdrop-filter: blur(30px) saturate(150%);
+        border: 1px solid rgba(255, 255, 255, 0.4);
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.05);
+      }
 
-    .dark ::-webkit-scrollbar-thumb {
-      background: rgba(255, 255, 255, 0.15);
-    }
+      .dark .liquid-glass-high {
+        background: rgba(30, 30, 30, 0.5);
+        border: 1px solid rgba(255, 255, 255, 0.12);
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+      }
 
-    ::-webkit-scrollbar-thumb:hover {
-      background: rgba(160, 160, 160, 0.5);
-    }
+      body {
+        background-color: #f8f9fa;
+        overscroll-behavior-y: none;
+      }
+      .dark body {
+        background-color: #050505;
+      }
 
-    /* --- Liquid Glass Design System --- */
-
-    /* Standard Glass (Cards) */
-    .liquid-glass {
-      background: rgba(255, 255, 255, 0.65);
-      backdrop-filter: blur(20px) saturate(120%);
-      -webkit-backdrop-filter: blur(20px) saturate(120%);
-      border: 1px solid rgba(255, 255, 255, 0.4);
-      box-shadow: 0 4px 30px rgba(0, 0, 0, 0.05);
-    }
-
-    .dark .liquid-glass {
-      background: rgba(30, 30, 30, 0.6);
-      backdrop-filter: blur(20px) saturate(120%);
-      -webkit-backdrop-filter: blur(20px) saturate(120%);
-      border: 1px solid rgba(255, 255, 255, 0.1);
-      box-shadow: 0 4px 30px rgba(0, 0, 0, 0.3);
-    }
-
-    /* High Glass (Modals, Nav, Inputs) - Thicker, more blur */
-    .liquid-glass-high {
-      background: rgba(255, 255, 255, 0.8);
-      backdrop-filter: blur(30px) saturate(150%);
-      -webkit-backdrop-filter: blur(30px) saturate(150%);
-      border: 1px solid rgba(255, 255, 255, 0.5);
-      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
-    }
-
-    .dark .liquid-glass-high {
-      background: rgba(40, 40, 40, 0.75);
-      border: 1px solid rgba(255, 255, 255, 0.15);
-      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
-    }
-
-    body {
-      background-color: #f8f9fa;
-      overscroll-behavior-y: none;
-    }
-
-    .dark body {
-      background-color: #050505;
-    }
-
-    /* Markdown Alerts */
-    .markdown-alert {
-      padding: 0.5rem 1rem;
-      margin-bottom: 1rem;
-      border-left: 0.25rem solid;
-      border-radius: 0.25rem;
-      font-size: 0.9em;
-    }
-
-    .markdown-alert-title {
-      display: flex;
-      align-items: center;
-      font-weight: 600;
-      margin-bottom: 0.25rem;
-    }
-
-    .markdown-alert-title svg {
-      fill: currentColor;
-      margin-right: 0.5rem;
-    }
-
-    .markdown-alert-note {
-      border-color: #0969da;
-      background-color: rgba(240, 247, 255, 0.5);
-      color: #1f2328;
-    }
-
-    .dark .markdown-alert-note {
-      background-color: rgba(13, 17, 23, 0.5);
-      color: #e6edf3;
-      border-color: #1f6feb;
-    }
-  </style>
+      /* Markdown Alerts */
+      .markdown-alert { padding: 0.5rem 1rem; margin-bottom: 1rem; border-left: 0.25rem solid; border-radius: 0.25rem; font-size: 0.9em; }
+      .markdown-alert-title { display: flex; align-items: center; font-weight: 600; margin-bottom: 0.25rem; }
+      .markdown-alert-title svg { fill: currentColor; margin-right: 0.5rem; }
+      .markdown-alert-note { border-color: #0969da; background-color: rgba(240, 247, 255, 0.5); color: #1f2328; }
+      .dark .markdown-alert-note { background-color: rgba(13, 17, 23, 0.5); color: #e6edf3; border-color: #1f6feb; }
+    </style>
   <script type="importmap">
 {
   "imports": {
@@ -148,11 +110,8 @@
 }
 </script>
 </head>
-
-<body
-  class="transition-colors duration-500 antialiased selection:bg-indigo-500/30 selection:text-indigo-900 dark:selection:text-white">
-  <div id="root"></div>
-  <script type="module" src="/index.tsx"></script>
-</body>
-
+  <body class="transition-colors duration-500 antialiased selection:bg-indigo-500/30 selection:text-indigo-900 dark:selection:text-white">
+    <div id="root"></div>
+    <script type="module" src="/index.tsx"></script>
+  </body>
 </html>
