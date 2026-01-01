@@ -149,62 +149,38 @@ export const Chat: React.FC = () => {
     await StorageService.saveChatSession(updatedSession, newMessages, isAdmin);
   };
 
-  const handleSend = async (overrideInput?: string, historyOverride?: ChatMessage[]) => {
-    const textToSend = overrideInput || input;
-    if (!textToSend.trim() || isLoading || !selectedModel) return;
+  /**
+   * Internal function to stream AI response based on a given history.
+   * DOES NOT add the user message (it assumes user message is already in history).
+   * It appends the AI message placeholder and streams content.
+   */
+  const triggerAIResponse = async (history: ChatMessage[]) => {
+    if (!selectedModel || !currentSessionId) return;
 
-    // Abort previous if any (though UI blocks it)
+    setIsLoading(true);
     if (abortControllerRef.current) abortControllerRef.current.abort();
     abortControllerRef.current = new AbortController();
 
-    if (!currentSessionId) {
-      await createNewSession();
-      // Wait for state update - actually createNewSession returns ID, but React batching...
-      // For simplicity, we assume createNewSession sets state, but async save might be slow.
-      // We will just proceed optimistically.
-    }
-
-    // Determine context (Are we appending or forking?)
-    const currentMsgs = historyOverride || messages;
-
-    // User Message
-    const userMsg: ChatMessage = {
-      id: Date.now().toString(),
-      sessionId: currentSessionId || 'temp', // fix later
-      role: 'user',
-      content: textToSend,
-      createdAt: new Date().toISOString()
-    };
-
-    const nextMessages = [...currentMsgs, userMsg];
-    setMessages(nextMessages);
-    setInput('');
-    setIsLoading(true);
-
-    // AI Placeholder
+    // Placeholder ID for AI
     const aiMsgId = (Date.now() + 1).toString();
     const aiMsgPlaceholder: ChatMessage = {
       id: aiMsgId,
-      sessionId: currentSessionId || 'temp',
+      sessionId: currentSessionId,
       role: 'assistant',
       content: '',
       createdAt: new Date().toISOString()
     };
-    setMessages([...nextMessages, aiMsgPlaceholder]);
 
-    // Prepare for API
-    const apiHistory = nextMessages.map(m => ({ role: m.role as 'user' | 'assistant', content: m.content }));
-    // Inject system prompt manually since we want to control it per session
-    // (Note: AIService.chatStream usually takes message history. We need to handle system prompt there too, 
-    // but the service has a hardcoded one. Let's fix the Service call to accept System Prompt if possible, 
-    // or just prepend it as a system message if the provider supports it. 
-    // *Correction*: The AIService.chatStream in previous file had a hardcoded system prompt. 
-    // We should prepend a system message to the history passed to AIService.chatStream.)
+    // Update UI with placeholder
+    const messagesWithPlaceholder = [...history, aiMsgPlaceholder];
+    setMessages(messagesWithPlaceholder);
 
-    // Hack: Prepend system prompt to apiHistory
+    // Prepare API Payload
+    const apiHistory = history.map(m => ({ role: m.role as 'user' | 'assistant', content: m.content }));
     apiHistory.unshift({ role: 'system' as any, content: systemPrompt });
 
     let fullResponse = '';
+
     try {
       await AIService.chatStream(
         apiHistory,
@@ -222,9 +198,9 @@ export const Chat: React.FC = () => {
         }
       );
 
-      // Save after complete
-      const finalAiMsg = { ...aiMsgPlaceholder, content: fullResponse, sessionId: currentSessionId! }; // Ensure ID is correct
-      const finalHistory = [...nextMessages.map(m => ({ ...m, sessionId: currentSessionId! })), finalAiMsg]; // Sync IDs
+      // Final save
+      const finalAiMsg = { ...aiMsgPlaceholder, content: fullResponse };
+      const finalHistory = [...history, finalAiMsg];
 
       setMessages(finalHistory);
       await updateCurrentSession(finalHistory);
@@ -242,6 +218,35 @@ export const Chat: React.FC = () => {
       setIsLoading(false);
       abortControllerRef.current = null;
     }
+  };
+
+  const handleSend = async () => {
+    if (!input.trim() || isLoading) return;
+
+    let activeSessionId = currentSessionId;
+
+    if (!activeSessionId) {
+      activeSessionId = await createNewSession();
+      // Wait for React state update frame or assume it works
+      // We use the variable activeSessionId to ensure we have it
+    }
+
+    // 1. Add User Message
+    const userMsg: ChatMessage = {
+      id: Date.now().toString(),
+      sessionId: activeSessionId!,
+      role: 'user',
+      content: input,
+      createdAt: new Date().toISOString()
+    };
+
+    // Optimistic UI update for user message
+    const nextMessages = [...messages, userMsg];
+    setMessages(nextMessages);
+    setInput('');
+
+    // 2. Trigger AI
+    await triggerAIResponse(nextMessages);
   };
 
   const handleDeleteSession = async (e: React.MouseEvent, id: string) => {
@@ -263,18 +268,14 @@ export const Chat: React.FC = () => {
   };
 
   const handleRegenerate = (index: number) => {
-    // Logic: Slice history up to index (exclusive), effectively deleting this AI response and anything after it.
-    // Then re-trigger send with the *previous* user message (which is at index - 1).
-    // Wait, handleSend expects new input.
-    // Better logic: Slice history up to index-1 (the user message triggering this).
-    // Then call handleSend with that user message content, and history override up to index-1.
-
+    // Fix: Don't remove the user message.
+    // If index is the AI response, index-1 is the user message.
+    // We want to keep everything UP TO index (exclusive), which includes the user message.
     if (index <= 0) return;
-    const previousUserMsg = messages[index - 1];
-    if (previousUserMsg.role !== 'user') return; // Should be user
+    const historyToKeep = messages.slice(0, index);
 
-    const historyToKeep = messages.slice(0, index - 1);
-    handleSend(previousUserMsg.content, historyToKeep);
+    // We do NOT add a new user message. We just re-trigger AI based on existing history.
+    triggerAIResponse(historyToKeep);
   };
 
   const handleEditUserMessage = (index: number) => {
@@ -283,11 +284,19 @@ export const Chat: React.FC = () => {
   };
 
   const submitEdit = (index: number) => {
-    // Logic: Slice history up to index (exclusive).
-    // Then call handleSend with NEW content.
-    const historyToKeep = messages.slice(0, index);
+    // Keep everything before this message
+    const historyPrefix = messages.slice(0, index);
+
+    // Create modified user message
+    const modifiedMsg = { ...messages[index], content: editContent };
+
+    // New history base
+    const newHistory = [...historyPrefix, modifiedMsg];
+
     setEditingMessageId(null);
-    handleSend(editContent, historyToKeep);
+
+    // Trigger AI with this new history
+    triggerAIResponse(newHistory);
   };
 
   // --- UI Helpers ---
