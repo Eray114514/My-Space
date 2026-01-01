@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useMemo } from 'react';
+import React, { useEffect, useState, useMemo, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { StorageService } from '../../services/storage';
 import { AIService, AIModelKey, AI_MODELS } from '../../services/ai';
@@ -6,6 +6,10 @@ import { Plus, Trash2, Edit2, Save, Globe, Search, X, Settings, Sparkles, Loader
 import { Article, Project } from '../../types';
 import * as Icons from 'lucide-react';
 import { MarkdownRenderer } from '../../components/MarkdownRenderer';
+
+// ... (Keep existing CURATED_ICONS, PROVIDERS, PROVIDER_NAMES, PROVIDER_ICONS, ModelSelector, IconPicker, ProjectEditor)
+// Since I cannot omit code easily without risking losing context in this specific request format, I must include the unchanged parts or instruct carefully.
+// I will include the full file content with the specific fixes applied to ArticleEditor.
 
 // Curated list of icons suitable for personal portfolio/tech stack
 const CURATED_ICONS = [
@@ -18,7 +22,6 @@ const CURATED_ICONS = [
   'Calendar', 'Clock', 'Timer', 'Sun', 'Moon', 'CloudRain', 'Wind', 'Umbrella', 'Coffee', 'Beer', 'Pizza', 'Gift', 'Shield', 'Lock', 'Unlock', 'Key'
 ];
 
-// Helper to get unique providers
 const PROVIDERS = Array.from(new Set(Object.values(AI_MODELS).map(m => m.provider)));
 const PROVIDER_NAMES: Record<string, string> = {
   'deepseek': 'DeepSeek',
@@ -64,7 +67,6 @@ const ModelSelector: React.FC<{
         <p className="text-sm text-gray-500 dark:text-gray-400 mt-2 font-light leading-relaxed">{description}</p>
       </div>
 
-      {/* Provider Tabs */}
       <div className="flex gap-2 mb-4 overflow-x-auto pb-2 scrollbar-hide">
         {PROVIDERS.map(p => {
           const Icon = PROVIDER_ICONS[p] || Bot;
@@ -85,7 +87,6 @@ const ModelSelector: React.FC<{
         })}
       </div>
 
-      {/* Model List */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
         {filteredModels.map(([key, model]) => {
           const isSelected = value === key;
@@ -116,8 +117,6 @@ const ModelSelector: React.FC<{
   );
 };
 
-
-// Subcomponents
 const IconPicker: React.FC<{
   selectedIcon: string;
   onSelect: (iconName: string) => void;
@@ -182,6 +181,7 @@ const ProjectEditor: React.FC<{
   defaultAiProvider: AIModelKey;
   defaultSvgProvider: AIModelKey;
 }> = ({ project, onSave, onCancel, defaultAiProvider, defaultSvgProvider }) => {
+  // ... (Keep existing implementation for ProjectEditor)
   const [formData, setFormData] = useState<Project>(
     project || {
       id: '',
@@ -219,15 +219,11 @@ const ProjectEditor: React.FC<{
     setFormData(prev => ({ ...prev, iconType: 'auto' }));
 
     try {
-      // Validation
       try { new URL(formData.url); } catch { alert("URL 格式无效"); setFetchingFavicon(false); return; }
-
       const iconUrl = `https://t1.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=${encodeURIComponent(formData.url)}&size=128`;
       const proxyUrl = `https://api.allorigins.win/raw?url=${encodeURIComponent(iconUrl)}`;
-
       const response = await fetch(proxyUrl);
       if (!response.ok) throw new Error("Fetch failed");
-
       const blob = await response.blob();
       const reader = new FileReader();
       reader.onloadend = () => {
@@ -235,7 +231,6 @@ const ProjectEditor: React.FC<{
         setFormData(prev => ({ ...prev, imageBase64: base64data }));
       };
       reader.readAsDataURL(blob);
-
     } catch (e) {
       console.error("Favicon fetch error", e);
       alert("获取图标失败，该网站可能没有公开的高清图标。");
@@ -281,7 +276,6 @@ const ProjectEditor: React.FC<{
   };
 
   return createPortal(
-    // Using Portal to break out of any stacking context (like main's z-0) and ensure it covers navbar
     <div className="fixed inset-0 z-[9999] bg-[#f8f9fa]/90 dark:bg-[#050505]/90 backdrop-blur-xl flex items-center justify-center p-4 animate-in fade-in duration-300">
       <div className="liquid-glass-high w-full max-w-lg rounded-3xl shadow-2xl p-8 max-h-[90vh] overflow-y-auto">
         <h3 className="text-2xl font-bold mb-6 dark:text-white">{project ? '编辑导航' : '新增导航'}</h3>
@@ -381,6 +375,7 @@ const ProjectEditor: React.FC<{
   );
 };
 
+// --- FIX: ArticleEditor with Unified Scroll & Better UI ---
 const ArticleEditor: React.FC<{
   article?: Article;
   onSave: (a: Article) => void;
@@ -394,6 +389,21 @@ const ArticleEditor: React.FC<{
   const [saving, setSaving] = useState(false);
   const [isGeneratingSummary, setIsGeneratingSummary] = useState(false);
   const [isAutoTagging, setIsAutoTagging] = useState(false);
+
+  // Refs for auto-resize textareas
+  const contentRef = useRef<HTMLTextAreaElement>(null);
+  const summaryRef = useRef<HTMLTextAreaElement>(null);
+
+  // Auto-resize function
+  const autoResize = (ref: React.RefObject<HTMLTextAreaElement>) => {
+    if (ref.current) {
+      ref.current.style.height = 'auto';
+      ref.current.style.height = ref.current.scrollHeight + 'px';
+    }
+  };
+
+  useEffect(() => { autoResize(contentRef); }, [formData.content]);
+  useEffect(() => { autoResize(summaryRef); }, [formData.summary]);
 
   const handleSubmit = async () => {
     if (!formData.title) return alert('请输入标题');
@@ -436,15 +446,15 @@ const ArticleEditor: React.FC<{
   };
 
   return createPortal(
-    // Using Portal to ensure full screen editor covers everything including navbar
     <div className="fixed inset-0 z-[9999] bg-[#f8f9fa] dark:bg-[#050505] flex flex-col animate-in fade-in zoom-in-95 duration-300">
-      {/* Embedded Liquid Ambient Background for Editor */}
+      {/* Background */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none z-0 opacity-50">
         <div className="absolute -top-[10%] -left-[10%] w-[60vw] h-[60vw] max-w-[800px] max-h-[800px] bg-indigo-300/30 dark:bg-indigo-600/20 rounded-full mix-blend-multiply dark:mix-blend-screen filter blur-[100px]" />
         <div className="absolute -bottom-[10%] -right-[10%] w-[60vw] h-[60vw] max-w-[800px] max-h-[800px] bg-pink-300/30 dark:bg-purple-600/20 rounded-full mix-blend-multiply dark:mix-blend-screen filter blur-[100px]" />
       </div>
 
-      <div className="h-20 border-b border-gray-200/50 dark:border-white/10 flex items-center justify-between px-6 bg-white/40 dark:bg-white/5 backdrop-blur-md relative z-10">
+      {/* Top Toolbar */}
+      <div className="h-16 border-b border-gray-200/50 dark:border-white/10 flex items-center justify-between px-6 bg-white/60 dark:bg-white/5 backdrop-blur-md relative z-10 shrink-0">
         <div className="flex items-center gap-4">
           <button onClick={onCancel} className="p-2 rounded-full hover:bg-black/5 dark:hover:bg-white/10 text-gray-500 hover:text-gray-800 dark:hover:text-white transition-colors"><X size={24} /></button>
           <h2 className="text-xl font-bold dark:text-white hidden sm:block">{article ? '编辑文章' : '写文章'}</h2>
@@ -454,32 +464,85 @@ const ArticleEditor: React.FC<{
           <button onClick={handleSubmit} disabled={saving} className="px-6 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-full flex items-center gap-2 shadow-lg shadow-indigo-500/30 transition-all hover:scale-105 active:scale-95 font-bold disabled:opacity-50"><Save size={18} /> {saving ? '保存中...' : '保存'}</button>
         </div>
       </div>
+
+      {/* Main Content Area */}
       <div className="flex-1 flex flex-col md:flex-row overflow-hidden relative z-10">
-        <div className="w-full md:w-1/2 flex flex-col border-b md:border-b-0 md:border-r border-gray-200/50 dark:border-white/10 bg-white/30 dark:bg-white/5 backdrop-blur-sm p-6 overflow-y-auto">
-          <input placeholder="请输入标题..." className="text-3xl font-bold bg-transparent border-none outline-none mb-6 dark:text-white placeholder-gray-400/50" value={formData.title} onChange={e => setFormData({ ...formData, title: e.target.value })} />
 
-          <div className="relative mb-6">
-            <textarea placeholder="请输入摘要..." className="w-full bg-white/50 dark:bg-black/20 border border-gray-200/50 dark:border-white/5 rounded-xl outline-none resize-none p-4 text-gray-600 dark:text-gray-300 text-sm leading-relaxed pr-24 shadow-sm focus:ring-2 focus:ring-indigo-500/30 transition-all" rows={3} value={formData.summary} onChange={e => setFormData({ ...formData, summary: e.target.value })} />
-            <div className="absolute right-2 top-2"><button type="button" onClick={handleGenerateSummary} disabled={isGeneratingSummary} className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold rounded-lg shadow-sm border bg-white dark:bg-white/10 border-gray-200 dark:border-white/5 text-indigo-600 dark:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-900/30 transition-colors">{isGeneratingSummary ? <Loader2 size={12} className="animate-spin" /> : <Sparkles size={12} />} AI 摘要</button></div>
-          </div>
+        {/* Left Editor - Unified Scroll */}
+        <div className="w-full md:w-1/2 h-full overflow-y-auto border-r border-gray-200/50 dark:border-white/10 bg-white/30 dark:bg-white/5 backdrop-blur-sm custom-scrollbar">
+          <div className="p-6 md:p-8 min-h-full flex flex-col">
 
-          <div className="flex flex-wrap gap-2 mb-6 items-center">
-            {formData.tags.map(tag => (<span key={tag} className="bg-white dark:bg-white/10 px-3 py-1 rounded-full text-xs font-medium border border-gray-200 dark:border-white/10 flex items-center gap-2 dark:text-gray-200 shadow-sm">{tag} <button onClick={() => setFormData({ ...formData, tags: formData.tags.filter(t => t !== tag) })} className="hover:text-red-500"><X size={12} /></button></span>))}
-            <div className="flex items-center gap-2 bg-white dark:bg-white/5 px-3 py-1 rounded-full border border-gray-200 dark:border-white/10 focus-within:border-indigo-500/50 focus-within:ring-2 focus-within:ring-indigo-500/20 transition-all shadow-sm"><Plus size={14} className="text-gray-400" /><input className="bg-transparent text-sm outline-none w-20 py-0.5 dark:text-white placeholder-gray-400" placeholder="标签..." value={tagInput} onChange={e => setTagInput(e.target.value)} onKeyDown={e => { if (e.key === 'Enter') { addTag(tagInput); setTagInput(''); } }} /></div>
-            <button type="button" onClick={handleAutoTag} disabled={isAutoTagging} className="flex items-center gap-1 px-3 py-1 text-xs rounded-full font-bold text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-900/30 hover:bg-indigo-100 dark:hover:bg-indigo-900/50 transition-colors">{isAutoTagging ? <Loader2 size={12} className="animate-spin" /> : <Zap size={12} />} 自动</button>
-          </div>
+            {/* Title Input */}
+            <input
+              placeholder="请输入标题..."
+              className="text-4xl font-extrabold bg-transparent border-none outline-none mb-6 dark:text-white placeholder-gray-400/50 leading-tight"
+              value={formData.title}
+              onChange={e => setFormData({ ...formData, title: e.target.value })}
+            />
 
-          <div className="flex-1 relative group border-t border-gray-200/50 dark:border-white/10 pt-6 mt-2">
-            <textarea className="w-full h-full bg-transparent border-none outline-none resize-none font-mono text-sm leading-relaxed dark:text-gray-200 p-0 placeholder-gray-400/50" placeholder="# 开始写作 (Markdown)..." value={formData.content} onChange={e => setFormData({ ...formData, content: e.target.value })} />
+            {/* Summary Section */}
+            <div className="relative mb-8 group">
+              <textarea
+                ref={summaryRef}
+                placeholder="输入摘要（或使用 AI 生成）..."
+                className="w-full bg-white/60 dark:bg-black/20 border-l-4 border-gray-300 dark:border-white/20 rounded-r-lg outline-none resize-none px-4 py-3 text-gray-600 dark:text-gray-300 text-lg italic leading-relaxed focus:border-indigo-500 transition-all overflow-hidden"
+                rows={1}
+                value={formData.summary}
+                onChange={e => setFormData({ ...formData, summary: e.target.value })}
+              />
+              {/* AI Summary Button */}
+              <div className="absolute right-2 bottom-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                <button type="button" onClick={handleGenerateSummary} disabled={isGeneratingSummary} className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold rounded-lg shadow-sm border bg-white dark:bg-neutral-800 border-gray-200 dark:border-white/10 text-indigo-600 dark:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-900/30 transition-colors">
+                  {isGeneratingSummary ? <Loader2 size={12} className="animate-spin" /> : <Sparkles size={12} />}
+                  AI 摘要
+                </button>
+              </div>
+            </div>
+
+            {/* Tags */}
+            <div className="flex flex-wrap gap-2 mb-8 items-center">
+              {formData.tags.map(tag => (
+                <span key={tag} className="bg-white dark:bg-white/10 px-3 py-1 rounded-full text-xs font-medium border border-gray-200 dark:border-white/10 flex items-center gap-2 dark:text-gray-200 shadow-sm">
+                  {tag}
+                  <button onClick={() => setFormData({ ...formData, tags: formData.tags.filter(t => t !== tag) })} className="hover:text-red-500"><X size={12} /></button>
+                </span>
+              ))}
+              <div className="flex items-center gap-2 bg-white dark:bg-white/5 px-3 py-1 rounded-full border border-gray-200 dark:border-white/10 focus-within:border-indigo-500/50 focus-within:ring-2 focus-within:ring-indigo-500/20 transition-all shadow-sm">
+                <Plus size={14} className="text-gray-400" />
+                <input
+                  className="bg-transparent text-sm outline-none w-20 py-0.5 dark:text-white placeholder-gray-400"
+                  placeholder="添加标签..."
+                  value={tagInput}
+                  onChange={e => setTagInput(e.target.value)}
+                  onKeyDown={e => { if (e.key === 'Enter') { addTag(tagInput); setTagInput(''); } }}
+                />
+              </div>
+              <button type="button" onClick={handleAutoTag} disabled={isAutoTagging} className="flex items-center gap-1 px-3 py-1 text-xs rounded-full font-bold text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-900/30 hover:bg-indigo-100 dark:hover:bg-indigo-900/50 transition-colors">
+                {isAutoTagging ? <Loader2 size={12} className="animate-spin" /> : <Zap size={12} />} 自动
+              </button>
+            </div>
+
+            {/* Content Area - Auto Expanding */}
+            <div className="flex-1 relative">
+              <textarea
+                ref={contentRef}
+                className="w-full min-h-[500px] bg-transparent border-none outline-none resize-none font-mono text-base leading-relaxed dark:text-gray-200 p-0 placeholder-gray-400/50 overflow-hidden"
+                placeholder="# 开始写作 (Markdown)..."
+                value={formData.content}
+                onChange={e => setFormData({ ...formData, content: e.target.value })}
+              />
+            </div>
           </div>
         </div>
-        <div className="hidden md:block w-1/2 p-10 overflow-y-auto bg-white/40 dark:bg-white/5 backdrop-blur-md">
-          <div className="max-w-2xl mx-auto">
+
+        {/* Right Preview */}
+        <div className="hidden md:block w-1/2 p-10 overflow-y-auto bg-white/40 dark:bg-white/5 backdrop-blur-md custom-scrollbar">
+          <div className="max-w-2xl mx-auto prose dark:prose-invert">
             <div className="mb-10 pb-6 border-b border-gray-200/50 dark:border-white/10">
-              <h1 className="text-4xl font-extrabold mb-4 text-gray-900 dark:text-white leading-tight">{formData.title || '无标题'}</h1>
-              {formData.summary && <div className="p-6 bg-white/50 dark:bg-white/5 rounded-2xl border border-gray-100 dark:border-white/5 shadow-sm"><p className="text-gray-600 dark:text-gray-300 text-lg leading-relaxed italic">{formData.summary}</p></div>}
+              <h1 className="text-4xl font-extrabold mb-4 text-gray-900 dark:text-white leading-tight">{formData.title || '预览标题'}</h1>
+              {formData.summary && <div className="p-6 bg-white/50 dark:bg-white/5 rounded-2xl border border-gray-100 dark:border-white/5 shadow-sm"><p className="text-gray-600 dark:text-gray-300 text-lg leading-relaxed italic m-0">{formData.summary}</p></div>}
             </div>
-            <MarkdownRenderer content={formData.content} />
+            <MarkdownRenderer content={formData.content || '暂无内容...'} />
           </div>
         </div>
       </div>
@@ -489,6 +552,7 @@ const ArticleEditor: React.FC<{
 };
 
 export const AdminDashboard: React.FC = () => {
+  // ... (This component remains largely unchanged, just ensuring it renders ArticleEditor correctly)
   const [tab, setTab] = useState<'articles' | 'projects' | 'settings'>('articles');
   const [articles, setArticles] = useState<Article[]>([]);
   const [projects, setProjects] = useState<Project[]>([]);
@@ -579,7 +643,7 @@ export const AdminDashboard: React.FC = () => {
         </div>
       </div>
 
-      {/* Content Area - Liquid Glass Container */}
+      {/* Content Area */}
       {tab === 'articles' && (
         <div className="liquid-glass rounded-3xl overflow-hidden shadow-lg animate-in slide-in-from-bottom-4 duration-500">
           <div className="p-6 border-b border-white/20 dark:border-white/5 flex justify-between items-center bg-white/30 dark:bg-white/5 backdrop-blur-sm">
@@ -654,23 +718,18 @@ export const AdminDashboard: React.FC = () => {
         <div className="liquid-glass rounded-3xl overflow-hidden shadow-lg animate-in slide-in-from-bottom-4 duration-500">
           <div className="p-6 border-b border-white/20 dark:border-white/5 bg-white/30 dark:bg-white/5 backdrop-blur-sm"><h3 className="font-bold text-lg dark:text-white flex items-center gap-2"><Settings size={20} className="text-indigo-500" /> 系统设置</h3></div>
           <div className="p-8 max-w-3xl space-y-10">
-
-            {/* 1. General AI Selection */}
             <ModelSelector
               label="全局 AI 写作模型"
               description="用于文章摘要生成、自动打标签等文本处理任务。建议选择速度较快的模型。"
               value={generalAiProvider}
               onChange={handleGeneralProviderChange}
             />
-
-            {/* 2. SVG AI Selection */}
             <ModelSelector
               label="图标绘制 AI 模型"
               description="专用于生成 SVG 图标代码。建议选择 DeepSeek Reasoner (R1) 或逻辑能力较强的模型以获得最佳绘图效果。"
               value={svgAiProvider}
               onChange={handleSvgProviderChange}
             />
-
           </div>
         </div>
       )}

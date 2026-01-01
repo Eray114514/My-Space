@@ -1,16 +1,19 @@
 import React, { useState, useRef, useEffect, useMemo } from 'react';
-import { useSearchParams } from 'react-router-dom';
-import { Send, Bot, User, Trash2, StopCircle, Sparkles, ChevronDown, Plus, MessageSquare, Settings, FileText, Hash, X, History } from 'lucide-react';
+import { useSearchParams, useNavigate } from 'react-router-dom';
+import { Send, Bot, User, Trash2, StopCircle, Sparkles, ChevronDown, Plus, MessageSquare, Settings, FileText, Hash, X, History, ArrowLeft } from 'lucide-react';
 import { AIService, AI_MODELS, AIModelKey } from '../services/ai';
 import { StorageService, ChatSession, ChatMessage } from '../services/storage';
 import { MarkdownRenderer } from '../components/MarkdownRenderer';
 import { Article } from '../types';
 
 const DEFAULT_SYSTEM_PROMPT = "你是一个智能助手，名字叫 My AI。请用简洁、优雅的 Markdown 格式回答用户的问题。";
+const CONTEXT_TAG_START = "<hidden_context>";
+const CONTEXT_TAG_END = "</hidden_context>";
 
 export const Chat: React.FC = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const articleId = searchParams.get('articleId');
+  const navigate = useNavigate();
 
   // State
   const [sessions, setSessions] = useState<ChatSession[]>([]);
@@ -142,7 +145,13 @@ export const Chat: React.FC = () => {
     const messagesWithPlaceholder = [...history, aiMsgPlaceholder];
     setMessages(messagesWithPlaceholder);
 
-    const apiHistory = history.map(m => ({ role: m.role as 'user' | 'assistant', content: m.content }));
+    // Clean history for API (Keep context tags so AI can see it)
+    const apiHistory = history.map(m => ({
+      role: m.role as 'user' | 'assistant',
+      content: m.content
+      // Note: We are sending the full content including <hidden_context> to the AI
+    }));
+
     apiHistory.unshift({ role: 'system' as any, content: systemPrompt });
 
     let fullResponse = '';
@@ -199,9 +208,12 @@ export const Chat: React.FC = () => {
     }
 
     let finalContent = input;
+
+    // Append context using hidden tags
     if (attachedArticles.length > 0) {
-      const refs = attachedArticles.map(a => `\n\n---\n引用文章标题：${a.title}\n文章摘要：${a.summary}\n文章正文：\n${a.content}\n---`).join('');
-      finalContent = `${input}\n${refs}`;
+      const refs = attachedArticles.map(a => `\n引用文章标题：${a.title}\n文章摘要：${a.summary}\n文章正文：\n${a.content}\n`).join('\n---\n');
+      // Wrap in hidden tags
+      finalContent = `${input.trim()}\n\n${CONTEXT_TAG_START}\n${refs}\n${CONTEXT_TAG_END}`;
     }
 
     const userMsg: ChatMessage = {
@@ -218,6 +230,27 @@ export const Chat: React.FC = () => {
     setAttachedArticles([]);
 
     await triggerAIResponse(nextMessages, activeSessionId!);
+  };
+
+  // Helper to strip hidden context for display
+  const getDisplayContent = (content: string) => {
+    // Regex to find content between tags
+    const regex = new RegExp(`${CONTEXT_TAG_START}[\\s\\S]*?${CONTEXT_TAG_END}`, 'g');
+    if (content.match(regex)) {
+      // You could extract the title here if you wanted to be fancy, 
+      // but for now just replacing the whole block with a badge
+      const cleanContent = content.replace(regex, '').trim();
+      return (
+        <>
+          {cleanContent}
+          <div className="mt-2 inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-indigo-50/50 dark:bg-indigo-500/10 border border-indigo-100 dark:border-indigo-500/20 text-xs font-medium text-indigo-600 dark:text-indigo-300 select-none">
+            <FileText size={12} />
+            已引用文章上下文
+          </div>
+        </>
+      );
+    }
+    return <span className="whitespace-pre-wrap">{content}</span>;
   };
 
   const handleDeleteSession = async (e: React.MouseEvent, id: string) => {
@@ -262,11 +295,11 @@ export const Chat: React.FC = () => {
 
       {/* Sidebar (History) - Frosted Glass */}
       <div className="hidden md:flex flex-col w-72 border-r border-white/20 dark:border-white/5 bg-white/10 dark:bg-black/20 backdrop-blur-xl h-full shrink-0">
-        <div className="p-5 flex items-center justify-between border-b border-white/10 dark:border-white/5">
-          <div className="flex items-center gap-2 text-gray-600 dark:text-gray-300 font-medium">
-            <History size={18} />
-            <span className="text-sm">历史对话</span>
-          </div>
+        <div className="p-5 flex items-center justify-between border-b border-white/10 dark:border-white/5 h-16 shrink-0">
+          <button onClick={() => navigate('/')} className="flex items-center gap-2 text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white transition-colors">
+            <ArrowLeft size={18} />
+            <span className="font-bold text-sm">主页</span>
+          </button>
           <button
             onClick={() => { setCurrentSessionId(null); setMessages([]); setSystemPrompt(DEFAULT_SYSTEM_PROMPT); setAttachedArticles([]); }}
             className="p-2 rounded-lg bg-white/20 dark:bg-white/5 text-gray-700 dark:text-gray-200 hover:bg-white/40 dark:hover:bg-white/10 transition-colors"
@@ -303,37 +336,44 @@ export const Chat: React.FC = () => {
       {/* Main Chat Area - Transparent to show liquid background */}
       <div className="flex-1 flex flex-col h-full relative">
 
-        {/* Header - Floating Glass Strip */}
-        <header className="h-14 px-6 flex items-center justify-between z-20 shrink-0 border-b border-white/10 dark:border-white/5 bg-white/5 dark:bg-black/5 backdrop-blur-sm">
-          {/* Model Selector */}
-          <div className="relative">
-            <button
-              onClick={() => setIsModelMenuOpen(!isModelMenuOpen)}
-              className="flex items-center gap-2 text-sm font-semibold text-gray-700 dark:text-gray-200 hover:bg-white/20 dark:hover:bg-white/10 px-3 py-1.5 rounded-lg transition-colors"
-            >
-              <Sparkles size={16} className="text-indigo-500" />
-              {/* @ts-ignore */}
-              {selectedModel ? AI_MODELS[selectedModel]?.shortName : 'Loading...'}
-              <ChevronDown size={14} className="opacity-50" />
+        {/* Header - Floating Glass Strip with Back Button */}
+        <header className="h-16 px-4 md:px-6 flex items-center justify-between z-20 shrink-0 border-b border-white/10 dark:border-white/5 bg-white/5 dark:bg-black/5 backdrop-blur-sm">
+          <div className="flex items-center gap-3">
+            {/* Mobile Back Button */}
+            <button onClick={() => navigate('/')} className="md:hidden p-2 -ml-2 rounded-full text-gray-600 dark:text-gray-300 hover:bg-white/10">
+              <ArrowLeft size={20} />
             </button>
 
-            {isModelMenuOpen && (
-              <div className="absolute top-full left-0 mt-2 w-64 liquid-glass-high rounded-xl shadow-2xl overflow-hidden py-1 animate-in fade-in zoom-in-95 duration-200 z-50">
-                <div className="px-3 py-2 text-[10px] font-bold text-gray-400 uppercase tracking-wider bg-gray-50/50 dark:bg-white/5">Available Models</div>
-                {availableModels.map(([key, model]) => (
-                  <button
-                    key={key}
-                    onClick={() => { setSelectedModel(key as AIModelKey); setIsModelMenuOpen(false); }}
-                    className={`w-full text-left px-4 py-2.5 text-sm transition-colors flex justify-between items-center ${selectedModel === key ? 'bg-indigo-50 dark:bg-indigo-900/20 text-indigo-600 dark:text-indigo-400' : 'text-gray-700 dark:text-gray-300 hover:bg-black/5 dark:hover:bg-white/5'}`}
-                  >
-                    {/* @ts-ignore */}
-                    <span>{model.name}</span>
-                    {/* @ts-ignore */}
-                    {model.isFree && <span className="text-[10px] px-1.5 py-0.5 bg-green-100 dark:bg-green-900/30 text-green-600 rounded">FREE</span>}
-                  </button>
-                ))}
-              </div>
-            )}
+            {/* Model Selector */}
+            <div className="relative">
+              <button
+                onClick={() => setIsModelMenuOpen(!isModelMenuOpen)}
+                className="flex items-center gap-2 text-sm font-semibold text-gray-700 dark:text-gray-200 hover:bg-white/20 dark:hover:bg-white/10 px-3 py-1.5 rounded-lg transition-colors"
+              >
+                <Sparkles size={16} className="text-indigo-500" />
+                {/* @ts-ignore */}
+                {selectedModel ? AI_MODELS[selectedModel]?.shortName : 'Loading...'}
+                <ChevronDown size={14} className="opacity-50" />
+              </button>
+
+              {isModelMenuOpen && (
+                <div className="absolute top-full left-0 mt-2 w-64 liquid-glass-high rounded-xl shadow-2xl overflow-hidden py-1 animate-in fade-in zoom-in-95 duration-200 z-50">
+                  <div className="px-3 py-2 text-[10px] font-bold text-gray-400 uppercase tracking-wider bg-gray-50/50 dark:bg-white/5">Available Models</div>
+                  {availableModels.map(([key, model]) => (
+                    <button
+                      key={key}
+                      onClick={() => { setSelectedModel(key as AIModelKey); setIsModelMenuOpen(false); }}
+                      className={`w-full text-left px-4 py-2.5 text-sm transition-colors flex justify-between items-center ${selectedModel === key ? 'bg-indigo-50 dark:bg-indigo-900/20 text-indigo-600 dark:text-indigo-400' : 'text-gray-700 dark:text-gray-300 hover:bg-black/5 dark:hover:bg-white/5'}`}
+                    >
+                      {/* @ts-ignore */}
+                      <span>{model.name}</span>
+                      {/* @ts-ignore */}
+                      {model.isFree && <span className="text-[10px] px-1.5 py-0.5 bg-green-100 dark:bg-green-900/30 text-green-600 rounded">FREE</span>}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
           </div>
 
           {/* System Settings Toggle */}
@@ -361,7 +401,7 @@ export const Chat: React.FC = () => {
         {/* Messages */}
         <div
           ref={scrollContainerRef}
-          className="flex-1 overflow-y-auto p-4 sm:p-8 space-y-6 scroll-smooth pb-32"
+          className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-6 scroll-smooth pb-32"
         >
           {messages.length === 0 && attachedArticles.length === 0 && (
             <div className="h-full flex flex-col items-center justify-center text-gray-400 dark:text-gray-500 space-y-4">
@@ -389,7 +429,7 @@ export const Chat: React.FC = () => {
                     : 'bg-white/70 dark:bg-black/40 text-gray-800 dark:text-gray-200 rounded-2xl rounded-tl-sm border-white/30 dark:border-white/10'
                   }`}>
                   {msg.role === 'user' ? (
-                    <p className="whitespace-pre-wrap">{msg.content.replace(/---[\s\S]*---/, '(附带了引用文章)').trim()}</p>
+                    <p>{getDisplayContent(msg.content)}</p>
                   ) : (
                     <div className="markdown-chat">
                       <MarkdownRenderer content={msg.content || 'Thinking...'} />
@@ -402,14 +442,14 @@ export const Chat: React.FC = () => {
         </div>
 
         {/* Input Area (Fixed Bottom) */}
-        <div className="absolute bottom-0 left-0 right-0 z-30">
+        <div className="absolute bottom-0 left-0 right-0 z-30 flex justify-center w-full">
           {/* Gradient Fade */}
           <div className="absolute bottom-0 inset-x-0 h-32 bg-gradient-to-t from-white via-white/80 to-transparent dark:from-black dark:via-black/80 dark:to-transparent pointer-events-none" />
 
-          <div className="relative max-w-4xl mx-auto px-4 pb-6 pt-2">
+          <div className="relative w-full max-w-4xl px-4 pb-6 pt-2 z-40">
             {/* Tags */}
             {attachedArticles.length > 0 && (
-              <div className="flex flex-wrap gap-2 animate-in slide-in-from-bottom-2 px-1 mb-2 relative z-40">
+              <div className="flex flex-wrap gap-2 animate-in slide-in-from-bottom-2 px-1 mb-2 relative z-50">
                 {attachedArticles.map(a => (
                   <div key={a.id} className="flex items-center gap-2 bg-indigo-50/90 dark:bg-indigo-900/40 text-indigo-600 dark:text-indigo-300 px-3 py-1.5 rounded-full text-xs font-medium border border-indigo-100 dark:border-indigo-800/50 backdrop-blur-md shadow-sm">
                     <FileText size={12} />
@@ -440,7 +480,7 @@ export const Chat: React.FC = () => {
             )}
 
             {/* Main Input Capsule */}
-            <div className="relative z-40 bg-white/60 dark:bg-white/5 rounded-[2rem] shadow-lg border border-white/40 dark:border-white/10 focus-within:bg-white/80 dark:focus-within:bg-black/40 focus-within:border-indigo-500/30 focus-within:ring-4 focus-within:ring-indigo-500/10 transition-all flex items-end p-1.5 gap-1 backdrop-blur-xl">
+            <div className="relative bg-white/60 dark:bg-white/5 rounded-[2rem] shadow-lg border border-white/40 dark:border-white/10 focus-within:bg-white/80 dark:focus-within:bg-black/40 focus-within:border-indigo-500/30 focus-within:ring-4 focus-within:ring-indigo-500/10 transition-all flex items-end p-1.5 gap-1 backdrop-blur-xl">
 
               <button
                 onClick={() => setIsArticlePickerOpen(!isArticlePickerOpen)}
