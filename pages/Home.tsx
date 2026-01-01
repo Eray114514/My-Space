@@ -87,7 +87,8 @@ export const Home: React.FC = () => {
           </div>
           <h1 className="text-5xl sm:text-7xl font-bold tracking-tight text-gray-900 dark:text-white leading-[1.1]">
             你好，我是 <br />
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 animate-pulse-slow">{adminName}</span>
+            {/* Removed animate-pulse-slow */}
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500">{adminName}</span>
           </h1>
         </div>
 

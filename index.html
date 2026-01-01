@@ -21,33 +21,13 @@
             background: "var(--background)",
             foreground: "var(--foreground)",
           },
-          animation: {
-            blob: "blob 7s infinite",
-            'pulse-slow': 'pulse 8s cubic-bezier(0.4, 0, 0.6, 1) infinite',
-          },
-          keyframes: {
-            blob: {
-              "0%": {
-                transform: "translate(0px, 0px) scale(1)",
-              },
-              "33%": {
-                transform: "translate(30px, -50px) scale(1.1)",
-              },
-              "66%": {
-                transform: "translate(-20px, 20px) scale(0.9)",
-              },
-              "100%": {
-                transform: "translate(0px, 0px) scale(1)",
-              },
-            },
-          },
+          // Removed CPU-intensive animations
         }
       }
     }
   </script>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <style>
-    /* Custom Scrollbar - Minimalist */
     ::-webkit-scrollbar {
       width: 6px;
       height: 6px;
@@ -70,43 +50,50 @@
       background: rgba(160, 160, 160, 0.5);
     }
 
-    /* Liquid Glass Utilities */
+    /* --- Liquid Glass Design System --- */
+
+    /* Standard Glass (Cards) */
     .liquid-glass {
-      background: rgba(255, 255, 255, 0.45);
-      backdrop-filter: blur(24px) saturate(140%);
-      -webkit-backdrop-filter: blur(24px) saturate(140%);
-      border: 1px solid rgba(255, 255, 255, 0.3);
-      box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.07);
+      background: rgba(255, 255, 255, 0.65);
+      backdrop-filter: blur(20px) saturate(120%);
+      -webkit-backdrop-filter: blur(20px) saturate(120%);
+      border: 1px solid rgba(255, 255, 255, 0.4);
+      box-shadow: 0 4px 30px rgba(0, 0, 0, 0.05);
     }
 
     .dark .liquid-glass {
-      background: rgba(10, 10, 10, 0.45);
-      border: 1px solid rgba(255, 255, 255, 0.08);
-      box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.2);
+      background: rgba(30, 30, 30, 0.6);
+      backdrop-filter: blur(20px) saturate(120%);
+      -webkit-backdrop-filter: blur(20px) saturate(120%);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      box-shadow: 0 4px 30px rgba(0, 0, 0, 0.3);
     }
 
+    /* High Glass (Modals, Nav, Inputs) - Thicker, more blur */
     .liquid-glass-high {
-      background: rgba(255, 255, 255, 0.65);
-      backdrop-filter: blur(32px) saturate(180%);
-      -webkit-backdrop-filter: blur(32px) saturate(180%);
-      border: 1px solid rgba(255, 255, 255, 0.4);
+      background: rgba(255, 255, 255, 0.8);
+      backdrop-filter: blur(30px) saturate(150%);
+      -webkit-backdrop-filter: blur(30px) saturate(150%);
+      border: 1px solid rgba(255, 255, 255, 0.5);
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
     }
 
     .dark .liquid-glass-high {
-      background: rgba(20, 20, 20, 0.6);
-      border: 1px solid rgba(255, 255, 255, 0.12);
+      background: rgba(40, 40, 40, 0.75);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
     }
 
     body {
-      /* Prevents white flicker */
-      background-color: #f3f4f6;
+      background-color: #f8f9fa;
+      overscroll-behavior-y: none;
     }
 
     .dark body {
-      background-color: #000000;
+      background-color: #050505;
     }
 
-    /* GitHub Alert Styles preserved */
+    /* Markdown Alerts */
     .markdown-alert {
       padding: 0.5rem 1rem;
       margin-bottom: 1rem;
@@ -138,8 +125,6 @@
       color: #e6edf3;
       border-color: #1f6feb;
     }
-
-    /* Other alerts omitted for brevity but logic applies */
   </style>
   <script type="importmap">
 {
