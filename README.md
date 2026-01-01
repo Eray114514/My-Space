@@ -115,9 +115,9 @@ npm run build
 
 ```
 my-space/
-├── components/          # 可复用的 UI 组件 (Layout, MarkdownRenderer 等)
+├── components/          # 可复用的 UI 组件 (Layout, MarkdownRenderer, ModelSelector 等)
 ├── pages/               # 页面组件
-│   ├── admin/           # 后台管理相关页面
+│   ├── admin/           # 后台管理相关页面 (AdminDashboard, ArticleEditor 等)
 │   ├── Blog.tsx         # 博客列表页
 │   ├── ArticleDetail.tsx# 文章详情页
 │   ├── Chat.tsx         # AI 对话页

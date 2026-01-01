@@ -32,14 +32,20 @@ export const Layout: React.FC<Props> = ({ isAuthenticated, onLogout, isDarkMode,
 
   return (
     <div className={`min-h-screen flex flex-col ${isDarkMode ? 'dark' : ''}`}>
-      <header className="fixed top-0 left-0 right-0 z-50 bg-white/80 dark:bg-neutral-950/80 backdrop-blur-md border-b border-gray-200 dark:border-neutral-800 transition-colors duration-300">
+      {/* 
+        Apple Aesthetic Header:
+        - High blur (backdrop-blur-xl)
+        - Slightly more transparency (bg/70)
+        - Subtle border (white/20 or black/5)
+      */}
+      <header className="fixed top-0 left-0 right-0 z-50 bg-white/70 dark:bg-neutral-950/70 backdrop-blur-xl border-b border-gray-200/50 dark:border-neutral-800/50 transition-colors duration-300">
         <div className="max-w-5xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
           {/* Logo */}
           <div
             className="flex items-center gap-2 font-bold text-xl tracking-tighter cursor-pointer"
             onClick={() => navigate('/')}
           >
-            <div className="w-8 h-8 bg-indigo-600 rounded-lg flex items-center justify-center text-white">{logoLetter}</div>
+            <div className="w-8 h-8 bg-indigo-600 rounded-lg flex items-center justify-center text-white shadow-md shadow-indigo-500/20">{logoLetter}</div>
             <span className="bg-clip-text text-transparent bg-gradient-to-r from-gray-900 to-gray-600 dark:from-white dark:to-gray-400">
               {adminName}
             </span>
@@ -74,11 +80,11 @@ export const Layout: React.FC<Props> = ({ isAuthenticated, onLogout, isDarkMode,
           </nav>
 
           {/* Actions */}
-          <div className="hidden md:flex items-center gap-4">
+          <div className="hidden md:flex items-center gap-3">
             {/* Search Button */}
             <button
               onClick={() => navigate('/search')}
-              className="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-neutral-800 text-gray-600 dark:text-gray-400 transition-colors"
+              className="p-2 rounded-full hover:bg-black/5 dark:hover:bg-white/10 text-gray-600 dark:text-gray-400 transition-colors"
               aria-label="Search"
             >
               <Search size={18} />
@@ -86,7 +92,7 @@ export const Layout: React.FC<Props> = ({ isAuthenticated, onLogout, isDarkMode,
 
             <button
               onClick={toggleTheme}
-              className="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-neutral-800 text-gray-600 dark:text-gray-400 transition-colors"
+              className="p-2 rounded-full hover:bg-black/5 dark:hover:bg-white/10 text-gray-600 dark:text-gray-400 transition-colors"
               aria-label="Toggle theme"
             >
               {isDarkMode ? <Moon size={18} /> : <Sun size={18} />}
@@ -95,7 +101,7 @@ export const Layout: React.FC<Props> = ({ isAuthenticated, onLogout, isDarkMode,
             {isAuthenticated ? (
               <button
                 onClick={onLogout}
-                className="flex items-center gap-2 px-3 py-1.5 text-xs font-medium text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-md transition-colors"
+                className="flex items-center gap-2 px-3 py-1.5 text-xs font-medium text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-full transition-colors"
               >
                 <LogOut size={14} />
                 退出
@@ -103,7 +109,7 @@ export const Layout: React.FC<Props> = ({ isAuthenticated, onLogout, isDarkMode,
             ) : (
               <button
                 onClick={() => navigate('/login')}
-                className="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-neutral-800 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
+                className="p-2 rounded-full hover:bg-black/5 dark:hover:bg-white/10 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
                 aria-label="Admin Login"
               >
                 <Lock size={16} />
@@ -121,9 +127,9 @@ export const Layout: React.FC<Props> = ({ isAuthenticated, onLogout, isDarkMode,
         </div>
       </header>
 
-      {/* Mobile Menu Overlay */}
+      {/* Mobile Menu Overlay with Blur */}
       {isMobileMenuOpen && (
-        <div className="fixed inset-0 z-40 bg-white dark:bg-neutral-950 pt-20 px-6 md:hidden animate-in fade-in slide-in-from-top-10 duration-200">
+        <div className="fixed inset-0 z-40 bg-white/80 dark:bg-neutral-950/80 backdrop-blur-xl pt-20 px-6 md:hidden animate-in fade-in slide-in-from-top-10 duration-200">
           <nav className="flex flex-col gap-6 text-lg">
             <NavLink
               to="/search"

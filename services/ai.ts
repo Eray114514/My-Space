@@ -3,34 +3,45 @@ import OpenAI from "openai";
 
 const env = (import.meta as any).env;
 
+// --- Helper to check if API Key is valid ---
+// returns true if key exists and is NOT "None" (case-insensitive)
+const isKeyValid = (key: string | undefined): boolean => {
+  return !!key && key.trim() !== '' && key.trim().toLowerCase() !== 'none';
+};
+
 // --- Clients ---
 
 // 1. Google Gemini
-// Renamed from VITE_GOOGLE_API_KEY to GEMINI_API_KEY
-const geminiClient = new GoogleGenAI({ apiKey: env.GEMINI_API_KEY });
+const geminiClient = isKeyValid(env.GEMINI_API_KEY)
+  ? new GoogleGenAI({ apiKey: env.GEMINI_API_KEY })
+  : null;
 
 // 2. DeepSeek Official
-// 使用 placeholder 防止在没有 key 时初始化报错，实际调用时会检查
-const deepseekClient = new OpenAI({
-  baseURL: 'https://api.deepseek.com',
-  apiKey: env.DEEPSEEK_API_KEY || 'sk-placeholder',
-  dangerouslyAllowBrowser: true
-});
+const deepseekClient = isKeyValid(env.DEEPSEEK_API_KEY)
+  ? new OpenAI({
+    baseURL: 'https://api.deepseek.com',
+    apiKey: env.DEEPSEEK_API_KEY,
+    dangerouslyAllowBrowser: true
+  })
+  : null;
 
 // 3. OpenRouter (New)
-const openRouterClient = new OpenAI({
-  baseURL: 'https://openrouter.ai/api/v1',
-  apiKey: env.OPENROUTER_API_KEY || 'sk-placeholder',
-  dangerouslyAllowBrowser: true,
-  defaultHeaders: {
-    "HTTP-Referer": typeof window !== 'undefined' ? window.location.origin : '',
-    "X-Title": "My Space", // Updated branding
-  }
-});
+const openRouterClient = isKeyValid(env.OPENROUTER_API_KEY)
+  ? new OpenAI({
+    baseURL: 'https://openrouter.ai/api/v1',
+    apiKey: env.OPENROUTER_API_KEY,
+    dangerouslyAllowBrowser: true,
+    defaultHeaders: {
+      "HTTP-Referer": typeof window !== 'undefined' ? window.location.origin : '',
+      "X-Title": "My Space",
+    }
+  })
+  : null;
 
 // --- Models Configuration ---
 
-export const AI_MODELS = {
+// Define all potential models first
+const ALL_POTENTIAL_MODELS = {
   // DeepSeek Official
   'deepseek-chat': {
     provider: 'deepseek',
@@ -78,16 +89,27 @@ export const AI_MODELS = {
   }
 } as const;
 
+// Filter models based on available keys
+export const AI_MODELS = Object.fromEntries(
+  Object.entries(ALL_POTENTIAL_MODELS).filter(([_, config]) => {
+    if (config.provider === 'deepseek') return isKeyValid(env.DEEPSEEK_API_KEY);
+    if (config.provider === 'gemini') return isKeyValid(env.GEMINI_API_KEY);
+    if (config.provider === 'openrouter') return isKeyValid(env.OPENROUTER_API_KEY);
+    return false;
+  })
+) as Partial<typeof ALL_POTENTIAL_MODELS>;
+
 export type AIModelKey = keyof typeof AI_MODELS;
 
 // Helper to execute request based on model key (One-off request)
-const executeAIRequest = async (modelKey: AIModelKey, systemPrompt: string, userPrompt: string, temperature: number = 0.7, streamCallback?: (text: string) => void): Promise<string> => {
-  const config = AI_MODELS[modelKey];
-  if (!config) throw new Error(`Unknown model key: ${modelKey}`);
+const executeAIRequest = async (modelKey: string, systemPrompt: string, userPrompt: string, temperature: number = 0.7, streamCallback?: (text: string) => void): Promise<string> => {
+  // Cast key to allow string access since we filtered
+  const config = (AI_MODELS as any)[modelKey];
+  if (!config) throw new Error(`Model ${modelKey} is not configured or available.`);
 
   // 1. Gemini Handling
   if (config.provider === 'gemini') {
-    if (!env.GEMINI_API_KEY) throw new Error("请在 .env 设置 GEMINI_API_KEY");
+    if (!geminiClient) throw new Error("Gemini Client not initialized");
 
     // Streaming
     if (streamCallback) {
@@ -117,18 +139,12 @@ const executeAIRequest = async (modelKey: AIModelKey, systemPrompt: string, user
   }
 
   // 2. OpenAI Compatible Handling (DeepSeek & OpenRouter)
-  let client: OpenAI;
-  let apiKey = '';
+  let client: OpenAI | null = null;
 
-  if (config.provider === 'deepseek') {
-    apiKey = env.DEEPSEEK_API_KEY;
-    if (!apiKey) throw new Error("请在 .env 设置 DEEPSEEK_API_KEY");
-    client = deepseekClient;
-  } else {
-    apiKey = env.OPENROUTER_API_KEY;
-    if (!apiKey) throw new Error("请在 .env 设置 OPENROUTER_API_KEY");
-    client = openRouterClient;
-  }
+  if (config.provider === 'deepseek') client = deepseekClient;
+  else client = openRouterClient;
+
+  if (!client) throw new Error(`${config.provider} client not initialized`);
 
   const options: any = {
     messages: [
@@ -281,19 +297,17 @@ export const AIService = {
    * Handles multi-turn conversation
    */
   chatStream: async (messages: { role: string; content: string }[], modelKey: AIModelKey, onChunk: (text: string) => void) => {
-    const config = AI_MODELS[modelKey];
-    if (!config) throw new Error(`Unknown model key: ${modelKey}`);
+    // Cast key
+    const config = (AI_MODELS as any)[modelKey];
+    if (!config) throw new Error(`Model ${modelKey} not available`);
 
     // System Instruction for Chat
     const systemInstruction = "你是一个智能助手，名字叫 My AI。请用简洁、优雅的 Markdown 格式回答用户的问题。";
 
     // 1. Gemini
     if (config.provider === 'gemini') {
-      if (!env.GEMINI_API_KEY) throw new Error("请在 .env 设置 GEMINI_API_KEY");
+      if (!geminiClient) throw new Error("Gemini not configured");
 
-      // Convert format for Gemini
-      // Note: Gemini SDK handles history nicely if we use chats.create, but for simplicity/statelessness similar to OpenAI logic below:
-      // We will construct the `contents` array manually.
       const geminiContent = messages.map(m => ({
         role: m.role === 'assistant' ? 'model' : 'user',
         parts: [{ text: m.content }]
@@ -311,14 +325,11 @@ export const AIService = {
     }
     // 2. OpenAI / DeepSeek
     else {
-      let client: OpenAI;
-      if (config.provider === 'deepseek') {
-        if (!env.DEEPSEEK_API_KEY) throw new Error("Missing Key");
-        client = deepseekClient;
-      } else {
-        if (!env.OPENROUTER_API_KEY) throw new Error("Missing Key");
-        client = openRouterClient;
-      }
+      let client: OpenAI | null = null;
+      if (config.provider === 'deepseek') client = deepseekClient;
+      else client = openRouterClient;
+
+      if (!client) throw new Error("Client not configured");
 
       const openAiMessages = [
         { role: "system", content: systemInstruction },
