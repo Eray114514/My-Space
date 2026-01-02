@@ -84,43 +84,50 @@ export const Layout: React.FC<Props> = ({ isAuthenticated, onLogout, isDarkMode,
   return (
     <div className={`min-h-screen flex flex-col ${isDarkMode ? 'dark' : ''} relative overflow-x-hidden selection:bg-indigo-500/30`}>
       
-      {/* Background */}
-      <div className="fixed inset-0 -z-10 bg-[#f8f9fa] dark:bg-[#050505] transition-colors duration-700">
+      {/* Background - Enhanced for Liquid Effect */}
+      <div className="fixed inset-0 -z-10 bg-[#f8f9fa] dark:bg-[#020202] transition-colors duration-700">
         <div className="absolute inset-0 overflow-hidden pointer-events-none">
-           <div className="absolute -top-[10%] -left-[10%] w-[60vw] h-[60vw] max-w-[800px] max-h-[800px] bg-indigo-300/30 dark:bg-indigo-600/20 rounded-full mix-blend-multiply dark:mix-blend-screen filter blur-[100px]" />
-           <div className="absolute -bottom-[10%] -right-[10%] w-[60vw] h-[60vw] max-w-[800px] max-h-[800px] bg-pink-300/30 dark:bg-purple-600/20 rounded-full mix-blend-multiply dark:mix-blend-screen filter blur-[100px]" />
-           <div className="absolute top-[40%] left-[50%] -translate-x-1/2 -translate-y-1/2 w-[40vw] h-[40vw] max-w-[600px] max-h-[600px] bg-blue-200/30 dark:bg-blue-800/10 rounded-full mix-blend-multiply dark:mix-blend-screen filter blur-[80px]" />
+           {/* Top Center Spotlight - Crucial for Glass Refraction */}
+           <div className="absolute top-[-10%] left-1/2 -translate-x-1/2 w-[80vw] h-[400px] bg-gradient-to-b from-indigo-500/20 to-transparent dark:from-indigo-900/40 dark:to-transparent blur-[80px] rounded-full" />
+
+           {/* Animated Blobs - Increased Opacity for Dark Mode */}
+           <div className="absolute -top-[10%] -left-[10%] w-[60vw] h-[60vw] max-w-[800px] max-h-[800px] bg-purple-300/40 dark:bg-violet-600/30 rounded-full mix-blend-multiply dark:mix-blend-screen filter blur-[100px] opacity-70 animate-pulse-slow" />
+           <div className="absolute top-[20%] -right-[10%] w-[50vw] h-[50vw] max-w-[600px] max-h-[600px] bg-blue-300/40 dark:bg-blue-600/20 rounded-full mix-blend-multiply dark:mix-blend-screen filter blur-[120px] opacity-70" />
+           <div className="absolute bottom-[-10%] left-[20%] w-[60vw] h-[60vw] max-w-[700px] max-h-[700px] bg-pink-300/30 dark:bg-fuchsia-900/30 rounded-full mix-blend-multiply dark:mix-blend-screen filter blur-[100px] opacity-60" />
         </div>
+        {/* Subtle Noise Texture */}
+        <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-20 dark:opacity-[0.07] mix-blend-overlay"></div>
       </div>
 
       {/* Floating Navigation - HIDDEN on Chat & Article Detail */}
       {!isImmersive && (
         <div 
-          className={`fixed top-0 w-full z-50 flex justify-center pt-4 sm:pt-6 px-4 pointer-events-none transition-transform duration-500 ease-in-out ${isNavVisible ? 'translate-y-0' : '-translate-y-[150%]'}`}
+          className={`fixed top-0 w-full z-50 flex justify-center pt-4 sm:pt-8 px-4 pointer-events-none transition-transform duration-500 ease-in-out ${isNavVisible ? 'translate-y-0' : '-translate-y-[150%]'}`}
         >
-          <LiquidGlass className={`pointer-events-auto rounded-full px-3 py-2 flex items-center gap-1 sm:gap-4 shadow-xl transition-all duration-300 ${isSearchPage ? 'w-full max-w-2xl' : 'max-w-full sm:max-w-3xl'}`}>
+          {/* Changed: w-fit instead of max-w-3xl to hug content. Added min-w for stability. */}
+          <LiquidGlass className={`pointer-events-auto rounded-full px-2 py-1.5 sm:px-3 sm:py-2 flex items-center gap-2 sm:gap-4 shadow-2xl transition-all duration-500 ease-[cubic-bezier(0.34,1.56,0.64,1)] ${isSearchPage ? 'w-full max-w-xl' : 'w-fit min-w-[320px] sm:min-w-[400px]'}`}>
             
-            {/* Logo - Hidden on Search Page Mobile to save space, visible otherwise */}
+            {/* Logo */}
             <div 
-              className={`flex items-center gap-2 pl-1 pr-3 py-1 cursor-pointer rounded-full hover:bg-black/5 dark:hover:bg-white/10 transition-colors group ${isSearchPage ? 'hidden sm:flex' : 'flex'}`}
+              className={`flex items-center gap-2 pl-2 pr-2 py-1 cursor-pointer rounded-full hover:bg-black/5 dark:hover:bg-white/10 transition-colors group shrink-0`}
               onClick={() => navigate('/')}
             >
-              <div className="w-8 h-8 bg-gradient-to-tr from-indigo-600 to-violet-600 rounded-full flex items-center justify-center text-white shadow-md text-sm font-bold">
+              <div className="w-9 h-9 bg-gradient-to-br from-indigo-500 via-purple-500 to-pink-500 rounded-full flex items-center justify-center text-white shadow-lg shadow-indigo-500/30 text-sm font-bold border border-white/20">
                 {logoLetter}
               </div>
-              <span className="font-semibold text-sm tracking-tight text-gray-800 dark:text-gray-100 hidden sm:inline-block">
+              <span className={`font-semibold text-sm tracking-tight text-gray-800 dark:text-gray-100 hidden sm:inline-block ${isSearchPage ? 'hidden' : ''}`}>
                 {adminName}
               </span>
             </div>
 
             {/* SEARCH INPUT MODE */}
             {isSearchPage ? (
-                <div className="flex-1 flex items-center gap-2 px-2 animate-in fade-in zoom-in-95">
+                <div className="flex-1 flex items-center gap-2 px-1 animate-in fade-in zoom-in-95">
                     <Search size={18} className="text-gray-400 shrink-0" />
                     <input 
                         autoFocus
                         type="text" 
-                        placeholder="搜索文章、导航..." 
+                        placeholder="Type to search..." 
                         className="w-full bg-transparent border-none outline-none text-sm text-gray-900 dark:text-white placeholder-gray-400 h-9"
                         value={searchParams.get('q') || ''}
                         onChange={handleSearchChange}
@@ -132,16 +139,16 @@ export const Layout: React.FC<Props> = ({ isAuthenticated, onLogout, isDarkMode,
             ) : (
                 /* NORMAL NAV MODE */
                 <>
-                    <nav className="hidden md:flex items-center p-1 bg-gray-100/50 dark:bg-white/5 rounded-full border border-black/5 dark:border-white/5">
+                    <nav className="hidden md:flex items-center p-1">
                     {navLinks.map((link) => (
                         <NavLink
                         key={link.path}
                         to={link.path}
                         className={({ isActive }) =>
-                            `px-5 py-1.5 rounded-full text-sm font-medium transition-all duration-300 relative ${
+                            `px-4 py-1.5 mx-0.5 rounded-full text-sm transition-all duration-300 relative font-medium ${
                             isActive 
-                                ? 'text-indigo-600 dark:text-white bg-white dark:bg-neutral-700/80 shadow-sm font-semibold' 
-                                : 'text-gray-500 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white hover:bg-black/5 dark:hover:bg-white/5'
+                                ? 'text-indigo-600 dark:text-white bg-white/80 dark:bg-white/10 shadow-sm' 
+                                : 'text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-black/5 dark:hover:bg-white/5'
                             }`
                         }
                         >
@@ -150,19 +157,21 @@ export const Layout: React.FC<Props> = ({ isAuthenticated, onLogout, isDarkMode,
                     ))}
                     </nav>
 
-                    <div className="w-px h-6 bg-gray-300/50 dark:bg-white/10 hidden md:block"></div>
+                    <div className="w-px h-5 bg-gray-300/50 dark:bg-white/10 hidden md:block mx-1"></div>
 
-                    <div className="flex items-center gap-1">
-                    <button onClick={() => navigate('/search')} className="p-2.5 rounded-full text-gray-500 dark:text-gray-300 hover:bg-black/5 dark:hover:bg-white/10 hover:text-indigo-600 dark:hover:text-white transition-all"><Search size={18} /></button>
-                    <button onClick={toggleTheme} className="p-2.5 rounded-full text-gray-500 dark:text-gray-300 hover:bg-black/5 dark:hover:bg-white/10 hover:text-yellow-500 dark:hover:text-yellow-400 transition-all">
-                        {isDarkMode ? <Moon size={18} /> : <Sun size={18} />}
-                    </button>
-                    {isAuthenticated ? (
-                        <button onClick={onLogout} className="ml-1 p-2.5 rounded-full text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 transition-all"><LogOut size={18} /></button>
-                    ) : (
-                        <button onClick={() => navigate('/login')} className="ml-1 p-2.5 rounded-full text-gray-400 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-white/10 transition-all"><Lock size={18} /></button>
-                    )}
-                    <button className="md:hidden p-2.5 text-gray-600 dark:text-gray-300" onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}>{isMobileMenuOpen ? <X size={20} /> : <Menu size={20} />}</button>
+                    <div className="flex items-center gap-1 ml-auto md:ml-0">
+                        <button onClick={() => navigate('/search')} className="p-2.5 rounded-full text-gray-500 dark:text-gray-400 hover:bg-black/5 dark:hover:bg-white/10 hover:text-indigo-600 dark:hover:text-white transition-all">
+                            <Search size={18} />
+                        </button>
+                        <button onClick={toggleTheme} className="p-2.5 rounded-full text-gray-500 dark:text-gray-400 hover:bg-black/5 dark:hover:bg-white/10 hover:text-yellow-500 dark:hover:text-yellow-400 transition-all">
+                            {isDarkMode ? <Moon size={18} /> : <Sun size={18} />}
+                        </button>
+                        {isAuthenticated ? (
+                            <button onClick={onLogout} className="ml-1 p-2.5 rounded-full text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 transition-all"><LogOut size={18} /></button>
+                        ) : (
+                            <button onClick={() => navigate('/login')} className="ml-1 p-2.5 rounded-full text-gray-400 dark:text-gray-500 hover:bg-gray-100 dark:hover:bg-white/10 transition-all"><Lock size={18} /></button>
+                        )}
+                        <button className="md:hidden p-2.5 text-gray-600 dark:text-gray-300" onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}>{isMobileMenuOpen ? <X size={20} /> : <Menu size={20} />}</button>
                     </div>
                 </>
             )}
