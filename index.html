@@ -12,6 +12,9 @@
         darkMode: 'class',
         theme: {
           extend: {
+            animation: {
+                'pulse-slow': 'pulse 6s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+            },
             fontFamily: {
               sans: ['Inter', 'SF Pro Display', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'Roboto', 'sans-serif'],
               serif: ['New York', 'Merriweather', 'serif'],
@@ -44,7 +47,7 @@
         margin: 0;
       }
       .dark body {
-        background-color: #050505;
+        background-color: #020202; /* Deeper black for better contrast with glows */
       }
 
       /* --- Liquid Glass Implementation --- */
@@ -79,13 +82,15 @@
         inset: 0;
         z-index: 2;
         border-radius: inherit;
-        backdrop-filter: blur(12px) saturate(150%);
-        -webkit-backdrop-filter: blur(12px) saturate(150%);
-        background: rgba(255, 255, 255, 0.15); /* Light Mode Tint */
+        backdrop-filter: blur(16px) saturate(180%);
+        -webkit-backdrop-filter: blur(16px) saturate(180%);
+        background: rgba(255, 255, 255, 0.2); /* Light Mode Tint */
         pointer-events: none;
       }
       .dark .liquid-glass-cover {
-        background: rgba(20, 20, 20, 0.4); /* Dark Mode Tint */
+        /* Lighter tint in dark mode to catch the background glows */
+        background: rgba(30, 30, 30, 0.45); 
+        box-shadow: inset 0 0 20px rgba(255,255,255,0.03);
       }
 
       /* 3. The Sharp Inner Border (Sharp) */
@@ -98,7 +103,8 @@
         pointer-events: none;
       }
       .dark .liquid-glass-sharp {
-        box-shadow: inset 1px 1px 0px 0px rgba(255, 255, 255, 0.15), inset -1px -1px 0px 0px rgba(255, 255, 255, 0.05);
+        /* Brighter inner border in dark mode */
+        box-shadow: inset 1px 1px 0px 0px rgba(255, 255, 255, 0.2), inset -1px -1px 0px 0px rgba(255, 255, 255, 0.08);
       }
 
       /* 4. The Reflections/Highlights (Reflect) */
@@ -107,11 +113,13 @@
         inset: 1px;
         z-index: 4;
         border-radius: inherit;
-        box-shadow: inset 2px 2px 6px 2px rgba(255, 255, 255, 0.2), inset -2px -2px 4px -1px rgba(255, 255, 255, 0.1);
+        /* Enhanced reflections */
+        box-shadow: inset 2px 2px 10px 0px rgba(255, 255, 255, 0.25), inset -2px -2px 10px -1px rgba(255, 255, 255, 0.15);
         pointer-events: none;
       }
       .dark .liquid-glass-reflect {
-         box-shadow: inset 2px 2px 6px 2px rgba(255, 255, 255, 0.05), inset -2px -2px 4px -1px rgba(255, 255, 255, 0.02);
+         /* Much stronger specular highlights in dark mode to define the shape */
+         box-shadow: inset 3px 3px 12px 0px rgba(255, 255, 255, 0.12), inset -1px -1px 6px 0px rgba(255, 255, 255, 0.05);
       }
 
       /* 5. The Content Container */
@@ -229,7 +237,6 @@
   }
 }
 </script>
-<link rel="stylesheet" href="/index.css">
 </head>
   <body class="transition-colors duration-500 antialiased selection:bg-indigo-500/30 selection:text-indigo-900 dark:selection:text-white">
     <!-- SVG Filter Definition for Liquid Glass Effect -->
