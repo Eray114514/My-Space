@@ -12,7 +12,7 @@ import { StorageService } from './services/storage';
 
 const App: React.FC = () => {
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
-
+  
   // 关键修复：直接在初始化时读取 Storage，防止 useEffect 异步覆盖导致每次刷新重置为浅色
   const [isDarkMode, setIsDarkMode] = useState<boolean>(() => {
     return StorageService.getTheme() === 'dark';
@@ -56,9 +56,9 @@ const App: React.FC = () => {
     <HashRouter>
       <Routes>
         <Route path="/" element={
-          <Layout
-            isAuthenticated={isAuthenticated}
-            onLogout={handleLogout}
+          <Layout 
+            isAuthenticated={isAuthenticated} 
+            onLogout={handleLogout} 
             isDarkMode={isDarkMode}
             toggleTheme={toggleTheme}
           />

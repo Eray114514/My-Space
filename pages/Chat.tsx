@@ -8,6 +8,7 @@ import { AIService, AI_MODELS, AIModelKey } from '../services/ai';
 import { StorageService, ChatSession, ChatMessage } from '../services/storage';
 import { MarkdownRenderer } from '../components/MarkdownRenderer';
 import { Article } from '../types';
+import { LiquidGlass } from '../components/LiquidGlass';
 
 const DEFAULT_SYSTEM_PROMPT = "你是一个智能助手，名字叫 My AI。请用简洁、优雅的 Markdown 格式回答用户的问题。";
 const CONTEXT_TAG_START = "<hidden_context>";
@@ -538,13 +539,15 @@ export const Chat: React.FC = () => {
                             <ChevronDown size={14} className="opacity-50" />
                         </button>
                         {isModelMenuOpen && (
-                            <div className="absolute top-full left-0 mt-2 w-64 liquid-glass-high rounded-xl shadow-2xl p-1 z-50 animate-in fade-in zoom-in-95">
+                            <div className="absolute top-full left-0 mt-2 w-64 z-50">
+                                <LiquidGlass className="rounded-xl shadow-2xl p-1 animate-in fade-in zoom-in-95">
                                 {availableModels.map(([key, m]) => (
                                     <button key={key} onClick={() => { setSelectedModel(key as AIModelKey); setIsModelMenuOpen(false); }} className={`w-full text-left px-4 py-2.5 text-sm rounded-lg flex justify-between ${selectedModel === key ? 'bg-indigo-50 dark:bg-indigo-900/20 text-indigo-600' : 'hover:bg-white/10 text-gray-700 dark:text-gray-300'}`}>
                                         {/* @ts-ignore */}
                                         {m.name}
                                     </button>
                                 ))}
+                                </LiquidGlass>
                             </div>
                         )}
                     </div>
@@ -593,7 +596,7 @@ export const Chat: React.FC = () => {
 
                                 <div className={`flex flex-col max-w-[85%] ${isUser ? 'items-end' : 'items-start'}`}>
                                     {isEditing ? (
-                                        <div className="w-full min-w-[300px] liquid-glass-high rounded-2xl p-2 shadow-xl animate-in fade-in zoom-in-95 duration-200 relative">
+                                        <LiquidGlass className="w-full min-w-[300px] rounded-2xl p-2 shadow-xl animate-in fade-in zoom-in-95 duration-200 relative">
                                             {/* Deletable Context Tags in Edit Mode */}
                                             {editAttachedArticles.length > 0 && (
                                                 <div className="mb-2 flex flex-wrap gap-2">
@@ -622,15 +625,17 @@ export const Chat: React.FC = () => {
                                                          <Plus size={12} /> 引用文章
                                                      </button>
                                                      {isEditPickerOpen && (
-                                                         <div className="absolute top-full left-0 mt-2 w-64 liquid-glass-high rounded-xl shadow-2xl overflow-hidden z-50">
-                                                            <div className="max-h-48 overflow-y-auto custom-scrollbar p-1">
-                                                                {availableArticles.map(article => (
-                                                                    <button key={article.id} onClick={() => handleEditArticleAdd(article)} className="w-full text-left px-3 py-2 text-sm rounded-lg hover:bg-black/5 dark:hover:bg-white/10 truncate transition-colors flex items-center gap-2 text-gray-700 dark:text-gray-200">
-                                                                        <FileText size={12} className="shrink-0 text-indigo-500"/>
-                                                                        <span className="truncate">{article.title}</span>
-                                                                    </button>
-                                                                ))}
-                                                            </div>
+                                                         <div className="absolute top-full left-0 mt-2 w-64 z-50">
+                                                            <LiquidGlass className="rounded-xl shadow-2xl overflow-hidden">
+                                                                <div className="max-h-48 overflow-y-auto custom-scrollbar p-1">
+                                                                    {availableArticles.map(article => (
+                                                                        <button key={article.id} onClick={() => handleEditArticleAdd(article)} className="w-full text-left px-3 py-2 text-sm rounded-lg hover:bg-black/5 dark:hover:bg-white/10 truncate transition-colors flex items-center gap-2 text-gray-700 dark:text-gray-200">
+                                                                            <FileText size={12} className="shrink-0 text-indigo-500"/>
+                                                                            <span className="truncate">{article.title}</span>
+                                                                        </button>
+                                                                    ))}
+                                                                </div>
+                                                            </LiquidGlass>
                                                          </div>
                                                      )}
                                                 </div>
@@ -642,7 +647,7 @@ export const Chat: React.FC = () => {
                                                     </button>
                                                 </div>
                                             </div>
-                                        </div>
+                                        </LiquidGlass>
                                     ) : (
                                         <>
                                             <div className={`px-5 py-3.5 shadow-sm text-[15px] leading-7 relative backdrop-blur-md border ${
@@ -689,21 +694,23 @@ export const Chat: React.FC = () => {
                     
                     {/* Article Picker (Glass Design) */}
                     {isArticlePickerOpen && (
-                        <div className="absolute bottom-full left-0 mb-2 w-72 liquid-glass-high rounded-2xl shadow-2xl overflow-hidden animate-in fade-in slide-in-from-bottom-2 z-50">
-                            <div className="p-3 border-b border-black/5 dark:border-white/5 text-xs font-bold text-gray-500 dark:text-gray-400">引用文章上下文 (可多选)</div>
-                            <div className="max-h-56 overflow-y-auto custom-scrollbar p-1">
-                                {availableArticles.map(article => {
-                                    const isSelected = attachedArticles.some(a => a.id === article.id);
-                                    return (
-                                        <button key={article.id} onClick={() => handleArticleClick(article)} className={`w-full text-left px-3 py-2.5 text-sm rounded-xl truncate transition-colors flex items-center gap-2 group ${isSelected ? 'bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-300' : 'hover:bg-black/5 dark:hover:bg-white/10 text-gray-700 dark:text-gray-200'}`}>
-                                            <div className={`w-5 h-5 rounded-md flex items-center justify-center shrink-0 border transition-colors ${isSelected ? 'bg-indigo-600 border-indigo-600 text-white' : 'border-gray-300 dark:border-gray-600 bg-transparent'}`}>
-                                                {isSelected && <Check size={12} />}
-                                            </div>
-                                            <span className="truncate">{article.title}</span>
-                                        </button>
-                                    );
-                                })}
-                            </div>
+                        <div className="absolute bottom-full left-0 mb-2 w-72 z-50">
+                            <LiquidGlass className="rounded-2xl shadow-2xl overflow-hidden animate-in fade-in slide-in-from-bottom-2">
+                                <div className="p-3 border-b border-black/5 dark:border-white/5 text-xs font-bold text-gray-500 dark:text-gray-400">引用文章上下文 (可多选)</div>
+                                <div className="max-h-56 overflow-y-auto custom-scrollbar p-1">
+                                    {availableArticles.map(article => {
+                                        const isSelected = attachedArticles.some(a => a.id === article.id);
+                                        return (
+                                            <button key={article.id} onClick={() => handleArticleClick(article)} className={`w-full text-left px-3 py-2.5 text-sm rounded-xl truncate transition-colors flex items-center gap-2 group ${isSelected ? 'bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-300' : 'hover:bg-black/5 dark:hover:bg-white/10 text-gray-700 dark:text-gray-200'}`}>
+                                                <div className={`w-5 h-5 rounded-md flex items-center justify-center shrink-0 border transition-colors ${isSelected ? 'bg-indigo-600 border-indigo-600 text-white' : 'border-gray-300 dark:border-gray-600 bg-transparent'}`}>
+                                                    {isSelected && <Check size={12} />}
+                                                </div>
+                                                <span className="truncate">{article.title}</span>
+                                            </button>
+                                        );
+                                    })}
+                                </div>
+                            </LiquidGlass>
                         </div>
                     )}
 

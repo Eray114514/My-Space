@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Lock, ArrowRight, Check } from 'lucide-react';
+import { LiquidGlass } from '../components/LiquidGlass';
 
 interface Props {
   onLogin: () => void;
@@ -42,9 +43,9 @@ export const Login: React.FC<Props> = ({ onLogin }) => {
 
   return (
     <div className="flex flex-col items-center justify-center py-20 animate-in fade-in zoom-in duration-500">
-      <div className="w-full max-w-sm bg-white dark:bg-neutral-900 p-8 rounded-2xl shadow-sm border border-gray-100 dark:border-neutral-800">
+      <LiquidGlass className="w-full max-w-sm p-8 rounded-3xl shadow-2xl">
         <div className="flex justify-center mb-6">
-          <div className="p-3 bg-indigo-50 dark:bg-indigo-900/20 rounded-full text-indigo-600 dark:text-indigo-400">
+          <div className="p-3 bg-indigo-50 dark:bg-indigo-900/20 rounded-full text-indigo-600 dark:text-indigo-400 shadow-sm">
             <Lock size={24} />
           </div>
         </div>
@@ -57,7 +58,7 @@ export const Login: React.FC<Props> = ({ onLogin }) => {
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">用户名</label>
             <input
               type="text"
-              className="w-full px-4 py-2 bg-gray-50 dark:bg-neutral-800 border border-gray-200 dark:border-neutral-700 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none dark:text-white transition-all"
+              className="w-full px-4 py-2 bg-gray-50/50 dark:bg-neutral-800/50 border border-gray-200 dark:border-neutral-700 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none dark:text-white transition-all backdrop-blur-sm"
               value={username}
               onChange={(e) => setUsername(e.target.value)}
             />
@@ -66,7 +67,7 @@ export const Login: React.FC<Props> = ({ onLogin }) => {
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">密码</label>
             <input
               type="password"
-              className="w-full px-4 py-2 bg-gray-50 dark:bg-neutral-800 border border-gray-200 dark:border-neutral-700 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none dark:text-white transition-all"
+              className="w-full px-4 py-2 bg-gray-50/50 dark:bg-neutral-800/50 border border-gray-200 dark:border-neutral-700 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none dark:text-white transition-all backdrop-blur-sm"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
             />
@@ -74,7 +75,7 @@ export const Login: React.FC<Props> = ({ onLogin }) => {
 
           <div className="flex items-center">
             <label className="flex items-center gap-2 cursor-pointer group">
-              <div className={`w-4 h-4 rounded border flex items-center justify-center transition-colors ${rememberMe ? 'bg-indigo-600 border-indigo-600' : 'bg-white dark:bg-neutral-800 border-gray-300 dark:border-neutral-600 group-hover:border-indigo-400'}`}>
+              <div className={`w-4 h-4 rounded border flex items-center justify-center transition-colors ${rememberMe ? 'bg-indigo-600 border-indigo-600' : 'bg-white/50 dark:bg-neutral-800/50 border-gray-300 dark:border-neutral-600 group-hover:border-indigo-400'}`}>
                 {rememberMe && <Check size={10} className="text-white" />}
               </div>
               <input 
@@ -88,20 +89,20 @@ export const Login: React.FC<Props> = ({ onLogin }) => {
           </div>
 
           {error && (
-            <div className="text-red-500 text-sm text-center bg-red-50 dark:bg-red-900/20 py-2 rounded-lg">
+            <div className="text-red-500 text-sm text-center bg-red-50/80 dark:bg-red-900/20 py-2 rounded-lg">
               {error}
             </div>
           )}
 
           <button
             type="submit"
-            className="w-full py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg font-medium transition-colors flex items-center justify-center gap-2 group"
+            className="w-full py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg font-medium transition-colors flex items-center justify-center gap-2 group shadow-lg shadow-indigo-500/30"
           >
             登录
             <ArrowRight size={16} className="group-hover:translate-x-1 transition-transform" />
           </button>
         </form>
-      </div>
+      </LiquidGlass>
     </div>
   );
 };

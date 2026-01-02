@@ -4,11 +4,12 @@ import { StorageService } from '../services/storage';
 import { Article, Project } from '../types';
 import { FileText, Layout, ExternalLink, Globe, Search as SearchIcon } from 'lucide-react';
 import * as Icons from 'lucide-react';
+import { LiquidGlass } from '../components/LiquidGlass';
 
 export const SearchPage: React.FC = () => {
   const [searchParams] = useSearchParams();
   const query = searchParams.get('q') || '';
-
+  
   const [articles, setArticles] = useState<Article[]>([]);
   const [projects, setProjects] = useState<Project[]>([]);
   const [loading, setLoading] = useState(true);
@@ -34,15 +35,15 @@ export const SearchPage: React.FC = () => {
   const results = useMemo(() => {
     if (!query.trim()) return { articles: [], projects: [] };
     const lowerQ = query.toLowerCase();
-
-    const filteredProjects = projects.filter(p =>
-      p.title.toLowerCase().includes(lowerQ) ||
+    
+    const filteredProjects = projects.filter(p => 
+      p.title.toLowerCase().includes(lowerQ) || 
       p.description.toLowerCase().includes(lowerQ) ||
       p.url.toLowerCase().includes(lowerQ)
     );
 
-    const filteredArticles = articles.filter(a =>
-      a.title.toLowerCase().includes(lowerQ) ||
+    const filteredArticles = articles.filter(a => 
+      a.title.toLowerCase().includes(lowerQ) || 
       a.summary.toLowerCase().includes(lowerQ) ||
       a.tags.some(t => t.toLowerCase().includes(lowerQ))
     );
@@ -51,31 +52,31 @@ export const SearchPage: React.FC = () => {
   }, [query, articles, projects]);
 
   const renderProjectIcon = (project: Project) => {
-    if (project.iconType === 'generated' && project.customSvg) {
-      return <div className="w-5 h-5 text-indigo-600 dark:text-indigo-400 [&>svg]:w-full [&>svg]:h-full" dangerouslySetInnerHTML={{ __html: project.customSvg }} />;
-    }
-    if (project.iconType === 'auto' && project.imageBase64) {
-      return <img src={project.imageBase64} alt={project.title} className="w-5 h-5 rounded object-cover" />;
-    }
-    const IconComp = (Icons as any)[project.presetIcon || 'Globe'] || Globe;
-    return <IconComp size={20} className="text-indigo-600 dark:text-indigo-400" />;
+      if (project.iconType === 'generated' && project.customSvg) {
+        return <div className="w-5 h-5 text-indigo-600 dark:text-indigo-400 [&>svg]:w-full [&>svg]:h-full" dangerouslySetInnerHTML={{ __html: project.customSvg }} />;
+      }
+      if (project.iconType === 'auto' && project.imageBase64) {
+        return <img src={project.imageBase64} alt={project.title} className="w-5 h-5 rounded object-cover" />;
+      }
+       const IconComp = (Icons as any)[project.presetIcon || 'Globe'] || Globe;
+       return <IconComp size={20} className="text-indigo-600 dark:text-indigo-400" />;
   }
 
   return (
     <div className="max-w-3xl mx-auto py-4 animate-in fade-in duration-500 min-h-[60vh]">
-
+      
       {!query && (
         <div className="text-center text-gray-400 dark:text-neutral-600 mt-20 flex flex-col items-center gap-4">
-          <div className="p-6 rounded-full bg-white/30 dark:bg-white/5 backdrop-blur-md">
-            <SearchIcon size={48} className="opacity-30" />
-          </div>
-          <p className="font-light tracking-wide">请在顶部搜索框输入关键词</p>
+            <div className="p-6 rounded-full bg-white/30 dark:bg-white/5 backdrop-blur-md">
+                 <SearchIcon size={48} className="opacity-30" />
+            </div>
+            <p className="font-light tracking-wide">请在顶部搜索框输入关键词</p>
         </div>
       )}
 
       {query && (results.articles.length === 0 && results.projects.length === 0) && (
         <div className="text-center text-gray-500 dark:text-neutral-500 mt-20">
-          <p>未找到与 "{query}" 相关的内容</p>
+            <p>未找到与 "{query}" 相关的内容</p>
         </div>
       )}
 
@@ -83,25 +84,27 @@ export const SearchPage: React.FC = () => {
         {results.projects.length > 0 && (
           <section>
             <h2 className="text-xl font-bold mb-6 flex items-center gap-2 text-gray-900 dark:text-white px-2">
-              <Layout size={20} className="text-indigo-500" /> 网站导航
+                <Layout size={20} className="text-indigo-500" /> 网站导航
             </h2>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               {results.projects.map(project => (
-                <a
-                  key={project.id}
-                  href={project.url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex items-center gap-4 p-4 liquid-glass rounded-2xl hover:bg-white/60 dark:hover:bg-white/10 hover:border-indigo-200/50 transition-all hover:shadow-md group"
+                <a 
+                    key={project.id}
+                    href={project.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="block group"
                 >
-                  <div className="p-2.5 bg-white/50 dark:bg-white/5 rounded-xl group-hover:bg-indigo-50 dark:group-hover:bg-indigo-900/20 transition-colors backdrop-blur-sm border border-white/20">
-                    {renderProjectIcon(project)}
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <h3 className="font-semibold text-gray-900 dark:text-white truncate">{project.title}</h3>
-                    <p className="text-xs text-gray-500 dark:text-gray-400 truncate">{project.description}</p>
-                  </div>
-                  <ExternalLink size={14} className="text-gray-300 group-hover:text-indigo-500 transition-colors" />
+                    <LiquidGlass className="flex items-center gap-4 p-4 rounded-2xl hover:bg-white/60 dark:hover:bg-white/10 hover:border-indigo-200/50 transition-all hover:shadow-md">
+                        <div className="p-2.5 bg-white/50 dark:bg-white/5 rounded-xl group-hover:bg-indigo-50 dark:group-hover:bg-indigo-900/20 transition-colors backdrop-blur-sm border border-white/20">
+                            {renderProjectIcon(project)}
+                        </div>
+                        <div className="flex-1 min-w-0">
+                            <h3 className="font-semibold text-gray-900 dark:text-white truncate">{project.title}</h3>
+                            <p className="text-xs text-gray-500 dark:text-gray-400 truncate">{project.description}</p>
+                        </div>
+                        <ExternalLink size={14} className="text-gray-300 group-hover:text-indigo-500 transition-colors" />
+                   </LiquidGlass>
                 </a>
               ))}
             </div>
@@ -109,31 +112,33 @@ export const SearchPage: React.FC = () => {
         )}
 
         {results.articles.length > 0 && (
-          <section>
+           <section>
             <h2 className="text-xl font-bold mb-6 flex items-center gap-2 text-gray-900 dark:text-white px-2">
-              <FileText size={20} className="text-indigo-500" /> 文章
+                <FileText size={20} className="text-indigo-500" /> 文章
             </h2>
             <div className="space-y-4">
-              {results.articles.map(article => (
-                <Link
-                  key={article.id}
-                  to={`/blog/${article.id}`}
-                  className="block p-6 liquid-glass rounded-2xl hover:bg-white/60 dark:hover:bg-white/10 hover:border-indigo-200/50 transition-all hover:shadow-md group"
-                >
-                  <div className="flex justify-between items-start mb-2">
-                    <h3 className="text-lg font-bold text-gray-900 dark:text-white group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">{article.title}</h3>
-                    <span className="text-xs text-gray-400 font-mono py-1 px-2 bg-black/5 dark:bg-white/5 rounded-md">{new Date(article.createdAt).toLocaleDateString()}</span>
-                  </div>
-                  <p className="text-sm text-gray-600 dark:text-gray-300 line-clamp-2 leading-relaxed">{article.summary}</p>
-                  <div className="flex gap-2 mt-4">
-                    {article.tags.map(t => (
-                      <span key={t} className="text-[10px] px-2 py-0.5 bg-white/50 dark:bg-white/5 backdrop-blur-sm text-gray-500 dark:text-gray-400 rounded-md border border-white/20">#{t}</span>
-                    ))}
-                  </div>
-                </Link>
-              ))}
+                {results.articles.map(article => (
+                    <Link 
+                        key={article.id}
+                        to={`/blog/${article.id}`}
+                        className="block group"
+                    >
+                        <LiquidGlass className="p-6 rounded-2xl hover:bg-white/60 dark:hover:bg-white/10 hover:border-indigo-200/50 transition-all hover:shadow-md">
+                             <div className="flex justify-between items-start mb-2">
+                                 <h3 className="text-lg font-bold text-gray-900 dark:text-white group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">{article.title}</h3>
+                                 <span className="text-xs text-gray-400 font-mono py-1 px-2 bg-black/5 dark:bg-white/5 rounded-md">{new Date(article.createdAt).toLocaleDateString()}</span>
+                             </div>
+                             <p className="text-sm text-gray-600 dark:text-gray-300 line-clamp-2 leading-relaxed">{article.summary}</p>
+                             <div className="flex gap-2 mt-4">
+                                 {article.tags.map(t => (
+                                     <span key={t} className="text-[10px] px-2 py-0.5 bg-white/50 dark:bg-white/5 backdrop-blur-sm text-gray-500 dark:text-gray-400 rounded-md border border-white/20">#{t}</span>
+                                 ))}
+                             </div>
+                        </LiquidGlass>
+                    </Link>
+                ))}
             </div>
-          </section>
+           </section>
         )}
       </div>
     </div>

@@ -1,233 +1,212 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
-
-<head>
-  <meta charset="UTF-8" />
-  <link rel="icon" type="image/svg+xml" href="https://api.iconify.design/lucide:terminal.svg" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>My Space</title>
-  <!-- 关键修复：添加 plugins=typography 以支持 Markdown 排版 -->
-  <script src="https://cdn.tailwindcss.com?plugins=typography"></script>
-  <script>
-    tailwind.config = {
-      darkMode: 'class',
-      theme: {
-        extend: {
-          fontFamily: {
-            sans: ['Inter', 'SF Pro Display', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'Roboto', 'sans-serif'],
-            serif: ['New York', 'Merriweather', 'serif'],
-          },
-          colors: {
-            background: "var(--background)",
-            foreground: "var(--foreground)",
-          },
-          // Removed CPU-intensive animations
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="https://api.iconify.design/lucide:terminal.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>My Space</title>
+    <!-- 关键修复：添加 plugins=typography 以支持 Markdown 排版 -->
+    <script src="https://cdn.tailwindcss.com?plugins=typography"></script>
+    <script>
+      tailwind.config = {
+        darkMode: 'class',
+        theme: {
+          extend: {
+            fontFamily: {
+              sans: ['Inter', 'SF Pro Display', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'Roboto', 'sans-serif'],
+              serif: ['New York', 'Merriweather', 'serif'],
+            },
+            colors: {
+              background: "var(--background)",
+              foreground: "var(--foreground)",
+            },
+          }
         }
       }
-    }
-  </script>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-  <style>
-    ::-webkit-scrollbar {
-      width: 6px;
-      height: 6px;
-    }
+    </script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+      ::-webkit-scrollbar {
+        width: 6px;
+        height: 6px;
+      }
+      ::-webkit-scrollbar-track { background: transparent; }
+      ::-webkit-scrollbar-thumb {
+        background: rgba(160, 160, 160, 0.3);
+        border-radius: 10px;
+      }
+      .dark ::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.15); }
+      ::-webkit-scrollbar-thumb:hover { background: rgba(160, 160, 160, 0.5); }
 
-    ::-webkit-scrollbar-track {
-      background: transparent;
-    }
+      body {
+        background-color: #f8f9fa;
+        overscroll-behavior-y: none;
+        margin: 0;
+      }
+      .dark body {
+        background-color: #050505;
+      }
 
-    ::-webkit-scrollbar-thumb {
-      background: rgba(160, 160, 160, 0.3);
-      border-radius: 10px;
-    }
+      /* --- Liquid Glass Implementation --- */
 
-    .dark ::-webkit-scrollbar-thumb {
-      background: rgba(255, 255, 255, 0.15);
-    }
+      .liquid-glass-wrapper {
+        position: relative;
+        /* display: flex;  Removed to allow block/inline-block behavior based on parent */
+        overflow: hidden; 
+        isolation: isolate; /* Create new stacking context */
+      }
 
-    ::-webkit-scrollbar-thumb:hover {
-      background: rgba(160, 160, 160, 0.5);
-    }
+      /* 1. The Distorted Rim (Outer) */
+      .liquid-glass-outer {
+        position: absolute;
+        inset: 0;
+        z-index: 1;
+        border-radius: inherit;
+        backdrop-filter: url(#liquid_glass_filter);
+        -webkit-backdrop-filter: url(#liquid_glass_filter);
+        pointer-events: none;
+        
+        /* Create a responsive hollow mask (the rim) */
+        padding: 6px; /* Controls rim thickness */
+        -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+        -webkit-mask-composite: xor;
+        mask-composite: exclude;
+      }
 
-    /* --- Liquid Glass Design System --- */
+      /* 2. The Main Surface (Cover) */
+      .liquid-glass-cover {
+        position: absolute;
+        inset: 0;
+        z-index: 2;
+        border-radius: inherit;
+        backdrop-filter: blur(12px) saturate(150%);
+        -webkit-backdrop-filter: blur(12px) saturate(150%);
+        background: rgba(255, 255, 255, 0.15); /* Light Mode Tint */
+        pointer-events: none;
+      }
+      .dark .liquid-glass-cover {
+        background: rgba(20, 20, 20, 0.4); /* Dark Mode Tint */
+      }
 
-    /* Standard Glass (Cards) - Increased Transparency */
-    .liquid-glass {
-      background: rgba(255, 255, 255, 0.4);
-      /* Lower opacity for transparency */
-      backdrop-filter: blur(20px) saturate(120%);
-      -webkit-backdrop-filter: blur(20px) saturate(120%);
-      border: 1px solid rgba(255, 255, 255, 0.3);
-      box-shadow: 0 4px 30px rgba(0, 0, 0, 0.05);
-    }
+      /* 3. The Sharp Inner Border (Sharp) */
+      .liquid-glass-sharp {
+        position: absolute;
+        inset: 0;
+        z-index: 3;
+        border-radius: inherit;
+        box-shadow: inset 1px 1px 0px 0px rgba(255, 255, 255, 0.4), inset -1px -1px 0px 0px rgba(255, 255, 255, 0.3);
+        pointer-events: none;
+      }
+      .dark .liquid-glass-sharp {
+        box-shadow: inset 1px 1px 0px 0px rgba(255, 255, 255, 0.15), inset -1px -1px 0px 0px rgba(255, 255, 255, 0.05);
+      }
 
-    .dark .liquid-glass {
-      background: rgba(20, 20, 20, 0.4);
-      /* Darker but transparent */
-      backdrop-filter: blur(20px) saturate(120%);
-      -webkit-backdrop-filter: blur(20px) saturate(120%);
-      border: 1px solid rgba(255, 255, 255, 0.08);
-      box-shadow: 0 4px 30px rgba(0, 0, 0, 0.3);
-    }
+      /* 4. The Reflections/Highlights (Reflect) */
+      .liquid-glass-reflect {
+        position: absolute;
+        inset: 1px;
+        z-index: 4;
+        border-radius: inherit;
+        box-shadow: inset 2px 2px 6px 2px rgba(255, 255, 255, 0.2), inset -2px -2px 4px -1px rgba(255, 255, 255, 0.1);
+        pointer-events: none;
+      }
+      .dark .liquid-glass-reflect {
+         box-shadow: inset 2px 2px 6px 2px rgba(255, 255, 255, 0.05), inset -2px -2px 4px -1px rgba(255, 255, 255, 0.02);
+      }
 
-    /* High Glass (Modals, Nav, Inputs) - Thicker but still transparent */
-    .liquid-glass-high {
-      background: rgba(255, 255, 255, 0.55);
-      backdrop-filter: blur(30px) saturate(150%);
-      -webkit-backdrop-filter: blur(30px) saturate(150%);
-      border: 1px solid rgba(255, 255, 255, 0.4);
-      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.05);
-    }
+      /* 5. The Content Container */
+      .liquid-glass-content {
+        position: relative;
+        z-index: 10;
+        width: 100%;
+        height: 100%;
+      }
 
-    .dark .liquid-glass-high {
-      background: rgba(30, 30, 30, 0.5);
-      border: 1px solid rgba(255, 255, 255, 0.12);
-      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
-    }
-
-    body {
-      background-color: #f8f9fa;
-      overscroll-behavior-y: none;
-    }
-
-    .dark body {
-      background-color: #050505;
-    }
-
-    /* --- Markdown Alerts (GitHub Style) --- */
-    .markdown-alert {
-      padding: 0.75rem 1rem;
-      margin-bottom: 1rem;
-      border-left: 4px solid;
-      border-radius: 0.5rem;
-      font-size: 0.95em;
-      line-height: 1.6;
-    }
-
-    .markdown-alert-title {
-      display: flex;
-      align-items: center;
-      font-weight: 600;
-      margin-bottom: 0.5rem;
-      text-transform: uppercase;
-      font-size: 0.8em;
-      letter-spacing: 0.05em;
-    }
-
-    /* 关键修复：强制图标继承文本颜色 (fill for Octicons) */
-    .markdown-alert-title svg {
-      margin-right: 0.5rem;
-      width: 16px;
-      height: 16px;
-      fill: currentColor;
-    }
-
-    /* Note (Blue) */
-    .markdown-alert-note {
-      border-color: #0969da;
-      background-color: rgba(221, 244, 255, 0.5);
-      color: #1f2328;
-    }
-
-    .markdown-alert-note .markdown-alert-title {
-      color: #0969da;
-    }
-
-    .dark .markdown-alert-note {
-      background-color: rgba(56, 139, 253, 0.1);
-      color: #e6edf3;
-      border-color: #1f6feb;
-    }
-
-    .dark .markdown-alert-note .markdown-alert-title {
-      color: #58a6ff;
-    }
-
-    /* Tip (Green) */
-    .markdown-alert-tip {
-      border-color: #1a7f37;
-      background-color: rgba(218, 251, 225, 0.5);
-      color: #1f2328;
-    }
-
-    .markdown-alert-tip .markdown-alert-title {
-      color: #1a7f37;
-    }
-
-    .dark .markdown-alert-tip {
-      background-color: rgba(46, 160, 67, 0.1);
-      color: #e6edf3;
-      border-color: #238636;
-    }
-
-    .dark .markdown-alert-tip .markdown-alert-title {
-      color: #3fb950;
-    }
-
-    /* Important (Purple) */
-    .markdown-alert-important {
-      border-color: #8250df;
-      background-color: rgba(240, 235, 255, 0.5);
-      color: #1f2328;
-    }
-
-    .markdown-alert-important .markdown-alert-title {
-      color: #8250df;
-    }
-
-    .dark .markdown-alert-important {
-      background-color: rgba(163, 113, 247, 0.1);
-      color: #e6edf3;
-      border-color: #8957e5;
-    }
-
-    .dark .markdown-alert-important .markdown-alert-title {
-      color: #a371f7;
-    }
-
-    /* Warning (Yellow) */
-    .markdown-alert-warning {
-      border-color: #9a6700;
-      background-color: rgba(255, 248, 197, 0.5);
-      color: #1f2328;
-    }
-
-    .markdown-alert-warning .markdown-alert-title {
-      color: #9a6700;
-    }
-
-    .dark .markdown-alert-warning {
-      background-color: rgba(187, 128, 9, 0.1);
-      color: #e6edf3;
-      border-color: #9e6a03;
-    }
-
-    .dark .markdown-alert-warning .markdown-alert-title {
-      color: #d29922;
-    }
-
-    /* Caution (Red) */
-    .markdown-alert-caution {
-      border-color: #d1242f;
-      background-color: rgba(255, 235, 233, 0.5);
-      color: #1f2328;
-    }
-
-    .markdown-alert-caution .markdown-alert-title {
-      color: #cf222e;
-    }
-
-    .dark .markdown-alert-caution {
-      background-color: rgba(218, 54, 51, 0.1);
-      color: #e6edf3;
-      border-color: #da3633;
-    }
-
-    .dark .markdown-alert-caution .markdown-alert-title {
-      color: #f85149;
-    }
-  </style>
+      /* --- Markdown Alerts (GitHub Style) --- */
+      .markdown-alert {
+        padding: 0.75rem 1rem;
+        margin-bottom: 1rem;
+        border-left: 4px solid;
+        border-radius: 0.5rem;
+        font-size: 0.95em;
+        line-height: 1.6;
+      }
+      .markdown-alert-title {
+        display: flex;
+        align-items: center;
+        font-weight: 600;
+        margin-bottom: 0.5rem;
+        text-transform: uppercase;
+        font-size: 0.8em;
+        letter-spacing: 0.05em;
+      }
+      .markdown-alert-title svg {
+        margin-right: 0.5rem;
+        width: 16px;
+        height: 16px;
+        fill: currentColor; 
+      }
+      .markdown-alert-note {
+        border-color: #0969da;
+        background-color: rgba(221, 244, 255, 0.5);
+        color: #1f2328;
+      }
+      .markdown-alert-note .markdown-alert-title { color: #0969da; }
+      .dark .markdown-alert-note {
+        background-color: rgba(56, 139, 253, 0.1);
+        color: #e6edf3;
+        border-color: #1f6feb;
+      }
+      .dark .markdown-alert-note .markdown-alert-title { color: #58a6ff; }
+      .markdown-alert-tip {
+        border-color: #1a7f37;
+        background-color: rgba(218, 251, 225, 0.5);
+        color: #1f2328;
+      }
+      .markdown-alert-tip .markdown-alert-title { color: #1a7f37; }
+      .dark .markdown-alert-tip {
+        background-color: rgba(46, 160, 67, 0.1);
+        color: #e6edf3;
+        border-color: #238636;
+      }
+      .dark .markdown-alert-tip .markdown-alert-title { color: #3fb950; }
+      .markdown-alert-important {
+        border-color: #8250df;
+        background-color: rgba(240, 235, 255, 0.5);
+        color: #1f2328;
+      }
+      .markdown-alert-important .markdown-alert-title { color: #8250df; }
+      .dark .markdown-alert-important {
+        background-color: rgba(163, 113, 247, 0.1);
+        color: #e6edf3;
+        border-color: #8957e5;
+      }
+      .dark .markdown-alert-important .markdown-alert-title { color: #a371f7; }
+      .markdown-alert-warning {
+        border-color: #9a6700;
+        background-color: rgba(255, 248, 197, 0.5);
+        color: #1f2328;
+      }
+      .markdown-alert-warning .markdown-alert-title { color: #9a6700; }
+      .dark .markdown-alert-warning {
+        background-color: rgba(187, 128, 9, 0.1);
+        color: #e6edf3;
+        border-color: #9e6a03;
+      }
+      .dark .markdown-alert-warning .markdown-alert-title { color: #d29922; }
+      .markdown-alert-caution {
+        border-color: #d1242f;
+        background-color: rgba(255, 235, 233, 0.5);
+        color: #1f2328;
+      }
+      .markdown-alert-caution .markdown-alert-title { color: #cf222e; }
+      .dark .markdown-alert-caution {
+        background-color: rgba(218, 54, 51, 0.1);
+        color: #e6edf3;
+        border-color: #da3633;
+      }
+      .dark .markdown-alert-caution .markdown-alert-title { color: #f85149; }
+    </style>
   <script type="importmap">
 {
   "imports": {
@@ -250,12 +229,18 @@
   }
 }
 </script>
+<link rel="stylesheet" href="/index.css">
 </head>
-
-<body
-  class="transition-colors duration-500 antialiased selection:bg-indigo-500/30 selection:text-indigo-900 dark:selection:text-white">
-  <div id="root"></div>
-  <script type="module" src="/index.tsx"></script>
-</body>
-
+  <body class="transition-colors duration-500 antialiased selection:bg-indigo-500/30 selection:text-indigo-900 dark:selection:text-white">
+    <!-- SVG Filter Definition for Liquid Glass Effect -->
+    <svg style="display: none; height: 0; width: 0; position: absolute;">
+      <defs>
+        <filter id="liquid_glass_filter" x="0%" y="0%" width="100%" height="100%" filterUnits="objectBoundingBox">
+          <feDisplacementMap scale="30" in="SourceGraphic" in2="SourceGraphic" />
+        </filter>
+      </defs>
+    </svg>
+    <div id="root"></div>
+    <script type="module" src="/index.tsx"></script>
+  </body>
 </html>

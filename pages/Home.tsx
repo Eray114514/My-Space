@@ -4,6 +4,7 @@ import { ArrowRight, ExternalLink, Globe, Layout, Code, Sparkles } from 'lucide-
 import { StorageService } from '../services/storage';
 import { Article, Project } from '../types';
 import * as Icons from 'lucide-react';
+import { LiquidGlass } from '../components/LiquidGlass';
 
 export const Home: React.FC = () => {
   const [projects, setProjects] = useState<Project[]>([]);
@@ -96,16 +97,16 @@ export const Home: React.FC = () => {
         </p>
         
         <div className="flex flex-wrap gap-4 pt-4">
-            <Link to="/blog" className="group relative inline-flex items-center gap-2 px-8 py-3.5 bg-gray-900 dark:bg-white text-white dark:text-gray-900 rounded-full font-semibold transition-all hover:scale-105 active:scale-95 shadow-lg shadow-gray-900/20 dark:shadow-white/20">
+            <Link to="/blog" className="group relative inline-flex items-center gap-2 px-8 py-3.5 bg-gray-900 dark:bg-white text-white dark:text-gray-900 rounded-full font-semibold transition-all hover:scale-105 active:scale-95 shadow-lg shadow-gray-900/20 dark:shadow-white/20 z-10">
                 阅读文章
                 <ArrowRight size={18} className="group-hover:translate-x-1 transition-transform" />
             </Link>
-            <button 
+            <LiquidGlass 
               onClick={scrollToProjects}
-              className="inline-flex items-center gap-2 px-8 py-3.5 liquid-glass rounded-full text-gray-900 dark:text-white font-semibold hover:bg-white/60 dark:hover:bg-white/10 transition-colors"
+              className="inline-flex items-center gap-2 px-8 py-3.5 rounded-full text-gray-900 dark:text-white font-semibold hover:bg-white/60 dark:hover:bg-white/10 transition-colors cursor-pointer"
             >
                 查看作品
-            </button>
+            </LiquidGlass>
         </div>
       </section>
 
@@ -123,27 +124,29 @@ export const Home: React.FC = () => {
               href={project.url}
               target="_blank"
               rel="noopener noreferrer"
-              className="group relative flex flex-col p-6 liquid-glass rounded-[2rem] hover:bg-white/60 dark:hover:bg-white/10 hover:border-white/50 dark:hover:border-white/20 transition-all duration-300 hover:-translate-y-2 hover:shadow-[0_20px_40px_-15px_rgba(0,0,0,0.1)] dark:hover:shadow-[0_20px_40px_-15px_rgba(255,255,255,0.05)]"
+              className="block group h-full"
             >
-              <div className="flex items-start justify-between mb-6">
-                <div className="p-3 bg-white/50 dark:bg-white/5 rounded-2xl group-hover:scale-110 transition-transform duration-300 shadow-sm border border-white/40 dark:border-white/10 backdrop-blur-md">
-                   {renderIcon(project)}
-                   {project.iconType === 'auto' && <Globe size={40} className="text-gray-300 hidden" />}
+              <LiquidGlass className="h-full flex flex-col p-6 rounded-[2rem] hover:bg-white/60 dark:hover:bg-white/10 hover:border-white/50 dark:hover:border-white/20 transition-all duration-300 hover:-translate-y-2 hover:shadow-[0_20px_40px_-15px_rgba(0,0,0,0.1)] dark:hover:shadow-[0_20px_40px_-15px_rgba(255,255,255,0.05)]">
+                <div className="flex items-start justify-between mb-6">
+                  <div className="p-3 bg-white/50 dark:bg-white/5 rounded-2xl group-hover:scale-110 transition-transform duration-300 shadow-sm border border-white/40 dark:border-white/10 backdrop-blur-md">
+                    {renderIcon(project)}
+                    {project.iconType === 'auto' && <Globe size={40} className="text-gray-300 hidden" />}
+                  </div>
+                  <div className="p-2 rounded-full bg-transparent group-hover:bg-indigo-50 dark:group-hover:bg-indigo-500/20 transition-colors">
+                      <ExternalLink size={20} className="text-gray-300 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors" />
+                  </div>
                 </div>
-                <div className="p-2 rounded-full bg-transparent group-hover:bg-indigo-50 dark:group-hover:bg-indigo-500/20 transition-colors">
-                    <ExternalLink size={20} className="text-gray-300 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors" />
-                </div>
-              </div>
-              <h3 className="font-bold text-xl text-gray-900 dark:text-white mb-2">{project.title}</h3>
-              <p className="text-sm text-gray-500 dark:text-gray-400 line-clamp-2 leading-relaxed">
-                {project.description}
-              </p>
+                <h3 className="font-bold text-xl text-gray-900 dark:text-white mb-2">{project.title}</h3>
+                <p className="text-sm text-gray-500 dark:text-gray-400 line-clamp-2 leading-relaxed">
+                  {project.description}
+                </p>
+              </LiquidGlass>
             </a>
           ))}
           {projects.length === 0 && (
-             <div className="col-span-full py-16 text-center text-gray-400 liquid-glass rounded-3xl">
+             <LiquidGlass className="col-span-full py-16 text-center text-gray-400 rounded-3xl">
                  暂无导航链接
-             </div>
+             </LiquidGlass>
           )}
         </div>
       </section>
