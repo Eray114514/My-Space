@@ -13,7 +13,14 @@
         theme: {
           extend: {
             animation: {
-                'pulse-slow': 'pulse 6s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+                'pulse-slow': 'pulse 8s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+                'float': 'float 6s ease-in-out infinite',
+            },
+            keyframes: {
+                float: {
+                    '0%, 100%': { transform: 'translateY(0)' },
+                    '50%': { transform: 'translateY(-20px)' },
+                }
             },
             fontFamily: {
               sans: ['Inter', 'SF Pro Display', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'Roboto', 'sans-serif'],
@@ -47,19 +54,18 @@
         margin: 0;
       }
       .dark body {
-        background-color: #020202; /* Deeper black for better contrast with glows */
+        background-color: #050505; /* Slightly softer black */
       }
 
-      /* --- Liquid Glass Implementation --- */
+      /* --- Liquid Glass Implementation (Refined) --- */
 
       .liquid-glass-wrapper {
         position: relative;
-        /* display: flex;  Removed to allow block/inline-block behavior based on parent */
         overflow: hidden; 
-        isolation: isolate; /* Create new stacking context */
+        isolation: isolate;
       }
 
-      /* 1. The Distorted Rim (Outer) */
+      /* 1. The Distorted Rim (Outer) - 减弱边缘扭曲感 */
       .liquid-glass-outer {
         position: absolute;
         inset: 0;
@@ -69,57 +75,55 @@
         -webkit-backdrop-filter: url(#liquid_glass_filter);
         pointer-events: none;
         
-        /* Create a responsive hollow mask (the rim) */
-        padding: 6px; /* Controls rim thickness */
+        padding: 4px; /* Thinner rim */
         -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
         -webkit-mask-composite: xor;
         mask-composite: exclude;
+        opacity: 0.7; /* Make the distortion less aggressive */
       }
 
-      /* 2. The Main Surface (Cover) */
+      /* 2. The Main Surface (Cover) - 增加通透感 */
       .liquid-glass-cover {
         position: absolute;
         inset: 0;
         z-index: 2;
         border-radius: inherit;
-        backdrop-filter: blur(16px) saturate(180%);
-        -webkit-backdrop-filter: blur(16px) saturate(180%);
-        background: rgba(255, 255, 255, 0.2); /* Light Mode Tint */
+        backdrop-filter: blur(20px) saturate(140%);
+        -webkit-backdrop-filter: blur(20px) saturate(140%);
+        background: rgba(255, 255, 255, 0.15);
         pointer-events: none;
       }
       .dark .liquid-glass-cover {
-        /* Lighter tint in dark mode to catch the background glows */
-        background: rgba(30, 30, 30, 0.45); 
-        box-shadow: inset 0 0 20px rgba(255,255,255,0.03);
+        /* Very subtle dark tint, relying on background blur for contrast */
+        background: rgba(20, 20, 20, 0.3); 
+        box-shadow: inset 0 0 30px rgba(255,255,255,0.02);
       }
 
-      /* 3. The Sharp Inner Border (Sharp) */
+      /* 3. The Sharp Inner Border (Sharp) - 极细的边界线 */
       .liquid-glass-sharp {
         position: absolute;
         inset: 0;
         z-index: 3;
         border-radius: inherit;
-        box-shadow: inset 1px 1px 0px 0px rgba(255, 255, 255, 0.4), inset -1px -1px 0px 0px rgba(255, 255, 255, 0.3);
+        box-shadow: inset 0.5px 0.5px 0px 0px rgba(255, 255, 255, 0.3), inset -0.5px -0.5px 0px 0px rgba(255, 255, 255, 0.2);
         pointer-events: none;
       }
       .dark .liquid-glass-sharp {
-        /* Brighter inner border in dark mode */
-        box-shadow: inset 1px 1px 0px 0px rgba(255, 255, 255, 0.2), inset -1px -1px 0px 0px rgba(255, 255, 255, 0.08);
+        box-shadow: inset 0.5px 0.5px 0px 0px rgba(255, 255, 255, 0.1), inset -0.5px -0.5px 0px 0px rgba(255, 255, 255, 0.05);
       }
 
-      /* 4. The Reflections/Highlights (Reflect) */
+      /* 4. The Reflections (Reflect) - 大幅降低高光，使其柔和 */
       .liquid-glass-reflect {
         position: absolute;
         inset: 1px;
         z-index: 4;
         border-radius: inherit;
-        /* Enhanced reflections */
-        box-shadow: inset 2px 2px 10px 0px rgba(255, 255, 255, 0.25), inset -2px -2px 10px -1px rgba(255, 255, 255, 0.15);
+        box-shadow: inset 1px 1px 12px 0px rgba(255, 255, 255, 0.15);
         pointer-events: none;
       }
       .dark .liquid-glass-reflect {
-         /* Much stronger specular highlights in dark mode to define the shape */
-         box-shadow: inset 3px 3px 12px 0px rgba(255, 255, 255, 0.12), inset -1px -1px 6px 0px rgba(255, 255, 255, 0.05);
+         /* Extremely subtle highlight in dark mode */
+         box-shadow: inset 1px 1px 15px 0px rgba(255, 255, 255, 0.03), inset -1px -1px 10px 0px rgba(255, 255, 255, 0.01);
       }
 
       /* 5. The Content Container */
@@ -240,10 +244,11 @@
 </head>
   <body class="transition-colors duration-500 antialiased selection:bg-indigo-500/30 selection:text-indigo-900 dark:selection:text-white">
     <!-- SVG Filter Definition for Liquid Glass Effect -->
+    <!-- Adjusted scale to 15 for subtler distortion -->
     <svg style="display: none; height: 0; width: 0; position: absolute;">
       <defs>
         <filter id="liquid_glass_filter" x="0%" y="0%" width="100%" height="100%" filterUnits="objectBoundingBox">
-          <feDisplacementMap scale="30" in="SourceGraphic" in2="SourceGraphic" />
+          <feDisplacementMap scale="15" in="SourceGraphic" in2="SourceGraphic" />
         </filter>
       </defs>
     </svg>
