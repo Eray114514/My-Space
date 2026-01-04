@@ -54,7 +54,7 @@
         margin: 0;
       }
       .dark body {
-        background-color: #050505; /* Slightly softer black */
+        background-color: #050505;
       }
 
       /* --- Liquid Glass Implementation (Refined) --- */
@@ -65,7 +65,7 @@
         isolation: isolate;
       }
 
-      /* 1. The Distorted Rim (Outer) - 减弱边缘扭曲感 */
+      /* 1. The Distorted Rim (Outer) */
       .liquid-glass-outer {
         position: absolute;
         inset: 0;
@@ -75,63 +75,64 @@
         -webkit-backdrop-filter: url(#liquid_glass_filter);
         pointer-events: none;
         
-        padding: 4px; /* Thinner rim */
+        padding: 4px;
         -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
         -webkit-mask-composite: xor;
         mask-composite: exclude;
-        opacity: 0.7; /* Make the distortion less aggressive */
+        opacity: 0.5; /* Reduced distortion opacity */
       }
 
-      /* 2. The Main Surface (Cover) - 增加通透感 */
+      /* 2. The Main Surface (Cover) */
       .liquid-glass-cover {
         position: absolute;
         inset: 0;
         z-index: 2;
         border-radius: inherit;
-        backdrop-filter: blur(20px) saturate(140%);
-        -webkit-backdrop-filter: blur(20px) saturate(140%);
-        background: rgba(255, 255, 255, 0.15);
+        backdrop-filter: blur(16px) saturate(140%);
+        -webkit-backdrop-filter: blur(16px) saturate(140%);
+        background: rgba(255, 255, 255, 0.1);
         pointer-events: none;
       }
       .dark .liquid-glass-cover {
-        /* Very subtle dark tint, relying on background blur for contrast */
         background: rgba(20, 20, 20, 0.3); 
-        box-shadow: inset 0 0 30px rgba(255,255,255,0.02);
+        box-shadow: inset 0 0 40px rgba(255,255,255,0.02);
       }
 
-      /* 3. The Sharp Inner Border (Sharp) - 极细的边界线 */
+      /* 3. The Sharp Inner Border (Sharp) */
       .liquid-glass-sharp {
         position: absolute;
         inset: 0;
         z-index: 3;
         border-radius: inherit;
-        box-shadow: inset 0.5px 0.5px 0px 0px rgba(255, 255, 255, 0.3), inset -0.5px -0.5px 0px 0px rgba(255, 255, 255, 0.2);
+        box-shadow: inset 0.5px 0.5px 0px 0px rgba(255, 255, 255, 0.3), inset -0.5px -0.5px 0px 0px rgba(255, 255, 255, 0.1);
         pointer-events: none;
       }
       .dark .liquid-glass-sharp {
-        box-shadow: inset 0.5px 0.5px 0px 0px rgba(255, 255, 255, 0.1), inset -0.5px -0.5px 0px 0px rgba(255, 255, 255, 0.05);
+        box-shadow: inset 0.5px 0.5px 0px 0px rgba(255, 255, 255, 0.15), inset -0.5px -0.5px 0px 0px rgba(255, 255, 255, 0.05);
       }
 
-      /* 4. The Reflections (Reflect) - 大幅降低高光，使其柔和 */
+      /* 4. The Reflections (Reflect) */
       .liquid-glass-reflect {
         position: absolute;
         inset: 1px;
         z-index: 4;
         border-radius: inherit;
-        box-shadow: inset 1px 1px 12px 0px rgba(255, 255, 255, 0.15);
+        box-shadow: inset 1px 1px 10px 0px rgba(255, 255, 255, 0.1);
         pointer-events: none;
       }
       .dark .liquid-glass-reflect {
-         /* Extremely subtle highlight in dark mode */
-         box-shadow: inset 1px 1px 15px 0px rgba(255, 255, 255, 0.03), inset -1px -1px 10px 0px rgba(255, 255, 255, 0.01);
+         /* Very subtle highlight */
+         box-shadow: inset 1px 1px 10px 0px rgba(255, 255, 255, 0.05), inset -1px -1px 5px 0px rgba(255, 255, 255, 0.01);
       }
 
-      /* 5. The Content Container */
+      /* 5. The Content Container - FIXED: Added flex to ensure single line layout */
       .liquid-glass-content {
         position: relative;
         z-index: 10;
         width: 100%;
         height: 100%;
+        display: flex;
+        align-items: center;
       }
 
       /* --- Markdown Alerts (GitHub Style) --- */
@@ -226,7 +227,7 @@
     "@neondatabase/serverless": "https://esm.sh/@neondatabase/serverless@^1.0.2",
     "react/": "https://esm.sh/react@^19.2.3/",
     "remark-gfm": "https://esm.sh/remark-gfm@^4.0.1",
-    "lucide-react": "https://esm.sh/lucide-react@^0.562.0",
+    "lucide-react": "https://esm.sh/lucide-react@^0.468.0",
     "@vitejs/plugin-react": "https://esm.sh/@vitejs/plugin-react@^5.1.2",
     "vite": "https://esm.sh/vite@^7.3.0",
     "remark-github-blockquote-alert": "https://esm.sh/remark-github-blockquote-alert@^2.0.1",
@@ -244,11 +245,10 @@
 </head>
   <body class="transition-colors duration-500 antialiased selection:bg-indigo-500/30 selection:text-indigo-900 dark:selection:text-white">
     <!-- SVG Filter Definition for Liquid Glass Effect -->
-    <!-- Adjusted scale to 15 for subtler distortion -->
     <svg style="display: none; height: 0; width: 0; position: absolute;">
       <defs>
         <filter id="liquid_glass_filter" x="0%" y="0%" width="100%" height="100%" filterUnits="objectBoundingBox">
-          <feDisplacementMap scale="15" in="SourceGraphic" in2="SourceGraphic" />
+          <feDisplacementMap scale="12" in="SourceGraphic" in2="SourceGraphic" />
         </filter>
       </defs>
     </svg>
