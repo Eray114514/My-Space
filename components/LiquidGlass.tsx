@@ -3,26 +3,26 @@ import React from 'react';
 interface Props extends React.HTMLAttributes<HTMLDivElement> {
   children: React.ReactNode;
   className?: string;
-  // 允许传递 onClick 等标准 HTML 属性
+  innerClassName?: string;
 }
 
-export const LiquidGlass: React.FC<Props> = ({ children, className = "", ...props }) => {
+export const LiquidGlass: React.FC<Props> = ({ children, className = "", innerClassName = "", ...props }) => {
   return (
     <div className={`liquid-glass-wrapper ${className}`} {...props}>
-      {/* 1. 外层边框扭曲 (Outer Rim) */}
+      {/* 1. The Distorted Rim (Outer) */}
       <div className="liquid-glass-outer"></div>
-      
-      {/* 2. 主体模糊层 (Cover) */}
+
+      {/* 2. The Main Surface (Cover) */}
       <div className="liquid-glass-cover"></div>
-      
-      {/* 3. 内部锐利边框 (Sharp) */}
+
+      {/* 3. The Sharp Inner Border (Sharp) */}
       <div className="liquid-glass-sharp"></div>
-      
-      {/* 4. 反光高光层 (Reflect) */}
+
+      {/* 4. The Reflections (Reflect) */}
       <div className="liquid-glass-reflect"></div>
-      
-      {/* 5. 实际内容 */}
-      <div className="liquid-glass-content">
+
+      {/* 5. The Content Container */}
+      <div className={`liquid-glass-content ${innerClassName}`}>
         {children}
       </div>
     </div>

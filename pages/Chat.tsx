@@ -105,6 +105,7 @@ export const Chat: React.FC = () => {
     const textareaRef = useRef<HTMLTextAreaElement>(null);
     const abortControllerRef = useRef<AbortController | null>(null);
     const historyRef = useRef<HTMLDivElement>(null);
+    const historyToggleRef = useRef<HTMLButtonElement>(null); // Ref for the toggle button
 
     // Auth Check
     const isAdmin = useMemo(() => {
@@ -148,7 +149,16 @@ export const Chat: React.FC = () => {
     // Close History when clicking outside
     useEffect(() => {
         const handleClickOutside = (event: MouseEvent) => {
-            if (historyRef.current && !historyRef.current.contains(event.target as Node) && isHistoryOpen) {
+            // Ignore clicks inside the drawer
+            if (historyRef.current && historyRef.current.contains(event.target as Node)) {
+                return;
+            }
+            // Ignore clicks on the toggle button itself (let onClick handle it)
+            if (historyToggleRef.current && historyToggleRef.current.contains(event.target as Node)) {
+                return;
+            }
+            // Close if currently open
+            if (isHistoryOpen) {
                 setIsHistoryOpen(false);
             }
         };
@@ -477,7 +487,10 @@ export const Chat: React.FC = () => {
 
             {/* --- Top Floating Glass Bar (Navigation & Controls) --- */}
             <div className="fixed top-4 left-0 right-0 flex justify-center z-50 pointer-events-none px-4">
-                <LiquidGlass className="pointer-events-auto rounded-full px-1.5 py-1.5 shadow-xl flex items-center gap-1 sm:gap-2 transition-all min-w-[300px]">
+                <LiquidGlass
+                    className="pointer-events-auto rounded-full shadow-xl transition-all min-w-[300px]"
+                    innerClassName="flex items-center gap-1 sm:gap-2 px-1.5 py-1.5"
+                >
 
                     {/* 1. Home Button */}
                     <button
@@ -492,6 +505,7 @@ export const Chat: React.FC = () => {
 
                     {/* 2. History Toggle */}
                     <button
+                        ref={historyToggleRef}
                         onClick={() => setIsHistoryOpen(!isHistoryOpen)}
                         className={`flex items-center gap-2 px-3 py-2 rounded-full text-xs font-bold transition-all ${isHistoryOpen ? 'bg-indigo-600 text-white shadow-md' : 'text-gray-700 dark:text-gray-200 hover:bg-black/5 dark:hover:bg-white/10'}`}
                     >
@@ -711,7 +725,10 @@ export const Chat: React.FC = () => {
                         )}
 
                         {/* Input Capsule */}
-                        <LiquidGlass className="rounded-[2.5rem] p-1.5 flex items-end gap-2 shadow-2xl shadow-indigo-500/10 border-white/50 dark:border-white/10 bg-white/60 dark:bg-black/40 backdrop-blur-2xl transition-all focus-within:bg-white/80 dark:focus-within:bg-black/60 focus-within:border-indigo-500/30">
+                        <LiquidGlass
+                            className="rounded-[2.5rem] shadow-2xl shadow-indigo-500/10 border border-white/20 dark:border-white/5 bg-white/40 dark:bg-black/30 backdrop-blur-2xl transition-all focus-within:bg-white/60 dark:focus-within:bg-black/50 focus-within:border-indigo-500/30"
+                            innerClassName="flex items-end gap-2 p-1.5"
+                        >
                             <button
                                 onClick={() => setIsArticlePickerOpen(!isArticlePickerOpen)}
                                 className={`p-3 rounded-full h-[46px] w-[46px] flex items-center justify-center transition-all ${attachedArticles.length > 0 ? 'bg-indigo-100 text-indigo-600 dark:bg-indigo-900/40 dark:text-indigo-300' : 'text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 hover:bg-black/5 dark:hover:bg-white/10'}`}
