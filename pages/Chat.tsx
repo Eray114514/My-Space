@@ -686,8 +686,8 @@ export const Chat: React.FC = () => {
                     </div>
                 </div>
 
-                {/* --- Floating Input Area --- */}
-                <div className="absolute bottom-6 left-0 right-0 px-4 z-50 flex justify-center pointer-events-none">
+                {/* --- Floating Input Area (FIXED BOTTOM) --- */}
+                <div className="fixed bottom-6 left-0 right-0 px-4 z-50 flex justify-center pointer-events-none">
                     <div className="w-full max-w-3xl relative pointer-events-auto">
                         {/* Context Tags (Floating above input) */}
                         {attachedArticles.length > 0 && (
@@ -724,10 +724,10 @@ export const Chat: React.FC = () => {
                             </div>
                         )}
 
-                        {/* Input Capsule */}
+                        {/* Input Capsule - High Quality Texture */}
                         <LiquidGlass
-                            className="rounded-[2.5rem] shadow-2xl shadow-indigo-500/10 border border-white/20 dark:border-white/5 bg-white/40 dark:bg-black/30 backdrop-blur-2xl transition-all focus-within:bg-white/60 dark:focus-within:bg-black/50 focus-within:border-indigo-500/30"
-                            innerClassName="flex items-end gap-2 p-1.5"
+                            className="rounded-[2.5rem] shadow-[0_0_50px_-12px_rgba(0,0,0,0.12)] dark:shadow-[0_0_50px_-12px_rgba(255,255,255,0.05)] border border-white/50 dark:border-white/10 bg-white/70 dark:bg-[#121212]/80 backdrop-blur-[40px] transition-all duration-300 focus-within:scale-[1.01] focus-within:bg-white/90 dark:focus-within:bg-black/90 focus-within:border-indigo-500/40 focus-within:shadow-[0_10px_40px_-10px_rgba(79,70,229,0.2)]"
+                            innerClassName="flex items-end gap-2 p-2"
                         >
                             <button
                                 onClick={() => setIsArticlePickerOpen(!isArticlePickerOpen)}
@@ -743,7 +743,7 @@ export const Chat: React.FC = () => {
                                 onKeyDown={(e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSend(); } }}
                                 placeholder={isLoading ? "AI 正在思考..." : "输入消息..."}
                                 disabled={isLoading || isMessagesLoading}
-                                className="flex-1 bg-transparent border-none outline-none py-3 max-h-[150px] min-h-[46px] resize-none text-[15px] text-gray-900 dark:text-white placeholder-gray-400/60 custom-scrollbar"
+                                className="flex-1 bg-transparent border-none outline-none py-3 max-h-[150px] min-h-[46px] resize-none text-[15px] text-gray-900 dark:text-white placeholder-gray-500/50 custom-scrollbar font-medium"
                                 rows={1}
                             />
                             <button
