@@ -83,8 +83,9 @@
       inset: 0;
       z-index: 1;
       border-radius: inherit;
-      backdrop-filter: url(#liquid_glass_filter);
-      -webkit-backdrop-filter: url(#liquid_glass_filter);
+      /* Removed expensive SVG filter for better performance on mobile and low-end devices */
+      /* backdrop-filter: url(#liquid_glass_filter); */
+      /* -webkit-backdrop-filter: url(#liquid_glass_filter); */
       pointer-events: none;
 
       padding: 4px;
@@ -101,8 +102,9 @@
       inset: 0;
       z-index: 2;
       border-radius: inherit;
-      backdrop-filter: blur(16px) saturate(140%);
-      -webkit-backdrop-filter: blur(16px) saturate(140%);
+      /* Reduced blur for better performance on low-end devices */
+      backdrop-filter: blur(12px) saturate(140%);
+      -webkit-backdrop-filter: blur(12px) saturate(140%);
       background: rgba(255, 255, 255, 0.1);
       pointer-events: none;
     }
