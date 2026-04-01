@@ -4,11 +4,17 @@ import react from '@vitejs/plugin-react'
 // https://vitejs.dev/config/
 export default defineConfig({
   plugins: [react()],
-  // 允许 Vite 将以下前缀的环境变量暴露给客户端代码 (import.meta.env)
-  envPrefix: ['GEMINI_', 'DEEPSEEK_', 'OPENROUTER_', 'DATABASE_', 'ADMIN_'],
+  // 移除敏感的 envPrefix，这些变量现在只在后端 Node.js 环境中通过 process.env 获取
+  // envPrefix: ['GEMINI_', 'DEEPSEEK_', 'OPENROUTER_', 'DATABASE_', 'ADMIN_'],
   define: {
-    // 某些库（如 openai）在浏览器中运行时可能会检查 process.env
-    // 这里定义一个空对象防止报错 "process is not defined"
     'process.env': {}
+  },
+  server: {
+    proxy: {
+      '/api': {
+        target: 'http://localhost:3000', // Vercel dev 默认端口
+        changeOrigin: true
+      }
+    }
   }
 })
