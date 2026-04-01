@@ -287,6 +287,50 @@
       padding-top: 0.5rem;
       padding-bottom: 0.5rem;
     }
+
+    /* --- Details & Summary --- */
+    details {
+      border: 1px solid rgba(160, 160, 160, 0.2);
+      border-radius: 0.5rem;
+      padding: 0.5rem 1rem;
+      margin-bottom: 1rem;
+      background-color: rgba(255, 255, 255, 0.5);
+    }
+    
+    .dark details {
+      border-color: rgba(255, 255, 255, 0.1);
+      background-color: rgba(0, 0, 0, 0.2);
+    }
+
+    summary {
+      cursor: pointer;
+      font-weight: 600;
+      outline: none;
+      user-select: none;
+      margin: -0.5rem -1rem;
+      padding: 0.5rem 1rem;
+      border-radius: 0.5rem;
+      transition: background-color 0.2s ease;
+    }
+
+    summary:hover {
+      background-color: rgba(160, 160, 160, 0.1);
+    }
+
+    .dark summary:hover {
+      background-color: rgba(255, 255, 255, 0.05);
+    }
+
+    details[open] summary {
+      margin-bottom: 0.5rem;
+      border-bottom-left-radius: 0;
+      border-bottom-right-radius: 0;
+      border-bottom: 1px solid rgba(160, 160, 160, 0.1);
+    }
+
+    .dark details[open] summary {
+      border-bottom-color: rgba(255, 255, 255, 0.05);
+    }
   </style>
   <script type="importmap">
 {
@@ -302,6 +346,7 @@
     "remark-math": "https://esm.sh/remark-math@^6.0.0",
     "rehype-katex": "https://esm.sh/rehype-katex@^7.0.0",
     "rehype-slug": "https://esm.sh/rehype-slug@^6.0.0",
+    "rehype-raw": "https://esm.sh/rehype-raw@^7.0.0",
     "mermaid": "https://esm.sh/mermaid@^11.0.0",
     "unist-util-visit": "https://esm.sh/unist-util-visit@^5.0.0",
     "react": "https://esm.sh/react@^19.2.3",

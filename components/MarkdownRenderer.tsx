@@ -4,6 +4,7 @@ import remarkGfm from 'remark-gfm';
 import remarkMath from 'remark-math';
 import rehypeKatex from 'rehype-katex';
 import rehypeSlug from 'rehype-slug';
+import rehypeRaw from 'rehype-raw';
 import { visit } from 'unist-util-visit';
 import { remarkAlert } from 'remark-github-blockquote-alert';
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
@@ -159,7 +160,7 @@ export const MarkdownRenderer: React.FC<Props> = ({ content }) => {
     ">
       <ReactMarkdown 
         remarkPlugins={[remarkFixChineseBold, remarkGfm, remarkAlert, remarkMath]}
-        rehypePlugins={[rehypeSlug, rehypeKatex]}
+        rehypePlugins={[rehypeRaw, rehypeSlug, rehypeKatex]}
         components={{
           pre: PreBlock,   // 拦截代码块
           code: InlineCode // 拦截行内代码
