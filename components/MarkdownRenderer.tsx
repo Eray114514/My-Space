@@ -1,10 +1,54 @@
 import React, { useState, isValidElement } from 'react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
+import remarkMath from 'remark-math';
+import rehypeKatex from 'rehype-katex';
+import rehypeSlug from 'rehype-slug';
+import rehypeRaw from 'rehype-raw';
+import { visit } from 'unist-util-visit';
 import { remarkAlert } from 'remark-github-blockquote-alert';
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 import { vscDarkPlus } from 'react-syntax-highlighter/dist/esm/styles/prism';
 import { Check, Copy } from 'lucide-react';
+import { Mermaid } from './Mermaid';
+
+// Custom remark plugin to fix CJK text bolding issues (e.g. **bold** adjacent to Chinese punctuation)
+function remarkFixChineseBold() {
+  return (tree: any) => {
+    visit(tree, 'text', (node: any, index: number, parent: any) => {
+      const regex = /\*\*(.+?)\*\*/g;
+      let match;
+      let lastIndex = 0;
+      const children = [];
+      
+      while ((match = regex.exec(node.value)) !== null) {
+        if (match.index > lastIndex) {
+          children.push({
+            type: 'text',
+            value: node.value.slice(lastIndex, match.index)
+          });
+        }
+        children.push({
+          type: 'strong',
+          children: [{ type: 'text', value: match[1] }]
+        });
+        lastIndex = regex.lastIndex;
+      }
+      
+      if (lastIndex < node.value.length) {
+        children.push({
+          type: 'text',
+          value: node.value.slice(lastIndex)
+        });
+      }
+      
+      if (children.length > 0 && index !== undefined && parent) {
+        parent.children.splice(index, 1, ...children);
+        return index + children.length;
+      }
+    });
+  };
+}
 
 interface Props {
   content: string;
@@ -27,6 +71,10 @@ const PreBlock = ({ children }: any) => {
   const match = /language-(\w+)/.exec(className || '');
   const language = match ? match[1] : 'text';
   const codeString = String(codeContent).replace(/\n$/, '');
+
+  if (language === 'mermaid') {
+    return <Mermaid chart={codeString} />;
+  }
 
   const handleCopy = async () => {
     try {
@@ -99,7 +147,7 @@ const InlineCode = ({ children, className, ...props }: any) => {
 export const MarkdownRenderer: React.FC<Props> = ({ content }) => {
   return (
     <div className="prose prose-zinc dark:prose-invert max-w-none 
-      prose-headings:font-bold prose-headings:tracking-tight
+      prose-headings:font-bold prose-headings:tracking-tight prose-headings:scroll-mt-24
       prose-p:leading-relaxed
       prose-a:text-indigo-600 dark:prose-a:text-indigo-400 prose-a:no-underline hover:prose-a:underline
       prose-blockquote:not-italic prose-blockquote:font-normal prose-blockquote:text-gray-500 dark:prose-blockquote:text-gray-400
@@ -111,7 +159,8 @@ export const MarkdownRenderer: React.FC<Props> = ({ content }) => {
       prose-code:before:content-none prose-code:after:content-none prose-code:font-normal
     ">
       <ReactMarkdown 
-        remarkPlugins={[remarkGfm, remarkAlert]}
+        remarkPlugins={[remarkFixChineseBold, remarkGfm, remarkAlert, remarkMath]}
+        rehypePlugins={[rehypeRaw, rehypeSlug, rehypeKatex]}
         components={{
           pre: PreBlock,   // 拦截代码块
           code: InlineCode // 拦截行内代码

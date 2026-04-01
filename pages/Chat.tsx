@@ -726,7 +726,7 @@ export const Chat: React.FC = () => {
 
                         {/* Input Capsule - High Quality Texture */}
                         <LiquidGlass
-                            className="rounded-[2.5rem] shadow-[0_0_50px_-12px_rgba(0,0,0,0.12)] dark:shadow-[0_0_50px_-12px_rgba(255,255,255,0.05)] border border-white/50 dark:border-white/10 bg-white/70 dark:bg-[#121212]/80 backdrop-blur-[40px] transition-all duration-300 focus-within:scale-[1.01] focus-within:bg-white/90 dark:focus-within:bg-black/90 focus-within:border-indigo-500/40 focus-within:shadow-[0_10px_40px_-10px_rgba(79,70,229,0.2)]"
+                            className="rounded-[2.5rem] shadow-[0_0_50px_-12px_rgba(0,0,0,0.12)] dark:shadow-[0_0_50px_-12px_rgba(255,255,255,0.05)] border border-white/50 dark:border-white/10 bg-white/70 dark:bg-[#121212]/80 backdrop-blur-xl transition-all duration-300 focus-within:scale-[1.01] focus-within:bg-white/90 dark:focus-within:bg-black/90 focus-within:border-indigo-500/40 focus-within:shadow-[0_10px_40px_-10px_rgba(79,70,229,0.2)]"
                             innerClassName="flex items-end gap-2 p-2"
                         >
                             <button

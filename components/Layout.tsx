@@ -88,20 +88,20 @@ export const Layout: React.FC<Props> = ({ isAuthenticated, onLogout, isDarkMode,
       <div className="fixed inset-0 -z-10 bg-[#f8f9fa] dark:bg-[#020202] transition-colors duration-700">
         <div className="absolute inset-0 overflow-hidden pointer-events-none">
            {/* Top Spotlight */}
-           <div className="absolute top-[-20%] left-1/2 -translate-x-1/2 w-[80vw] h-[600px] bg-gradient-to-b from-indigo-500/10 to-transparent dark:from-indigo-600/30 dark:to-transparent blur-[80px] rounded-full pointer-events-none" />
+           <div className="absolute top-[-20%] left-1/2 -translate-x-1/2 w-[80vw] h-[600px] bg-gradient-to-b from-indigo-500/10 to-transparent dark:from-indigo-600/30 dark:to-transparent filter blur-[40px] md:blur-[80px] rounded-full pointer-events-none" />
 
            {/* Animated Orbs */}
-           <div className="absolute top-[10%] left-[10%] w-[40vw] h-[40vw] max-w-[500px] max-h-[500px] bg-purple-400/30 dark:bg-violet-600/40 rounded-full mix-blend-multiply dark:mix-blend-screen filter blur-[90px] animate-pulse-slow" />
-           <div className="absolute top-[30%] right-[10%] w-[35vw] h-[35vw] max-w-[400px] max-h-[400px] bg-blue-400/30 dark:bg-blue-600/30 rounded-full mix-blend-multiply dark:mix-blend-screen filter blur-[100px] animate-float" />
+           <div className="absolute top-[10%] left-[10%] w-[40vw] h-[40vw] max-w-[500px] max-h-[500px] bg-purple-400/30 dark:bg-violet-600/40 rounded-full mix-blend-normal md:mix-blend-multiply dark:md:mix-blend-screen filter blur-[60px] md:blur-[90px] md:animate-pulse-slow will-change-transform" />
+           <div className="absolute top-[30%] right-[10%] w-[35vw] h-[35vw] max-w-[400px] max-h-[400px] bg-blue-400/30 dark:bg-blue-600/30 rounded-full mix-blend-normal md:mix-blend-multiply dark:md:mix-blend-screen filter blur-[60px] md:blur-[100px] md:animate-float will-change-transform" />
         </div>
         {/* Noise Texture */}
-        <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-20 dark:opacity-[0.06] mix-blend-overlay"></div>
+        <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-20 dark:opacity-[0.06] mix-blend-overlay pointer-events-none hidden md:block"></div>
       </div>
 
       {/* Floating Navigation (Fixed Layout) - Hides on Immersive Pages */}
       {!isImmersive && (
         <div 
-          className={`fixed top-4 sm:top-6 left-0 right-0 z-50 flex justify-center px-4 pointer-events-none transition-transform duration-500 ease-in-out ${isNavVisible ? 'translate-y-0' : '-translate-y-[200%]'}`}
+          className={`fixed top-4 sm:top-6 left-0 right-0 z-50 flex justify-center px-4 pointer-events-none transition-transform duration-500 ease-in-out will-change-transform ${isNavVisible ? 'translate-y-0' : '-translate-y-[200%]'}`}
         >
           {/* Liquid Glass Navbar */}
           {/* NOTE: We manually add 'flex items-center' inside here because we removed it from the global liquid-glass-content css */}
