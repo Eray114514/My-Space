@@ -1,0 +1,65 @@
+diff --git a/package.json b/package.json
+index 76c1095..fa32693 100644
+--- a/package.json
++++ b/package.json
+@@ -12,14 +12,24 @@
+     "@google/genai": "^1.34.0",
+     "@neondatabase/serverless": "^0.6.0",
+     "lucide-react": "^0.468.0",
++    "mermaid": "^11.14.0",
+     "openai": "^4.28.0",
+     "react": "^18.2.0",
+     "react-dom": "^18.2.0",
+     "react-markdown": "^9.0.1",
+     "react-router-dom": "^6.20.0",
+     "react-syntax-highlighter": "^15.5.0",
++    "rehype-katex": "^7.0.1",
++    "rehype-raw": "^7.0.0",
++    "rehype-slug": "^6.0.0",
++    "rehype-stringify": "^10.0.1",
+     "remark-gfm": "^4.0.0",
+-    "remark-github-blockquote-alert": "^1.2.1"
++    "remark-github-blockquote-alert": "^1.2.1",
++    "remark-math": "^6.0.0",
++    "remark-parse": "^11.0.0",
++    "remark-rehype": "^11.1.2",
++    "unified": "^11.0.5",
++    "unist-util-visit": "^5.1.0"
+   },
+   "devDependencies": {
+     "@types/react": "^18.2.43",
+@@ -32,4 +42,4 @@
+     "typescript": "^5.2.2",
+     "vite": "^5.0.8"
+   }
+-}
+\ No newline at end of file
++}
+diff --git a/pages/Chat.tsx b/pages/Chat.tsx
+index fea9157..4f47737 100644
+--- a/pages/Chat.tsx
++++ b/pages/Chat.tsx
+@@ -726,7 +726,7 @@ export const Chat: React.FC = () => {
+ 
+                         {/* Input Capsule - High Quality Texture */}
+                         <LiquidGlass
+-                            className="rounded-[2.5rem] shadow-[0_0_50px_-12px_rgba(0,0,0,0.12)] dark:shadow-[0_0_50px_-12px_rgba(255,255,255,0.05)] border border-white/50 dark:border-white/10 bg-white/70 dark:bg-[#121212]/80 backdrop-blur-[40px] transition-all duration-300 focus-within:scale-[1.01] focus-within:bg-white/90 dark:focus-within:bg-black/90 focus-within:border-indigo-500/40 focus-within:shadow-[0_10px_40px_-10px_rgba(79,70,229,0.2)]"
++                            className="rounded-[2.5rem] shadow-[0_0_50px_-12px_rgba(0,0,0,0.12)] dark:shadow-[0_0_50px_-12px_rgba(255,255,255,0.05)] border border-white/50 dark:border-white/10 bg-white/70 dark:bg-[#121212]/80 backdrop-blur-xl transition-all duration-300 focus-within:scale-[1.01] focus-within:bg-white/90 dark:focus-within:bg-black/90 focus-within:border-indigo-500/40 focus-within:shadow-[0_10px_40px_-10px_rgba(79,70,229,0.2)]"
+                             innerClassName="flex items-end gap-2 p-2"
+                         >
+                             <button
+diff --git a/pages/admin/AdminDashboard.tsx b/pages/admin/AdminDashboard.tsx
+index 3aa448e..aaf4a8d 100644
+--- a/pages/admin/AdminDashboard.tsx
++++ b/pages/admin/AdminDashboard.tsx
+@@ -479,8 +479,8 @@ const ArticleEditor: React.FC<{
+     <div className="fixed inset-0 z-[9999] bg-[#f8f9fa] dark:bg-[#050505] flex flex-col animate-in fade-in zoom-in-95 duration-300">
+       {/* Background */}
+       <div className="absolute inset-0 overflow-hidden pointer-events-none z-0 opacity-50">
+-        <div className="absolute -top-[10%] -left-[10%] w-[60vw] h-[60vw] max-w-[800px] max-h-[800px] bg-indigo-300/30 dark:bg-indigo-600/20 rounded-full mix-blend-multiply dark:mix-blend-screen filter blur-[100px]" />
+-        <div className="absolute -bottom-[10%] -right-[10%] w-[60vw] h-[60vw] max-w-[800px] max-h-[800px] bg-pink-300/30 dark:bg-purple-600/20 rounded-full mix-blend-multiply dark:mix-blend-screen filter blur-[100px]" />
++        <div className="absolute -top-[10%] -left-[10%] w-[60vw] h-[60vw] max-w-[800px] max-h-[800px] bg-indigo-300/30 dark:bg-indigo-600/20 rounded-full mix-blend-normal md:mix-blend-multiply dark:md:mix-blend-screen filter blur-[60px] md:blur-[100px]" />
++        <div className="absolute -bottom-[10%] -right-[10%] w-[60vw] h-[60vw] max-w-[800px] max-h-[800px] bg-pink-300/30 dark:bg-purple-600/20 rounded-full mix-blend-normal md:mix-blend-multiply dark:md:mix-blend-screen filter blur-[60px] md:blur-[100px]" />
+       </div>
+ 
+       {/* Top Toolbar */}
