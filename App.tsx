@@ -1,14 +1,16 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, Suspense, lazy } from 'react';
 import { HashRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { Layout } from './components/Layout';
-import { Home } from './pages/Home';
-import { Blog } from './pages/Blog';
-import { ArticleDetail } from './pages/ArticleDetail';
-import { Login } from './pages/Login';
-import { AdminDashboard } from './pages/admin/AdminDashboard';
-import { SearchPage } from './pages/Search';
-import { Chat } from './pages/Chat';
 import { StorageService } from './services/storage';
+
+// 懒加载页面组件
+const Home = lazy(() => import('./pages/Home').then(m => ({ default: m.Home })));
+const Blog = lazy(() => import('./pages/Blog').then(m => ({ default: m.Blog })));
+const ArticleDetail = lazy(() => import('./pages/ArticleDetail').then(m => ({ default: m.ArticleDetail })));
+const Login = lazy(() => import('./pages/Login').then(m => ({ default: m.Login })));
+const AdminDashboard = lazy(() => import('./pages/admin/AdminDashboard').then(m => ({ default: m.AdminDashboard })));
+const SearchPage = lazy(() => import('./pages/Search').then(m => ({ default: m.SearchPage })));
+const Chat = lazy(() => import('./pages/Chat').then(m => ({ default: m.Chat })));
 
 const App: React.FC = () => {
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
@@ -54,25 +56,33 @@ const App: React.FC = () => {
 
   return (
     <HashRouter>
-      <Routes>
-        <Route path="/" element={
-          <Layout 
-            isAuthenticated={isAuthenticated} 
-            onLogout={handleLogout} 
-            isDarkMode={isDarkMode}
-            toggleTheme={toggleTheme}
-          />
-        }>
-          <Route index element={<Home />} />
-          <Route path="blog" element={<Blog />} />
-          <Route path="blog/:id" element={<ArticleDetail />} />
-          <Route path="chat" element={<Chat />} />
-          <Route path="search" element={<SearchPage />} />
-          <Route path="login" element={isAuthenticated ? <Navigate to="/admin" /> : <Login onLogin={handleLogin} />} />
-          <Route path="admin" element={isAuthenticated ? <AdminDashboard /> : <Navigate to="/login" />} />
-          <Route path="*" element={<Navigate to="/" />} />
-        </Route>
-      </Routes>
+      <Suspense fallback={
+        <div className="min-h-screen flex items-center justify-center bg-[#f8f9fa] dark:bg-[#050505]">
+          <div className="text-gray-400 dark:text-gray-500 font-light tracking-widest animate-pulse text-sm">
+            正在加载 / LOADING...
+          </div>
+        </div>
+      }>
+        <Routes>
+          <Route path="/" element={
+            <Layout 
+              isAuthenticated={isAuthenticated} 
+              onLogout={handleLogout} 
+              isDarkMode={isDarkMode}
+              toggleTheme={toggleTheme}
+            />
+          }>
+            <Route index element={<Home />} />
+            <Route path="blog" element={<Blog />} />
+            <Route path="blog/:id" element={<ArticleDetail />} />
+            <Route path="chat" element={<Chat />} />
+            <Route path="search" element={<SearchPage />} />
+            <Route path="login" element={isAuthenticated ? <Navigate to="/admin" /> : <Login onLogin={handleLogin} />} />
+            <Route path="admin" element={isAuthenticated ? <AdminDashboard /> : <Navigate to="/login" />} />
+            <Route path="*" element={<Navigate to="/" />} />
+          </Route>
+        </Routes>
+      </Suspense>
     </HashRouter>
   );
 };
