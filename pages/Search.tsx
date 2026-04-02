@@ -88,24 +88,20 @@ export const SearchPage: React.FC = () => {
             </h2>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               {results.projects.map(project => (
-                <a 
+                <LiquidGlass 
                     key={project.id}
-                    href={project.url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="block group"
+                    className="flex items-center gap-4 p-4 rounded-2xl hover:bg-white/60 dark:hover:bg-white/10 hover:border-indigo-200/50 transition-all hover:shadow-md cursor-pointer group"
+                    onClick={() => window.open(project.url, '_blank')}
                 >
-                    <LiquidGlass className="flex items-center gap-4 p-4 rounded-2xl hover:bg-white/60 dark:hover:bg-white/10 hover:border-indigo-200/50 transition-all hover:shadow-md">
-                        <div className="p-2.5 bg-white/50 dark:bg-white/5 rounded-xl group-hover:bg-indigo-50 dark:group-hover:bg-indigo-900/20 transition-colors backdrop-blur-sm border border-white/20">
-                            {renderProjectIcon(project)}
-                        </div>
-                        <div className="flex-1 min-w-0">
-                            <h3 className="font-semibold text-gray-900 dark:text-white truncate">{project.title}</h3>
-                            <p className="text-xs text-gray-500 dark:text-gray-400 truncate">{project.description}</p>
-                        </div>
-                        <ExternalLink size={14} className="text-gray-300 group-hover:text-indigo-500 transition-colors" />
-                   </LiquidGlass>
-                </a>
+                    <div className="p-2.5 bg-white/50 dark:bg-white/5 rounded-xl group-hover:bg-indigo-50 dark:group-hover:bg-indigo-900/20 transition-colors backdrop-blur-sm border border-white/20">
+                        {renderProjectIcon(project)}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                        <h3 className="font-semibold text-gray-900 dark:text-white truncate">{project.title}</h3>
+                        <p className="text-xs text-gray-500 dark:text-gray-400 truncate">{project.description}</p>
+                    </div>
+                    <ExternalLink size={14} className="text-gray-300 group-hover:text-indigo-500 transition-colors" />
+               </LiquidGlass>
               ))}
             </div>
           </section>
@@ -118,24 +114,22 @@ export const SearchPage: React.FC = () => {
             </h2>
             <div className="space-y-4">
                 {results.articles.map(article => (
-                    <Link 
-                        key={article.id}
-                        to={`/blog/${article.id}`}
-                        className="block group"
-                    >
-                        <LiquidGlass className="p-6 rounded-2xl hover:bg-white/60 dark:hover:bg-white/10 hover:border-indigo-200/50 transition-all hover:shadow-md">
-                             <div className="flex justify-between items-start mb-2">
-                                 <h3 className="text-lg font-bold text-gray-900 dark:text-white group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">{article.title}</h3>
-                                 <span className="text-xs text-gray-400 font-mono py-1 px-2 bg-black/5 dark:bg-white/5 rounded-md">{new Date(article.createdAt).toLocaleDateString()}</span>
-                             </div>
-                             <p className="text-sm text-gray-600 dark:text-gray-300 line-clamp-2 leading-relaxed">{article.summary}</p>
-                             <div className="flex gap-2 mt-4">
-                                 {article.tags.map(t => (
-                                     <span key={t} className="text-[10px] px-2 py-0.5 bg-white/50 dark:bg-white/5 backdrop-blur-sm text-gray-500 dark:text-gray-400 rounded-md border border-white/20">#{t}</span>
-                                 ))}
-                             </div>
-                        </LiquidGlass>
-                    </Link>
+                    <div key={article.id} className="block group">
+                        <Link to={`/blog/${article.id}`} className="block h-full">
+                            <LiquidGlass className="p-6 rounded-2xl hover:bg-white/60 dark:hover:bg-white/10 hover:border-indigo-200/50 transition-all hover:shadow-md cursor-pointer">
+                                 <div className="flex justify-between items-start mb-2">
+                                     <h3 className="text-lg font-bold text-gray-900 dark:text-white group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">{article.title}</h3>
+                                     <span className="text-xs text-gray-400 font-mono py-1 px-2 bg-black/5 dark:bg-white/5 rounded-md">{new Date(article.createdAt).toLocaleDateString()}</span>
+                                 </div>
+                                 <p className="text-sm text-gray-600 dark:text-gray-300 line-clamp-2 leading-relaxed">{article.summary}</p>
+                                 <div className="flex gap-2 mt-4">
+                                     {article.tags.map(t => (
+                                         <span key={t} className="text-[10px] px-2 py-0.5 bg-white/50 dark:bg-white/5 backdrop-blur-sm text-gray-500 dark:text-gray-400 rounded-md border border-white/20">#{t}</span>
+                                     ))}
+                                 </div>
+                            </LiquidGlass>
+                        </Link>
+                    </div>
                 ))}
             </div>
            </section>
