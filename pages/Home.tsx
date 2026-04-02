@@ -21,11 +21,8 @@ export const Home: React.FC = () => {
             const allProjects = await StorageService.getProjects();
             setProjects(allProjects);
 
-            const allArticles = await StorageService.getArticles();
-            const published = allArticles
-                .filter(a => a.isPublished)
-                .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
-                .slice(0, 3);
+            const allArticles = await StorageService.getPublishedArticlesLight();
+            const published = allArticles.slice(0, 3);
             setRecentArticles(published);
         } catch (e) {
             console.error("Failed to load home data", e);

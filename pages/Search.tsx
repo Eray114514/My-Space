@@ -18,10 +18,10 @@ export const SearchPage: React.FC = () => {
     const loadData = async () => {
       try {
         const [fetchedArticles, fetchedProjects] = await Promise.all([
-          StorageService.getArticles(),
+          StorageService.getPublishedArticlesLight(),
           StorageService.getProjects()
         ]);
-        setArticles(fetchedArticles.filter(a => a.isPublished));
+        setArticles(fetchedArticles);
         setProjects(fetchedProjects);
       } catch (e) {
         console.error(e);

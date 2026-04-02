@@ -7,12 +7,16 @@ import {
 import { AIService, AI_MODELS, AIModelKey } from '../services/ai';
 import { StorageService, ChatSession, ChatMessage } from '../services/storage';
 import { MarkdownRenderer } from '../components/MarkdownRenderer';
+import { confirmToast } from '../utils/toast';
+import toast from 'react-hot-toast';
 import { Article } from '../types';
 import { LiquidGlass } from '../components/LiquidGlass';
+import { MessageActions, getDisplayContent, CONTEXT_TAG_START, CONTEXT_TAG_END } from '../components/chat/MessageItem';
 
 const DEFAULT_SYSTEM_PROMPT = "你是一个智能助手，名字叫 My AI。请用简洁、优雅的 Markdown 格式回答用户的问题。";
-const CONTEXT_TAG_START = "<hidden_context>";
-const CONTEXT_TAG_END = "</hidden_context>";
+
+import { ChatSidebar } from '../components/chat/ChatSidebar';
+import { ChatTopBar } from '../components/chat/ChatTopBar';
 
 // Helper for unique IDs
 const generateId = () => {
@@ -23,45 +27,6 @@ const generateId = () => {
 };
 
 // --- Helper Components ---
-
-interface MessageActionsProps {
-    role: 'user' | 'assistant';
-    content: string;
-    isLast: boolean;
-    onCopy: () => void;
-    onRegenerate?: () => void;
-    onEdit?: () => void;
-}
-
-const MessageActions: React.FC<MessageActionsProps> = ({ role, isLast, onCopy, onRegenerate, onEdit }) => {
-    const [copied, setCopied] = useState(false);
-
-    const handleCopy = () => {
-        onCopy();
-        setCopied(true);
-        setTimeout(() => setCopied(false), 2000);
-    };
-
-    return (
-        <div className={`flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-all duration-300 mt-1.5 ${role === 'user' ? 'justify-end pr-1' : 'justify-start pl-1'}`}>
-            <button onClick={handleCopy} className="p-1.5 rounded-full text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 hover:bg-black/5 dark:hover:bg-white/10 transition-colors" title="复制">
-                {copied ? <Check size={12} className="text-green-500" /> : <Copy size={12} />}
-            </button>
-
-            {role === 'user' && onEdit && (
-                <button onClick={onEdit} className="p-1.5 rounded-full text-gray-400 hover:text-indigo-500 hover:bg-black/5 dark:hover:bg-white/10 transition-colors" title="编辑">
-                    <Edit2 size={12} />
-                </button>
-            )}
-
-            {role === 'assistant' && onRegenerate && (
-                <button onClick={onRegenerate} className="p-1.5 rounded-full text-gray-400 hover:text-indigo-500 hover:bg-black/5 dark:hover:bg-white/10 transition-colors" title="重新生成">
-                    <RefreshCw size={12} />
-                </button>
-            )}
-        </div>
-    );
-};
 
 // --- Main Component ---
 
@@ -168,8 +133,8 @@ export const Chat: React.FC = () => {
 
     useEffect(() => {
         const init = async () => {
-            const articles = await StorageService.getArticles();
-            setAvailableArticles(articles.filter(a => a.isPublished));
+            const articles = await StorageService.getPublishedArticlesLight();
+            setAvailableArticles(articles);
             const list = await StorageService.getChatSessions(isAdmin);
             setSessions(list);
         };
@@ -402,13 +367,14 @@ export const Chat: React.FC = () => {
 
     const handleDeleteSession = async (e: React.MouseEvent, id: string) => {
         e.stopPropagation();
-        if (window.confirm("删除此会话？")) {
+        if (await confirmToast("删除此会话？")) {
             await StorageService.deleteChatSession(id, isAdmin);
             setSessions(p => p.filter(s => s.id !== id));
             if (currentSessionId === id) {
                 setCurrentSessionId(null);
                 setMessages([]);
             }
+            toast.success('会话已删除');
         }
     };
 
@@ -437,42 +403,6 @@ export const Chat: React.FC = () => {
 
     // --- 3. UI Helpers ---
 
-    const getDisplayContent = (content: string) => {
-        const regex = new RegExp(`${CONTEXT_TAG_START}([\\s\\S]*?)${CONTEXT_TAG_END}`);
-        const match = regex.exec(content);
-
-        if (match) {
-            const innerText = match[1];
-            const clean = content.replace(match[0], '').trim();
-
-            // Parse all titles
-            const titles: string[] = [];
-            const chunks = innerText.split('\n---\n');
-            chunks.forEach(c => {
-                const t = c.match(/标题：(.*?)\n/);
-                if (t) titles.push(t[1].trim());
-            });
-
-            return (
-                <>
-                    {clean}
-                    {titles.length > 0 && (
-                        <div className="mt-3 flex flex-wrap gap-2">
-                            {titles.map((title, i) => (
-                                <div key={i} className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-indigo-50/50 dark:bg-indigo-500/10 border border-indigo-100 dark:border-indigo-500/20 text-xs font-medium text-indigo-600 dark:text-indigo-300 select-none hover:bg-indigo-100/50 dark:hover:bg-indigo-500/20">
-                                    <FileText size={12} />
-                                    <span className="opacity-70">引用:</span>
-                                    <span className="font-bold border-b border-indigo-500/30">{title}</span>
-                                </div>
-                            ))}
-                        </div>
-                    )}
-                </>
-            );
-        }
-        return <span className="whitespace-pre-wrap">{content}</span>;
-    };
-
     const handleCopy = (text: string) => {
         const clean = text.replace(new RegExp(`${CONTEXT_TAG_START}[\\s\\S]*?${CONTEXT_TAG_END}`, 'g'), '').trim();
         navigator.clipboard.writeText(clean);
@@ -486,107 +416,35 @@ export const Chat: React.FC = () => {
         <div className="flex h-full w-full overflow-hidden bg-transparent relative">
 
             {/* --- Top Floating Glass Bar (Navigation & Controls) --- */}
-            <div className="fixed top-4 left-0 right-0 flex justify-center z-50 pointer-events-none px-4">
-                <LiquidGlass
-                    className="pointer-events-auto rounded-full shadow-xl transition-all min-w-[300px]"
-                    innerClassName="flex items-center gap-1 sm:gap-2 px-1.5 py-1.5"
-                >
-
-                    {/* 1. Home Button */}
-                    <button
-                        onClick={() => navigate('/')}
-                        className="p-2 rounded-full text-gray-600 dark:text-gray-300 hover:bg-black/5 dark:hover:bg-white/10 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors"
-                        title="返回主页"
-                    >
-                        <ArrowLeft size={18} />
-                    </button>
-
-                    <div className="w-px h-4 bg-gray-300/50 dark:bg-white/10 mx-1"></div>
-
-                    {/* 2. History Toggle */}
-                    <button
-                        ref={historyToggleRef}
-                        onClick={() => setIsHistoryOpen(!isHistoryOpen)}
-                        className={`flex items-center gap-2 px-3 py-2 rounded-full text-xs font-bold transition-all ${isHistoryOpen ? 'bg-indigo-600 text-white shadow-md' : 'text-gray-700 dark:text-gray-200 hover:bg-black/5 dark:hover:bg-white/10'}`}
-                    >
-                        <History size={16} />
-                        <span className="hidden sm:inline">历史</span>
-                    </button>
-
-                    {/* 3. Model Selector */}
-                    <div className="relative">
-                        <button
-                            onClick={() => setIsModelMenuOpen(!isModelMenuOpen)}
-                            className="flex items-center gap-2 px-3 py-2 rounded-full text-xs font-bold text-gray-700 dark:text-gray-200 hover:bg-black/5 dark:hover:bg-white/10 transition-all border border-transparent hover:border-black/5 dark:hover:border-white/10"
-                        >
-                            <Sparkles size={16} className="text-indigo-500" />
-                            {/* @ts-ignore */}
-                            <span className="max-w-[80px] sm:max-w-xs truncate">{selectedModel ? AI_MODELS[selectedModel]?.shortName : 'Loading'}</span>
-                            <ChevronDown size={14} className="opacity-50" />
-                        </button>
-
-                        {/* Model Dropdown */}
-                        {isModelMenuOpen && (
-                            <div className="absolute top-full left-1/2 -translate-x-1/2 mt-3 w-64 z-[60]">
-                                <LiquidGlass className="rounded-2xl shadow-2xl p-1.5 flex flex-col gap-0.5 animate-in fade-in slide-in-from-top-2">
-                                    {availableModels.map(([key, m]) => (
-                                        <button
-                                            key={key}
-                                            onClick={() => { setSelectedModel(key as AIModelKey); setIsModelMenuOpen(false); }}
-                                            className={`w-full text-left px-3 py-2.5 text-xs font-medium rounded-xl flex justify-between items-center transition-colors ${selectedModel === key ? 'bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 border border-indigo-500/10' : 'hover:bg-black/5 dark:hover:bg-white/10 text-gray-700 dark:text-gray-300 border border-transparent'}`}
-                                        >
-                                            {/* @ts-ignore */}
-                                            {m.name}
-                                            {selectedModel === key && <Check size={14} />}
-                                        </button>
-                                    ))}
-                                </LiquidGlass>
-                            </div>
-                        )}
-                    </div>
-
-                    <div className="flex-1"></div>
-
-                    {/* 4. Actions */}
-                    <button onClick={() => setIsSystemPromptOpen(!isSystemPromptOpen)} className={`p-2 rounded-full transition-colors ${isSystemPromptOpen ? 'text-indigo-600 bg-indigo-50 dark:bg-white/10' : 'text-gray-500 hover:bg-black/5 dark:hover:bg-white/10'}`}>
-                        <Settings size={18} />
-                    </button>
-
-                    <button
-                        onClick={() => { setCurrentSessionId(null); setMessages([]); }}
-                        className="p-2 rounded-full bg-indigo-600 text-white hover:bg-indigo-700 shadow-lg shadow-indigo-500/30 transition-all hover:scale-105 active:scale-95"
-                        title="新对话"
-                    >
-                        <Plus size={18} />
-                    </button>
-                </LiquidGlass>
-            </div>
+            <ChatTopBar 
+                isHistoryOpen={isHistoryOpen}
+                setIsHistoryOpen={setIsHistoryOpen}
+                historyToggleRef={historyToggleRef}
+                isModelMenuOpen={isModelMenuOpen}
+                setIsModelMenuOpen={setIsModelMenuOpen}
+                selectedModel={selectedModel}
+                setSelectedModel={setSelectedModel}
+                availableModels={availableModels}
+                isSystemPromptOpen={isSystemPromptOpen}
+                setIsSystemPromptOpen={setIsSystemPromptOpen}
+                onNewChat={() => { setCurrentSessionId(null); setMessages([]); }}
+                onNavigateHome={() => navigate('/')}
+            />
 
             {/* --- History Drawer (Floating Glass Panel) --- */}
-            <div
-                ref={historyRef}
-                className={`fixed top-20 left-4 bottom-24 w-72 z-40 transition-all duration-500 ease-[cubic-bezier(0.32,0.72,0,1)] ${isHistoryOpen ? 'translate-x-0 opacity-100' : '-translate-x-[120%] opacity-0 pointer-events-none'}`}
-            >
-                <LiquidGlass className="h-full rounded-[2rem] shadow-2xl border border-white/40 dark:border-white/10 flex flex-col overflow-hidden">
-                    <div className="p-4 border-b border-white/20 dark:border-white/5 flex justify-between items-center bg-white/40 dark:bg-white/5">
-                        <h3 className="font-bold text-gray-900 dark:text-white flex items-center gap-2 text-sm"><Clock size={16} /> 历史记录</h3>
-                        <button onClick={() => setIsHistoryOpen(false)} className="p-1 rounded-full hover:bg-black/5 dark:hover:bg-white/10"><X size={16} /></button>
-                    </div>
-                    <div className="flex-1 overflow-y-auto p-2 space-y-1 custom-scrollbar">
-                        {sessions.length === 0 && <div className="text-center text-xs text-gray-400 py-10">暂无记录</div>}
-                        {sessions.map(s => (
-                            <div key={s.id} onClick={() => { setCurrentSessionId(s.id); if (window.innerWidth < 768) setIsHistoryOpen(false); }}
-                                className={`group relative p-3 rounded-xl cursor-pointer transition-all border ${currentSessionId === s.id ? 'bg-white/60 dark:bg-white/10 border-indigo-200 dark:border-white/20 text-indigo-700 dark:text-white shadow-sm backdrop-blur-md' : 'border-transparent hover:bg-white/30 dark:hover:bg-white/5 text-gray-600 dark:text-gray-400'}`}>
-                                <div className="text-sm font-medium truncate pr-6">{s.title}</div>
-                                <div className="text-[10px] opacity-50 mt-1 font-mono">{new Date(s.updatedAt).toLocaleDateString()}</div>
-                                <button onClick={(e) => handleDeleteSession(e, s.id)} className="absolute right-2 top-1/2 -translate-y-1/2 p-1.5 opacity-0 group-hover:opacity-100 hover:text-red-500 bg-white/50 dark:bg-black/40 rounded-full transition-all backdrop-blur-sm">
-                                    <Trash2 size={12} />
-                                </button>
-                            </div>
-                        ))}
-                    </div>
-                </LiquidGlass>
-            </div>
+            <ChatSidebar 
+                isHistoryOpen={isHistoryOpen}
+                historyRef={historyRef}
+                sessions={sessions}
+                currentSessionId={currentSessionId}
+                isAdmin={isAdmin}
+                onClose={() => setIsHistoryOpen(false)}
+                onSelectSession={(id) => {
+                    setCurrentSessionId(id);
+                    setIsHistoryOpen(false);
+                }}
+                onDeleteSession={handleDeleteSession}
+            />
 
             {/* --- Main Chat Area --- */}
             <div className="flex-1 flex flex-col h-full min-w-0 relative pt-20">

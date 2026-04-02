@@ -5,7 +5,20 @@ const safeParseJSON = (jsonString: string | null) => {
     try { return JSON.parse(jsonString); } catch (e) { return []; }
 }
 
-export default async function handler(req: any, res: any) {
+interface ApiRequest {
+    method: string;
+    body: {
+        action: string;
+        args: any[];
+    };
+}
+
+interface ApiResponse {
+    status: (code: number) => ApiResponse;
+    json: (data: unknown) => void;
+}
+
+export default async function handler(req: ApiRequest, res: ApiResponse) {
     if (req.method !== 'POST') return res.status(405).json({ error: 'Method Not Allowed' });
 
     const DATABASE_URL = process.env.DATABASE_URL;
@@ -43,6 +56,7 @@ export default async function handler(req: any, res: any) {
                         role TEXT, content TEXT, created_at TEXT
                     );
                 `;
+                await sql`CREATE INDEX IF NOT EXISTS idx_chat_messages_session_id ON chat_messages(session_id);`;
                 try { await sql`ALTER TABLE projects ADD COLUMN image_base64 TEXT`; } catch (e) {}
                 try { await sql`ALTER TABLE projects ADD COLUMN custom_svg TEXT`; } catch (e) {}
                 data = { success: true };
@@ -62,11 +76,20 @@ export default async function handler(req: any, res: any) {
                 break;
             case 'getArticles':
                 const rowsArticles = await sql`SELECT * FROM articles ORDER BY created_at DESC`;
-                data = rowsArticles.map((row: any) => ({
+                data = rowsArticles.map((row: Record<string, unknown>) => ({
                     id: row.id, title: row.title, summary: row.summary, content: row.content,
                     createdAt: row.created_at, updatedAt: row.updated_at,
                     isPublished: row.is_published === true || row.is_published === 'true' || row.is_published === 't',
-                    tags: safeParseJSON(row.tags)
+                    tags: safeParseJSON(row.tags as string)
+                }));
+                break;
+            case 'getPublishedArticlesLight':
+                const rowsLight = await sql`SELECT id, title, summary, created_at, updated_at, tags FROM articles WHERE is_published = true ORDER BY created_at DESC`;
+                data = rowsLight.map((row: Record<string, unknown>) => ({
+                    id: row.id, title: row.title, summary: row.summary, content: '', // Light weight
+                    createdAt: row.created_at, updatedAt: row.updated_at,
+                    isPublished: true,
+                    tags: safeParseJSON(row.tags as string)
                 }));
                 break;
             case 'getArticleById':
@@ -99,7 +122,7 @@ export default async function handler(req: any, res: any) {
                 break;
             case 'getProjects':
                 const rowsProj = await sql`SELECT * FROM projects ORDER BY id DESC`;
-                data = rowsProj.map((row: any) => ({
+                data = rowsProj.map((row: Record<string, unknown>) => ({
                     id: row.id, title: row.title, description: row.description, url: row.url,
                     iconType: row.icon_type, presetIcon: row.preset_icon,
                     imageBase64: row.image_base64, customSvg: row.custom_svg
@@ -124,7 +147,7 @@ export default async function handler(req: any, res: any) {
             case 'getChatSessions':
                 if (!args[0]) { data = []; break; }
                 const sessions = await sql`SELECT id, title, system_prompt, article_context_id, created_at, updated_at FROM chat_sessions ORDER BY updated_at DESC`;
-                data = sessions.map((r: any) => ({
+                data = sessions.map((r: Record<string, unknown>) => ({
                     id: r.id, title: r.title, systemPrompt: r.system_prompt,
                     articleContextId: r.article_context_id, createdAt: r.created_at, updatedAt: r.updated_at
                 }));
@@ -132,7 +155,7 @@ export default async function handler(req: any, res: any) {
             case 'getChatMessages':
                 if (!args[1]) { data = []; break; }
                 const msgs = await sql`SELECT * FROM chat_messages WHERE session_id = ${args[0]} ORDER BY created_at ASC`;
-                data = msgs.map((r: any) => ({
+                data = msgs.map((r: Record<string, unknown>) => ({
                     id: r.id, sessionId: r.session_id, role: r.role, content: r.content, createdAt: r.created_at
                 }));
                 break;
@@ -145,7 +168,7 @@ export default async function handler(req: any, res: any) {
                         ON CONFLICT (id) DO UPDATE SET
                             title = EXCLUDED.title, system_prompt = EXCLUDED.system_prompt, updated_at = EXCLUDED.updated_at
                     `;
-                    const msgIds = messages.map((m: any) => m.id);
+                    const msgIds = messages.map((m: Record<string, unknown>) => m.id);
                     if (msgIds.length > 0) {
                         await sql`DELETE FROM chat_messages WHERE session_id = ${session.id} AND NOT (id = ANY(${msgIds}))`;
                     } else {
@@ -171,8 +194,8 @@ export default async function handler(req: any, res: any) {
                 return res.status(400).json({ error: `Unknown action ${action}` });
         }
         return res.json({ data });
-    } catch (e: any) {
+    } catch (e: unknown) {
         console.error(`Storage API Error [${action}]:`, e);
-        return res.status(500).json({ error: e.message });
+        return res.status(500).json({ error: e instanceof Error ? e.message : 'Unknown error' });
     }
 }

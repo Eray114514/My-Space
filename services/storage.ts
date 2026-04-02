@@ -4,6 +4,7 @@ import { AIModelKey } from './ai';
 const THEME_KEY = 'my_theme';
 
 let articlesCache: Article[] | null = null;
+let publishedLightCache: Article[] | null = null;
 let projectsCache: Project[] | null = null;
 let settingsCache: Record<string, string> | null = null;
 
@@ -52,17 +53,25 @@ export const StorageService = {
     articlesCache = data;
     return data;
   },
+  getPublishedArticlesLight: async (forceRefresh = false): Promise<Article[]> => {
+    if (publishedLightCache && !forceRefresh) return publishedLightCache;
+    const data = await rpc('getPublishedArticlesLight');
+    publishedLightCache = data;
+    return data;
+  },
   getArticleById: async (id: string): Promise<Article | null> => {
     if (articlesCache) { const found = articlesCache.find(a => a.id === id); if (found) return found; }
     return await rpc('getArticleById', [id]);
   },
-  saveArticle: async (article: Article) => {
+  saveArticle: async (article: Article): Promise<void> => {
     await rpc('saveArticle', [article]);
     articlesCache = null;
+    publishedLightCache = null;
   },
-  deleteArticle: async (id: string) => {
+  deleteArticle: async (id: string): Promise<void> => {
     await rpc('deleteArticle', [id]);
     articlesCache = null;
+    publishedLightCache = null;
   },
   getProjects: async (forceRefresh = false): Promise<Project[]> => {
     if (projectsCache && !forceRefresh) return projectsCache;

@@ -7,6 +7,7 @@ import * as Icons from 'lucide-react';
 import { LiquidGlass } from '../../../components/LiquidGlass';
 import { IconPicker } from './IconPicker';
 import { CURATED_ICONS } from '../constants';
+import toast from 'react-hot-toast';
 
 export const ProjectEditor: React.FC<{
   project?: Project;
@@ -34,6 +35,8 @@ export const ProjectEditor: React.FC<{
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!formData.title) return toast.error('请输入名称');
+    if (!formData.url) return toast.error('请输入链接');
     setSaving(true);
     await onSave({ ...formData, id: formData.id || Date.now().toString() });
     setSaving(false);
@@ -45,14 +48,14 @@ export const ProjectEditor: React.FC<{
 
   const handleFetchFavicon = async () => {
     if (!formData.url) {
-      alert("请先填写 URL");
+      toast.error("请先填写 URL");
       return;
     }
     setFetchingFavicon(true);
     setFormData(prev => ({ ...prev, iconType: 'auto' }));
 
     try {
-      try { new URL(formData.url); } catch { alert("URL 格式无效"); setFetchingFavicon(false); return; }
+      try { new URL(formData.url); } catch { toast.error("URL 格式无效"); setFetchingFavicon(false); return; }
       const iconUrl = `https://t1.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=${encodeURIComponent(formData.url)}&size=128`;
       const proxyUrl = `https://api.allorigins.win/raw?url=${encodeURIComponent(iconUrl)}`;
       const response = await fetch(proxyUrl);
@@ -66,14 +69,14 @@ export const ProjectEditor: React.FC<{
       reader.readAsDataURL(blob);
     } catch (e) {
       console.error("Favicon fetch error", e);
-      alert("获取图标失败，该网站可能没有公开的高清图标。");
+      toast.error("获取图标失败，该网站可能没有公开的高清图标。");
     } finally {
       setFetchingFavicon(false);
     }
   };
 
   const handleRecommendIcon = async () => {
-    if (!formData.title && !formData.description) return alert("请先填写标题或描述");
+    if (!formData.title && !formData.description) return toast.error("请先填写标题或描述");
     setRecommendingIcon(true);
     setFormData(prev => ({ ...prev, iconType: 'preset' }));
     try {
@@ -82,27 +85,27 @@ export const ProjectEditor: React.FC<{
         setFormData(prev => ({ ...prev, presetIcon: recommended }));
       } else {
         setFormData(prev => ({ ...prev, presetIcon: 'Globe' }));
-        alert(`AI 推荐结果不明确，已为您选择通用图标。`);
+        toast.error(`AI 推荐结果不明确，已为您选择通用图标。`);
       }
     } catch (e) {
-      alert("AI 服务暂时不可用。");
+      toast.error("AI 服务暂时不可用。");
     } finally {
       setRecommendingIcon(false);
     }
   };
 
   const handleGenerateSvg = async () => {
-    if (!formData.title && !formData.description) return alert("请先填写标题或描述");
+    if (!formData.title && !formData.description) return toast.error("请先填写标题或描述");
     setGeneratingSvg(true);
     try {
       const svgCode = await AIService.generateSVGIcon(formData.title, formData.description, defaultSvgProvider);
       if (svgCode && svgCode.trim().startsWith('<svg')) {
         setFormData(prev => ({ ...prev, customSvg: svgCode, iconType: 'generated' }));
       } else {
-        alert("SVG 生成失败，请重试。");
+        toast.error("SVG 生成失败，请重试。");
       }
     } catch (e) {
-      alert("生成出错。");
+      toast.error("生成出错。");
     } finally {
       setGeneratingSvg(false);
     }

@@ -14,7 +14,7 @@ const ALL_POTENTIAL_MODELS = {
 } as const;
 
 const executeAIRequest = async (modelKey: string, systemPrompt: string, userPrompt: string, temperature: number = 0.7): Promise<string> => {
-    const config = (ALL_POTENTIAL_MODELS as any)[modelKey];
+    const config = (ALL_POTENTIAL_MODELS as Record<string, any>)[modelKey];
     if (!config) throw new Error(`Model ${modelKey} is not supported.`);
 
     if (config.provider === 'gemini') {
@@ -57,7 +57,20 @@ const executeAIRequest = async (modelKey: string, systemPrompt: string, userProm
     return response.choices[0]?.message?.content || '';
 };
 
-export default async function handler(req: any, res: any) {
+interface ApiRequest {
+    method: string;
+    body: {
+        action: string;
+        args: any[];
+    };
+}
+
+interface ApiResponse {
+    status: (code: number) => ApiResponse;
+    json: (data: unknown) => void;
+}
+
+export default async function handler(req: ApiRequest, res: ApiResponse) {
     if (req.method !== 'POST') return res.status(405).json({ error: 'Method Not Allowed' });
 
     const { action, args } = req.body;
@@ -107,8 +120,8 @@ export default async function handler(req: any, res: any) {
             return res.status(400).json({ error: `Unknown action ${action}` });
         }
         return res.json({ data });
-    } catch (e: any) {
+    } catch (e: unknown) {
         console.error(`AI API Error [${action}]:`, e);
-        return res.status(500).json({ error: e.message });
+        return res.status(500).json({ error: e instanceof Error ? e.message : 'Unknown error' });
     }
 }

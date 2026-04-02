@@ -1,5 +1,6 @@
 import React, { useEffect, useState, Suspense, lazy } from 'react';
 import { HashRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { Toaster } from 'react-hot-toast';
 import { Layout } from './components/Layout';
 import { StorageService } from './services/storage';
 
@@ -83,6 +84,11 @@ const App: React.FC = () => {
           </Route>
         </Routes>
       </Suspense>
+      <Toaster 
+        toastOptions={{
+          className: 'dark:bg-[#1a1a1a] dark:text-gray-100 dark:border dark:border-white/10 shadow-lg',
+        }}
+      />
     </HashRouter>
   );
 };

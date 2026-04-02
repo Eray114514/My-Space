@@ -23,7 +23,7 @@ export default async function handler(req: Request) {
     const { action, args } = await req.json();
 
     let systemPrompt = "";
-    let messages: any[] = [];
+    let messages: Record<string, any>[] = [];
     let modelKey = "";
     let temperature = 0.7;
 
@@ -42,7 +42,7 @@ export default async function handler(req: Request) {
         return new Response('Unknown action', { status: 400 });
     }
 
-    const config = (ALL_POTENTIAL_MODELS as any)[modelKey];
+    const config = (ALL_POTENTIAL_MODELS as Record<string, any>)[modelKey];
     if (!config) return new Response(`Model ${modelKey} not supported`, { status: 400 });
 
     const encoder = new TextEncoder();
@@ -96,15 +96,16 @@ export default async function handler(req: Request) {
                         options.temperature = temperature;
                     }
 
-                    const res = await client.chat.completions.create(options) as any;
+                    const res = (await client.chat.completions.create(options)) as unknown as AsyncIterable<any>;
                     for await (const chunk of res) {
                         const content = chunk.choices[0]?.delta?.content || '';
                         if (content) controller.enqueue(encoder.encode(content));
                     }
                 }
-                controller.close();
-            } catch (e: any) {
-                controller.enqueue(encoder.encode(`\n\n[Error: ${e.message}]`));
+            } catch (e: unknown) {
+                console.error("Stream error:", e);
+                controller.enqueue(encoder.encode(`\n\n[Error: ${e instanceof Error ? e.message : 'Unknown error'}]`));
+            } finally {
                 controller.close();
             }
         }

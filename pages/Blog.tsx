@@ -12,10 +12,7 @@ export const Blog: React.FC = () => {
   useEffect(() => {
     const fetchArticles = async () => {
         try {
-            const all = await StorageService.getArticles();
-            const published = all
-                .filter(a => a.isPublished)
-                .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+            const published = await StorageService.getPublishedArticlesLight();
             setArticles(published);
         } catch (e) {
             console.error(e);

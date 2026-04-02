@@ -5,6 +5,7 @@ import { AIModelKey, AIService } from '../../../services/ai';
 import { StorageService } from '../../../services/storage';
 import { X, Save, Loader2, Sparkles, Plus, Zap } from 'lucide-react';
 import { MarkdownRenderer } from '../../../components/MarkdownRenderer';
+import toast from 'react-hot-toast';
 
 export const ArticleEditor: React.FC<{
   article?: Article;
@@ -36,7 +37,7 @@ export const ArticleEditor: React.FC<{
   useEffect(() => { autoResize(summaryRef); }, [formData.summary]);
 
   const handleSubmit = async () => {
-    if (!formData.title) return alert('请输入标题');
+    if (!formData.title) return toast.error('请输入标题');
     setSaving(true);
     await onSave({ ...formData, id: formData.id || Date.now().toString(), updatedAt: new Date().toISOString() });
     setSaving(false);
@@ -48,7 +49,7 @@ export const ArticleEditor: React.FC<{
   };
 
   const handleGenerateSummary = async () => {
-    if (!formData.content || formData.content.length < 10) return alert("请先输入足够的文章内容以便 AI 生成摘要。");
+    if (!formData.content || formData.content.length < 10) return toast.error("请先输入足够的文章内容以便 AI 生成摘要。");
     setIsGeneratingSummary(true);
     setFormData(prev => ({ ...prev, summary: '' }));
     try {
@@ -56,17 +57,17 @@ export const ArticleEditor: React.FC<{
         setFormData(prev => ({ ...prev, summary: prev.summary + chunk }));
       });
     } catch (error) {
-      alert(`AI 生成失败: ${error}`);
+      toast.error(`AI 生成失败: ${error}`);
     } finally {
       setIsGeneratingSummary(false);
     }
   };
 
   const handleAutoTag = async () => {
-    if (!formData.title && !formData.content) return alert("请先输入标题或内容");
+    if (!formData.title && !formData.content) return toast.error("请先输入标题或内容");
     setIsAutoTagging(true);
     try {
-      const allArticles = await StorageService.getArticles();
+      const allArticles = await StorageService.getPublishedArticlesLight();
       const allTagsSet = new Set<string>();
       allArticles.forEach(a => {
         if (a.tags) {
@@ -78,7 +79,7 @@ export const ArticleEditor: React.FC<{
       const newTags = await AIService.generateTags(formData.title, formData.content, formData.tags, allTags, defaultAIProvider);
       if (newTags.length > 0) setFormData(prev => ({ ...prev, tags: [...prev.tags, ...newTags] }));
     } catch (e) {
-      alert("生成标签失败");
+      toast.error("生成标签失败");
     } finally {
       setIsAutoTagging(false);
     }

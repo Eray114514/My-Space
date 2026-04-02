@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { StorageService } from '../../services/storage';
 import { AIModelKey } from '../../services/ai';
+import { confirmToast } from '../../utils/toast';
+import toast from 'react-hot-toast';
 import { Plus, Trash2, Edit2, Globe, Settings, Layout } from 'lucide-react';
 import { Article, Project } from '../../types';
 import * as Icons from 'lucide-react';
@@ -56,12 +58,13 @@ export const AdminDashboard: React.FC = () => {
       await loadData();
       setIsEditingArticle(false);
       setCurrentArticle(undefined);
-    } catch (e) { alert('保存失败'); }
+      toast.success('文章保存成功');
+    } catch (e) { toast.error('保存失败'); }
   };
 
   const handleDeleteArticle = async (id: string) => {
-    if (window.confirm('确定要删除这篇文章吗？')) {
-      try { await StorageService.deleteArticle(id); await loadData(); } catch (e) { alert('删除失败'); }
+    if (await confirmToast('确定要删除这篇文章吗？')) {
+      try { await StorageService.deleteArticle(id); await loadData(); toast.success('文章已删除'); } catch (e) { toast.error('删除失败'); }
     }
   };
 
@@ -71,12 +74,13 @@ export const AdminDashboard: React.FC = () => {
       await loadData();
       setIsEditingProject(false);
       setCurrentProject(undefined);
-    } catch (e) { alert('保存失败'); }
+      toast.success('项目保存成功');
+    } catch (e) { toast.error('保存失败'); }
   };
 
   const handleDeleteProject = async (id: string) => {
-    if (window.confirm('确定要删除这个导航链接吗？')) {
-      try { await StorageService.deleteProject(id); await loadData(); } catch (e) { alert('删除失败'); }
+    if (await confirmToast('确定要删除这个项目吗？')) {
+      try { await StorageService.deleteProject(id); await loadData(); toast.success('项目已删除'); } catch (e) { toast.error('删除失败'); }
     }
   };
 
