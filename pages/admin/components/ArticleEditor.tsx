@@ -2,6 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { Article } from '../../../types';
 import { AIModelKey, AIService } from '../../../services/ai';
+import { StorageService } from '../../../services/storage';
 import { X, Save, Loader2, Sparkles, Plus, Zap } from 'lucide-react';
 import { MarkdownRenderer } from '../../../components/MarkdownRenderer';
 
@@ -65,7 +66,16 @@ export const ArticleEditor: React.FC<{
     if (!formData.title && !formData.content) return alert("请先输入标题或内容");
     setIsAutoTagging(true);
     try {
-      const newTags = await AIService.generateTags(formData.title, formData.content, formData.tags, defaultAIProvider);
+      const allArticles = await StorageService.getArticles();
+      const allTagsSet = new Set<string>();
+      allArticles.forEach(a => {
+        if (a.tags) {
+          a.tags.forEach(t => allTagsSet.add(t));
+        }
+      });
+      const allTags = Array.from(allTagsSet);
+
+      const newTags = await AIService.generateTags(formData.title, formData.content, formData.tags, allTags, defaultAIProvider);
       if (newTags.length > 0) setFormData(prev => ({ ...prev, tags: [...prev.tags, ...newTags] }));
     } catch (e) {
       alert("生成标签失败");

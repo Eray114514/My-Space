@@ -24,11 +24,11 @@ export const AIService = {
       onChunk(decoder.decode(value));
     }
   },
-  generateTags: async (title: string, content: string, existingTags: string[], modelKey: AIModelKey): Promise<string[]> => {
+  generateTags: async (title: string, content: string, existingTags: string[], allTags: string[], modelKey: AIModelKey): Promise<string[]> => {
     const res = await fetch('/api/ai', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ action: 'generateTags', args: [title, content, existingTags, modelKey] })
+      body: JSON.stringify({ action: 'generateTags', args: [title, content, existingTags, allTags, modelKey] })
     });
     const { data, error } = await res.json();
     if (error) throw new Error(error);

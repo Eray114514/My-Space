@@ -65,10 +65,13 @@ export default async function handler(req: any, res: any) {
     try {
         let data;
         if (action === 'generateTags') {
-            const [title, content, existingTags, modelKey] = args;
+            const [title, content, existingTags, allTags, modelKey] = args;
             const isAdding = existingTags.length > 0;
             const count = isAdding ? 1 : 2;
-            const systemInstruction = `你是一个专业的博客标签生成器。请根据文章标题和内容，生成 ${count} 个最相关的技术或主题标签。${isAdding ? `现有标签为：${JSON.stringify(existingTags)}，请不要重复。` : ''}必须只返回一个纯 JSON 字符串数组，例如：["Tag1", "Tag2"]。不要返回任何 markdown 格式，不要有任何解释文字。`;
+            const allTagsInstruction = allTags && allTags.length > 0 
+                ? `系统中已有的标签有：${JSON.stringify(allTags)}。请尽量参考这些已有标签（但不是强制只能用已有标签）。` 
+                : '';
+            const systemInstruction = `你是一个专业的博客标签生成器。请根据文章标题和内容，生成 ${count} 个最相关的技术或主题标签。${allTagsInstruction}${isAdding ? `这篇文章已有的标签为：${JSON.stringify(existingTags)}，请不要重复。` : ''}必须只返回一个纯 JSON 字符串数组，例如：["Tag1", "Tag2"]。不要返回任何 markdown 格式，不要有任何解释文字。`;
             const userPrompt = `标题：${title}\n内容摘要：${content.substring(0, 500)}`;
             let responseText = await executeAIRequest(modelKey, systemInstruction, userPrompt, 0.5);
             responseText = responseText.replace(/```json/g, '').replace(/```/g, '').trim();
