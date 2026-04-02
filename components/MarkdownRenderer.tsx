@@ -1,4 +1,4 @@
-import React, { useState, isValidElement } from 'react';
+import React, { useState, isValidElement, useEffect } from 'react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import remarkMath from 'remark-math';
@@ -46,6 +46,19 @@ function remarkFixChineseBold() {
         parent.children.splice(index, 1, ...children);
         return index + children.length;
       }
+    });
+  };
+}
+
+// Custom remark plugin to support standard LaTeX delimiters \[ \] and \( \)
+function remarkMathDelimiters() {
+  return (tree: any) => {
+    visit(tree, 'text', (node: any) => {
+      if (!node.value) return;
+      // Replace \[ ... \] with $$ ... $$
+      node.value = node.value.replace(/\\\[([\s\S]*?)\\\]/g, (match: string, p1: string) => `$$${p1}$$`);
+      // Replace \( ... \) with $ ... $
+      node.value = node.value.replace(/\\\(([\s\S]*?)\\\)/g, (match: string, p1: string) => `$${p1}$`);
     });
   };
 }
@@ -144,7 +157,43 @@ const InlineCode = ({ children, className, ...props }: any) => {
   );
 };
 
+// 3. 专门处理普通 a 标签，支持锚点跳转
+const AnchorLink = ({ href, children, ...props }: any) => {
+  const handleClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
+    // 拦截内部锚点跳转（例如 "#header-1"），防止触发 React Router 默认跳转到主页
+    if (href && href.startsWith('#')) {
+      e.preventDefault();
+      const targetId = href.substring(1);
+      const elem = document.getElementById(targetId);
+      if (elem) {
+        elem.scrollIntoView({ behavior: 'smooth' });
+        // 尝试无刷新更新 URL hash
+        window.history.pushState(null, '', href);
+      }
+    }
+  };
+
+  return (
+    <a href={href} onClick={handleClick} {...props}>
+      {children}
+    </a>
+  );
+};
+
 export const MarkdownRenderer: React.FC<Props> = ({ content }) => {
+  // 处理初始化时 URL 带有 hash 的情况
+  useEffect(() => {
+    if (window.location.hash) {
+      const id = window.location.hash.substring(1);
+      setTimeout(() => {
+        const elem = document.getElementById(id);
+        if (elem) {
+          elem.scrollIntoView({ behavior: 'smooth' });
+        }
+      }, 500); // 稍微延迟等待渲染完成
+    }
+  }, [content]);
+
   return (
     <div className="prose prose-zinc dark:prose-invert max-w-none 
       prose-headings:font-bold prose-headings:tracking-tight prose-headings:scroll-mt-24
@@ -157,13 +206,17 @@ export const MarkdownRenderer: React.FC<Props> = ({ content }) => {
       
       /* 移除默认的 code 样式，完全由自定义组件控制 */
       prose-code:before:content-none prose-code:after:content-none prose-code:font-normal
+      
+      /* 确保 KaTeX 容器可以水平滚动，防止溢出 */
+      [&_.katex-display]:overflow-x-auto [&_.katex-display]:overflow-y-hidden [&_.katex-display]:py-2
     ">
       <ReactMarkdown 
-        remarkPlugins={[remarkFixChineseBold, remarkGfm, remarkAlert, remarkMath]}
+        remarkPlugins={[remarkMathDelimiters, remarkFixChineseBold, remarkGfm, remarkAlert, remarkMath]}
         rehypePlugins={[rehypeRaw, rehypeSlug, rehypeKatex]}
         components={{
           pre: PreBlock,   // 拦截代码块
-          code: InlineCode // 拦截行内代码
+          code: InlineCode, // 拦截行内代码
+          a: AnchorLink     // 拦截超链接，处理锚点跳转
         }}
       >
         {content}

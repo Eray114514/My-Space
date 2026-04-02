@@ -89,25 +89,24 @@ export const Blog: React.FC = () => {
             </div>
 
             {/* Card Content - Liquid Glass */}
-            <Link 
-                to={`/blog/${article.id}`}
-                className="w-[calc(100%-4rem)] md:w-[calc(50%-2.5rem)]"
-            >
-                <LiquidGlass className="p-6 rounded-2xl hover:bg-white/60 dark:hover:bg-white/10 hover:border-indigo-200/40 dark:hover:border-indigo-500/20 transition-all duration-300 hover:shadow-lg hover:-translate-y-1">
-                    <div className="flex items-center justify-between mb-3">
-                        <time className="font-mono text-xs text-gray-400 font-medium">{new Date(article.createdAt).toLocaleDateString('zh-CN')}</time>
-                        <div className="flex gap-2">
-                            {article.tags.map(tag => (
-                                <span key={tag} className={`text-[10px] px-1.5 py-0.5 rounded-md border border-white/10 ${selectedTag === tag ? 'bg-indigo-500/10 text-indigo-600 dark:text-indigo-400' : 'bg-gray-100/50 dark:bg-white/5 text-gray-500'}`}>#{tag}</span>
-                            ))}
+            <div className="w-[calc(100%-4rem)] md:w-[calc(50%-2.5rem)]">
+                <Link to={`/blog/${article.id}`} className="block h-full">
+                    <LiquidGlass className="p-6 rounded-2xl hover:bg-white/60 dark:hover:bg-white/10 hover:border-indigo-200/40 dark:hover:border-indigo-500/20 transition-all duration-300 hover:shadow-lg hover:-translate-y-1">
+                        <div className="flex items-center justify-between mb-3">
+                            <time className="font-mono text-xs text-gray-400 font-medium">{new Date(article.createdAt).toLocaleDateString('zh-CN')}</time>
+                            <div className="flex gap-2">
+                                {article.tags.map(tag => (
+                                    <span key={tag} className={`text-[10px] px-1.5 py-0.5 rounded-md border border-white/10 ${selectedTag === tag ? 'bg-indigo-500/10 text-indigo-600 dark:text-indigo-400' : 'bg-gray-100/50 dark:bg-white/5 text-gray-500'}`}>#{tag}</span>
+                                ))}
+                            </div>
                         </div>
-                    </div>
-                    <h3 className="text-xl font-bold text-gray-900 dark:text-gray-100 mb-2 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors leading-tight">{article.title}</h3>
-                    <p className="text-sm text-gray-600 dark:text-gray-300 line-clamp-3 leading-relaxed opacity-90">
-                        {article.summary}
-                    </p>
-                </LiquidGlass>
-            </Link>
+                        <h3 className="text-xl font-bold text-gray-900 dark:text-gray-100 mb-2 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors leading-tight">{article.title}</h3>
+                        <p className="text-sm text-gray-600 dark:text-gray-300 line-clamp-3 leading-relaxed opacity-90">
+                            {article.summary}
+                        </p>
+                    </LiquidGlass>
+                </Link>
+            </div>
           </div>
         ))}
         {filteredArticles.length === 0 && (

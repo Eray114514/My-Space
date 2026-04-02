@@ -119,14 +119,11 @@ export const Home: React.FC = () => {
         
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
           {projects.map((project) => (
-            <a 
+            <LiquidGlass 
               key={project.id}
-              href={project.url}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="block group h-full"
+              className="h-full flex flex-col p-6 rounded-[2rem] hover:bg-white/60 dark:hover:bg-white/10 hover:border-white/50 dark:hover:border-white/20 transition-all duration-300 hover:-translate-y-2 hover:shadow-[0_20px_40px_-15px_rgba(0,0,0,0.1)] dark:hover:shadow-[0_20px_40px_-15px_rgba(255,255,255,0.05)] cursor-pointer"
+              onClick={() => window.open(project.url, '_blank')}
             >
-              <LiquidGlass className="h-full flex flex-col p-6 rounded-[2rem] hover:bg-white/60 dark:hover:bg-white/10 hover:border-white/50 dark:hover:border-white/20 transition-all duration-300 hover:-translate-y-2 hover:shadow-[0_20px_40px_-15px_rgba(0,0,0,0.1)] dark:hover:shadow-[0_20px_40px_-15px_rgba(255,255,255,0.05)]">
                 <div className="flex items-start justify-between mb-6">
                   <div className="p-3 bg-white/50 dark:bg-white/5 rounded-2xl group-hover:scale-110 transition-transform duration-300 shadow-sm border border-white/40 dark:border-white/10 backdrop-blur-md">
                     {renderIcon(project)}
@@ -140,8 +137,7 @@ export const Home: React.FC = () => {
                 <p className="text-sm text-gray-500 dark:text-gray-400 line-clamp-2 leading-relaxed">
                   {project.description}
                 </p>
-              </LiquidGlass>
-            </a>
+            </LiquidGlass>
           ))}
           {projects.length === 0 && (
              <LiquidGlass className="col-span-full py-16 text-center text-gray-400 rounded-3xl">
@@ -163,39 +159,41 @@ export const Home: React.FC = () => {
 
         <div className="space-y-4">
           {recentArticles.map(article => (
-            <Link key={article.id} to={`/blog/${article.id}`} className="block group">
-                <article className="relative flex flex-col sm:flex-row gap-4 sm:gap-8 sm:items-center p-6 rounded-3xl transition-all duration-300 hover:bg-white/50 dark:hover:bg-white/5 border border-transparent hover:border-white/30 dark:hover:border-white/10">
-                    <div className="sm:w-32 flex-shrink-0 flex flex-col gap-1">
-                         {/* Corrected text colors for visibility */}
-                         <span className="text-3xl font-bold text-gray-400 dark:text-gray-500 group-hover:text-indigo-500 dark:group-hover:text-indigo-400 transition-colors font-mono">
-                             {new Date(article.createdAt).getDate().toString().padStart(2, '0')}
-                         </span>
-                         <span className="text-sm font-medium text-gray-400 uppercase tracking-wider">
-                             {new Date(article.createdAt).toLocaleDateString('en-US', { month: 'short', year: 'numeric' })}
-                         </span>
-                    </div>
-                    
-                    <div className="flex-1 space-y-2">
-                         <div className="flex flex-wrap items-center gap-3">
-                            <h3 className="text-xl font-bold text-gray-900 dark:text-gray-100 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">
-                                {article.title}
-                            </h3>
-                            {article.tags.map(tag => (
-                                <span key={tag} className="px-2 py-0.5 rounded-md bg-gray-100/80 dark:bg-white/5 border border-gray-200 dark:border-white/5 text-[10px] font-medium text-gray-500 dark:text-gray-400">
-                                    #{tag}
-                                </span>
-                            ))}
-                        </div>
-                        <p className="text-gray-500 dark:text-gray-400 leading-relaxed line-clamp-2 pr-4">
-                            {article.summary}
-                        </p>
-                    </div>
-                    
-                    <div className="hidden sm:flex items-center justify-center w-10 h-10 rounded-full border border-gray-200 dark:border-neutral-800 text-gray-300 group-hover:border-indigo-500 group-hover:text-indigo-500 transition-all opacity-0 group-hover:opacity-100 transform translate-x-[-10px] group-hover:translate-x-0">
-                        <ArrowRight size={18} />
-                    </div>
-                </article>
-            </Link>
+            <div key={article.id} className="block group">
+              <Link to={`/blog/${article.id}`} className="block h-full cursor-pointer">
+                  <article className="relative flex flex-col sm:flex-row gap-4 sm:gap-8 sm:items-center p-6 rounded-3xl transition-all duration-300 hover:bg-white/50 dark:hover:bg-white/5 border border-transparent hover:border-white/30 dark:hover:border-white/10">
+                      <div className="sm:w-32 flex-shrink-0 flex flex-col gap-1">
+                           {/* Corrected text colors for visibility */}
+                           <span className="text-3xl font-bold text-gray-400 dark:text-gray-500 group-hover:text-indigo-500 dark:group-hover:text-indigo-400 transition-colors font-mono">
+                               {new Date(article.createdAt).getDate().toString().padStart(2, '0')}
+                           </span>
+                           <span className="text-sm font-medium text-gray-400 uppercase tracking-wider">
+                               {new Date(article.createdAt).toLocaleDateString('en-US', { month: 'short', year: 'numeric' })}
+                           </span>
+                      </div>
+                      
+                      <div className="flex-1 space-y-2">
+                           <div className="flex flex-wrap items-center gap-3">
+                              <h3 className="text-xl font-bold text-gray-900 dark:text-gray-100 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">
+                                  {article.title}
+                              </h3>
+                              {article.tags.map(tag => (
+                                  <span key={tag} className="px-2 py-0.5 rounded-md bg-gray-100/80 dark:bg-white/5 border border-gray-200 dark:border-white/5 text-[10px] font-medium text-gray-500 dark:text-gray-400">
+                                      #{tag}
+                                  </span>
+                              ))}
+                          </div>
+                          <p className="text-gray-500 dark:text-gray-400 leading-relaxed line-clamp-2 pr-4">
+                              {article.summary}
+                          </p>
+                      </div>
+                      
+                      <div className="hidden sm:flex items-center justify-center w-10 h-10 rounded-full border border-gray-200 dark:border-neutral-800 text-gray-300 group-hover:border-indigo-500 group-hover:text-indigo-500 transition-all opacity-0 group-hover:opacity-100 transform translate-x-[-10px] group-hover:translate-x-0">
+                          <ArrowRight size={18} />
+                      </div>
+                  </article>
+              </Link>
+            </div>
           ))}
            {recentArticles.length === 0 && (
              <div className="py-10 text-center text-gray-400">暂无文章</div>
