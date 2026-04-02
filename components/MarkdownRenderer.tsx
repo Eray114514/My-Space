@@ -157,6 +157,9 @@ export const MarkdownRenderer: React.FC<Props> = ({ content }) => {
       
       /* 移除默认的 code 样式，完全由自定义组件控制 */
       prose-code:before:content-none prose-code:after:content-none prose-code:font-normal
+      
+      /* 确保 KaTeX 容器可以水平滚动，防止溢出 */
+      [&_.katex-display]:overflow-x-auto [&_.katex-display]:overflow-y-hidden [&_.katex-display]:py-2
     ">
       <ReactMarkdown 
         remarkPlugins={[remarkFixChineseBold, remarkGfm, remarkAlert, remarkMath]}
