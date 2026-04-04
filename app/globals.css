@@ -1,3 +1,37 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+@layer base {
+  ::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background: rgba(160, 160, 160, 0.3);
+    border-radius: 10px;
+  }
+
+  .dark ::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.15);
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background: rgba(160, 160, 160, 0.5);
+  }
+
+  body {
+    background-color: #f8f9fa;
+    overscroll-behavior-y: none;
+    margin: 0;
+  }
+
+  .dark body {
+    background-color: #050505;
+  }
+}

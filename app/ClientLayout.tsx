@@ -7,6 +7,40 @@ import { Moon, Sun, Lock, LogOut, Menu, X, LayoutGrid, FileText, Search, Message
 import { LiquidGlass } from '@/components/LiquidGlass';
 import { StorageService } from '@/services/storage';
 
+const SearchInput = () => {
+  const searchParams = useSearchParams();
+  const router = useRouter();
+  const pathname = usePathname() || '/';
+
+  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+      const val = e.target.value;
+      const params = new URLSearchParams(searchParams.toString());
+      if (!val) {
+          params.delete('q');
+      } else {
+          params.set('q', val);
+      }
+      router.replace(`${pathname}?${params.toString()}`);
+  };
+
+  return (
+      <div className="w-full flex items-center gap-2 px-2 animate-in fade-in zoom-in-95">
+          <Search size={16} className="text-gray-400 shrink-0" />
+          <input 
+              autoFocus
+              type="text" 
+              placeholder="Type to search..." 
+              className="w-full bg-transparent border-none outline-none text-sm text-gray-900 dark:text-white placeholder-gray-400/70 h-8 font-medium"
+              value={searchParams.get('q') || ''}
+              onChange={handleSearchChange}
+          />
+          <button onClick={() => router.push('/')} className="p-1.5 rounded-full text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 hover:bg-black/5 dark:hover:bg-white/10">
+              <X size={14} />
+          </button>
+      </div>
+  );
+};
+
 export const ClientLayout = ({ children }: { children: React.ReactNode }) => {
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
   const [isDarkMode, setIsDarkMode] = useState<boolean>(false);
@@ -18,7 +52,6 @@ export const ClientLayout = ({ children }: { children: React.ReactNode }) => {
   
   const pathname = usePathname() || '/';
   const router = useRouter();
-  const searchParams = useSearchParams();
 
   // Determine if we are in "Immersive Mode" (Chat or Article Detail)
   const isChatPage = pathname === '/chat';
@@ -98,17 +131,6 @@ export const ClientLayout = ({ children }: { children: React.ReactNode }) => {
     ? [...baseLinks, { name: '控制台', path: '/admin', icon: Settings }] 
     : baseLinks;
 
-  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-      const val = e.target.value;
-      const params = new URLSearchParams(searchParams.toString());
-      if (!val) {
-          params.delete('q');
-      } else {
-          params.set('q', val);
-      }
-      router.replace(`${pathname}?${params.toString()}`);
-  };
-
   // Prevent hydration mismatch
   if (!isMounted) {
     return <div className="min-h-screen bg-[#f8f9fa] dark:bg-[#020202]"></div>;
@@ -155,20 +177,9 @@ export const ClientLayout = ({ children }: { children: React.ReactNode }) => {
 
                 <div className="flex-1 flex items-center justify-center">
                 {isSearchPage ? (
-                    <div className="w-full flex items-center gap-2 px-2 animate-in fade-in zoom-in-95">
-                        <Search size={16} className="text-gray-400 shrink-0" />
-                        <input 
-                            autoFocus
-                            type="text" 
-                            placeholder="Type to search..." 
-                            className="w-full bg-transparent border-none outline-none text-sm text-gray-900 dark:text-white placeholder-gray-400/70 h-8 font-medium"
-                            value={searchParams.get('q') || ''}
-                            onChange={handleSearchChange}
-                        />
-                        <button onClick={() => router.push('/')} className="p-1.5 rounded-full text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 hover:bg-black/5 dark:hover:bg-white/10">
-                            <X size={14} />
-                        </button>
-                    </div>
+                    <React.Suspense fallback={<div className="h-8"></div>}>
+                        <SearchInput />
+                    </React.Suspense>
                 ) : (
                     <nav className="hidden md:flex items-center gap-0.5">
                         {navLinks.map((link) => {

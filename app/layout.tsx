@@ -1,6 +1,8 @@
 import type { Metadata } from 'next';
 import { Inter } from 'next/font/google';
 import './globals.css';
+import './liquid-glass.css';
+import './markdown.css';
 import { ClientLayout } from './ClientLayout';
 import { Toaster } from 'react-hot-toast';
 import { Suspense } from 'react';
@@ -19,12 +21,13 @@ export default function RootLayout({
 }) {
   return (
     <html lang="zh-CN" suppressHydrationWarning>
+      <head>
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css" integrity="sha384-n8MVd4RsEw098lKa53KkMv4hO0E1mQ7tE/l6g9Z0S//P/Y9wB/oR5lZ/oH/Qp1n/" crossOrigin="anonymous" />
+      </head>
       <body className={inter.className}>
-        <Suspense fallback={<div>Loading...</div>}>
-          <ClientLayout>
-            {children}
-          </ClientLayout>
-        </Suspense>
+        <ClientLayout>
+          {children}
+        </ClientLayout>
         <Toaster 
           toastOptions={{
             className: 'dark:bg-[#1a1a1a] dark:text-gray-100 dark:border dark:border-white/10 shadow-lg',

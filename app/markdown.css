@@ -1,0 +1,178 @@
+/* --- Markdown Alerts (GitHub Style) --- */
+.markdown-alert {
+  padding: 0.75rem 1rem;
+  margin-bottom: 1rem;
+  border-left: 4px solid;
+  border-radius: 0.5rem;
+  font-size: 0.95em;
+  line-height: 1.6;
+}
+
+.markdown-alert-title {
+  display: flex;
+  align-items: center;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+  text-transform: uppercase;
+  font-size: 0.8em;
+  letter-spacing: 0.05em;
+}
+
+.markdown-alert-title svg {
+  margin-right: 0.5rem;
+  width: 16px;
+  height: 16px;
+  fill: currentColor;
+}
+
+.markdown-alert-note {
+  border-color: #0969da;
+  background-color: rgba(221, 244, 255, 0.5);
+  color: #1f2328;
+}
+
+.markdown-alert-note .markdown-alert-title {
+  color: #0969da;
+}
+
+.dark .markdown-alert-note {
+  background-color: rgba(56, 139, 253, 0.1);
+  color: #e6edf3;
+  border-color: #1f6feb;
+}
+
+.dark .markdown-alert-note .markdown-alert-title {
+  color: #58a6ff;
+}
+
+.markdown-alert-tip {
+  border-color: #1a7f37;
+  background-color: rgba(218, 251, 225, 0.5);
+  color: #1f2328;
+}
+
+.markdown-alert-tip .markdown-alert-title {
+  color: #1a7f37;
+}
+
+.dark .markdown-alert-tip {
+  background-color: rgba(46, 160, 67, 0.1);
+  color: #e6edf3;
+  border-color: #238636;
+}
+
+.dark .markdown-alert-tip .markdown-alert-title {
+  color: #3fb950;
+}
+
+.markdown-alert-important {
+  border-color: #8250df;
+  background-color: rgba(240, 235, 255, 0.5);
+  color: #1f2328;
+}
+
+.markdown-alert-important .markdown-alert-title {
+  color: #8250df;
+}
+
+.dark .markdown-alert-important {
+  background-color: rgba(163, 113, 247, 0.1);
+  color: #e6edf3;
+  border-color: #8957e5;
+}
+
+.dark .markdown-alert-important .markdown-alert-title {
+  color: #a371f7;
+}
+
+.markdown-alert-warning {
+  border-color: #9a6700;
+  background-color: rgba(255, 248, 197, 0.5);
+  color: #1f2328;
+}
+
+.markdown-alert-warning .markdown-alert-title {
+  color: #9a6700;
+}
+
+.dark .markdown-alert-warning {
+  background-color: rgba(187, 128, 9, 0.1);
+  color: #e6edf3;
+  border-color: #9e6a03;
+}
+
+.dark .markdown-alert-warning .markdown-alert-title {
+  color: #d29922;
+}
+
+.markdown-alert-caution {
+  border-color: #d1242f;
+  background-color: rgba(255, 235, 233, 0.5);
+  color: #1f2328;
+}
+
+.markdown-alert-caution .markdown-alert-title {
+  color: #cf222e;
+}
+
+.dark .markdown-alert-caution {
+  background-color: rgba(218, 54, 51, 0.1);
+  color: #e6edf3;
+  border-color: #da3633;
+}
+
+.dark .markdown-alert-caution .markdown-alert-title {
+  color: #f85149;
+}
+
+/* --- KaTeX Overflow Fix --- */
+.katex-display {
+  overflow-x: auto;
+  overflow-y: hidden;
+  padding-top: 0.5rem;
+  padding-bottom: 0.5rem;
+}
+
+/* --- Details & Summary --- */
+details {
+  border: 1px solid rgba(160, 160, 160, 0.2);
+  border-radius: 0.5rem;
+  padding: 0.5rem 1rem;
+  margin-bottom: 1rem;
+  background-color: rgba(255, 255, 255, 0.5);
+}
+
+.dark details {
+  border-color: rgba(255, 255, 255, 0.1);
+  background-color: rgba(0, 0, 0, 0.2);
+}
+
+summary {
+  cursor: pointer;
+  font-weight: 600;
+  outline: none;
+  user-select: none;
+  margin: -0.5rem -1rem;
+  padding: 0.5rem 1rem;
+  border-radius: 0.5rem;
+  transition: background-color 0.2s ease;
+}
+
+summary:hover {
+  background-color: rgba(160, 160, 160, 0.1);
+}
+
+.dark summary:hover {
+  background-color: rgba(255, 255, 255, 0.05);
+}
+
+details[open] summary {
+  margin-bottom: 0.5rem;
+  border-bottom-left-radius: 0;
+  border-bottom-right-radius: 0;
+  border-bottom: 1px solid rgba(160, 160, 160, 0.1);
+}
+
+.dark details[open] summary {
+  border-bottom-color: rgba(255, 255, 255, 0.05);
+}

@@ -8,7 +8,8 @@ import { LiquidGlass } from '../../../components/LiquidGlass';
 import { Metadata } from 'next';
 
 export async function generateMetadata({ params }: { params: { id: string } }): Promise<Metadata> {
-  const article = await ServerStorageService.getArticleById(params.id).catch(() => null);
+  const id = decodeURIComponent(params.id);
+  const article = await ServerStorageService.getArticleById(id).catch(() => null);
   if (!article) return { title: 'Article Not Found' };
   
   return {
@@ -19,7 +20,8 @@ export async function generateMetadata({ params }: { params: { id: string } }): 
 }
 
 export default async function ArticleDetail({ params }: { params: { id: string } }) {
-  const article = await ServerStorageService.getArticleById(params.id).catch(() => null);
+  const id = decodeURIComponent(params.id);
+  const article = await ServerStorageService.getArticleById(id).catch(() => null);
 
   if (!article) {
     notFound();
