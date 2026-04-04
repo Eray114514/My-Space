@@ -7,11 +7,19 @@ const safeParseJSON = (jsonString: string | null) => {
 
 interface ApiRequest {
     method: string;
+    headers: {
+        cookie?: string;
+    };
     body: {
         action: string;
         args: any[];
     };
 }
+
+const isAdmin = (req: ApiRequest) => {
+    const cookie = req.headers?.cookie || '';
+    return cookie.includes('admin_session=active');
+};
 
 interface ApiResponse {
     status: (code: number) => ApiResponse;
@@ -26,9 +34,17 @@ export default async function handler(req: ApiRequest, res: ApiResponse) {
 
     const sql = neon(DATABASE_URL);
     const { action, args } = req.body;
+    const isUserAdmin = isAdmin(req);
 
     try {
         let data;
+        
+        // Protect admin actions
+        const adminActions = ['initDB', 'saveSystemSetting', 'saveArticle', 'deleteArticle', 'saveProject', 'deleteProject'];
+        if (adminActions.includes(action) && !isUserAdmin) {
+            return res.status(401).json({ error: 'Unauthorized: Admin access required.' });
+        }
+
         switch (action) {
             case 'initDB':
                 await sql`
@@ -145,7 +161,7 @@ export default async function handler(req: ApiRequest, res: ApiResponse) {
                 data = { success: true };
                 break;
             case 'getChatSessions':
-                if (!args[0]) { data = []; break; }
+                if (!isUserAdmin) { data = []; break; }
                 const sessions = await sql`SELECT id, title, system_prompt, article_context_id, created_at, updated_at FROM chat_sessions ORDER BY updated_at DESC`;
                 data = sessions.map((r: Record<string, unknown>) => ({
                     id: r.id, title: r.title, systemPrompt: r.system_prompt,
@@ -153,15 +169,15 @@ export default async function handler(req: ApiRequest, res: ApiResponse) {
                 }));
                 break;
             case 'getChatMessages':
-                if (!args[1]) { data = []; break; }
+                if (!isUserAdmin) { data = []; break; }
                 const msgs = await sql`SELECT * FROM chat_messages WHERE session_id = ${args[0]} ORDER BY created_at ASC`;
                 data = msgs.map((r: Record<string, unknown>) => ({
                     id: r.id, sessionId: r.session_id, role: r.role, content: r.content, createdAt: r.created_at
                 }));
                 break;
             case 'saveChatSession':
-                const [session, messages, isAdmin] = args;
-                if (isAdmin) {
+                const [session, messages] = args;
+                if (isUserAdmin) {
                     await sql`
                         INSERT INTO chat_sessions (id, title, system_prompt, article_context_id, created_at, updated_at)
                         VALUES (${session.id}, ${session.title}, ${session.systemPrompt || null}, ${session.articleContextId || null}, ${session.createdAt}, ${session.updatedAt})
@@ -185,7 +201,7 @@ export default async function handler(req: ApiRequest, res: ApiResponse) {
                 data = { success: true };
                 break;
             case 'deleteChatSession':
-                if (args[1]) {
+                if (isUserAdmin) {
                     await sql`DELETE FROM chat_sessions WHERE id = ${args[0]}`;
                 }
                 data = { success: true };

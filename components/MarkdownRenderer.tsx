@@ -159,24 +159,10 @@ const InlineCode = ({ children, className, ...props }: any) => {
   );
 };
 
-// 3. 专门处理普通 a 标签，支持锚点跳转
+// 3. 专门处理普通 a 标签
 const AnchorLink = ({ href, children, ...props }: any) => {
-  const handleClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
-    // 拦截内部锚点跳转（例如 "#header-1"），防止触发 React Router 默认跳转到主页
-    if (href && href.startsWith('#')) {
-      e.preventDefault();
-      const targetId = href.substring(1);
-      const elem = document.getElementById(targetId);
-      if (elem) {
-        elem.scrollIntoView({ behavior: 'smooth' });
-        // 尝试无刷新更新 URL hash
-        window.history.pushState(null, '', href);
-      }
-    }
-  };
-
   return (
-    <a href={href} onClick={handleClick} {...props}>
+    <a href={href} {...props}>
       {children}
     </a>
   );

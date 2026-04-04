@@ -7,8 +7,9 @@ import { ArrowLeft, Calendar, MessageSquare } from 'lucide-react';
 import { LiquidGlass } from '../../../components/LiquidGlass';
 import { Metadata } from 'next';
 
-export async function generateMetadata({ params }: { params: { id: string } }): Promise<Metadata> {
-  const id = decodeURIComponent(params.id);
+export async function generateMetadata({ params }: { params: Promise<{ id: string }> }): Promise<Metadata> {
+  const resolvedParams = await params;
+  const id = decodeURIComponent(resolvedParams.id);
   const article = await ServerStorageService.getArticleById(id).catch(() => null);
   if (!article) return { title: 'Article Not Found' };
   
@@ -19,8 +20,9 @@ export async function generateMetadata({ params }: { params: { id: string } }): 
   };
 }
 
-export default async function ArticleDetail({ params }: { params: { id: string } }) {
-  const id = decodeURIComponent(params.id);
+export default async function ArticleDetail({ params }: { params: Promise<{ id: string }> }) {
+  const resolvedParams = await params;
+  const id = decodeURIComponent(resolvedParams.id);
   const article = await ServerStorageService.getArticleById(id).catch(() => null);
 
   if (!article) {

@@ -14,26 +14,31 @@ export default function Login() {
 
   // Get credentials from environment variables
   const ADMIN_USERNAME = process.env.NEXT_PUBLIC_ADMIN_USERNAME || 'Eray'; // Fallback to Eray if not set
-  const ADMIN_PASSWORD = process.env.NEXT_PUBLIC_ADMIN_PASSWORD;
 
-  const handleLogin = (e: React.FormEvent) => {
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    // Safety check: ensure env vars are actually set
-    if (!ADMIN_PASSWORD) {
-      setError('系统配置错误：未在 .env 中设置管理员密码');
-      return;
-    }
+    try {
+      const res = await fetch('/api/auth', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username, password })
+      });
 
-    if (username === ADMIN_USERNAME && password === ADMIN_PASSWORD) {
-      if (rememberMe) {
-        localStorage.setItem('my_session', 'active');
+      const data = await res.json();
+
+      if (res.ok && data.success) {
+        if (rememberMe) {
+          localStorage.setItem('my_session', 'active');
+        } else {
+          sessionStorage.setItem('my_session', 'active');
+        }
+        router.push('/admin');
       } else {
-        sessionStorage.setItem('my_session', 'active');
+        setError(data.error || '用户名或密码错误');
       }
-      router.push('/admin');
-    } else {
-      setError('用户名或密码错误');
+    } catch (err) {
+      setError('登录请求失败，请稍后重试');
     }
   };
 

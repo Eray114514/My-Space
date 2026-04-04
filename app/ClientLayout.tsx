@@ -110,7 +110,12 @@ export const ClientLayout = ({ children }: { children: React.ReactNode }) => {
     return () => window.removeEventListener('scroll', handleScroll);
   }, [isImmersive]);
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
+    try {
+      await fetch('/api/auth', { method: 'DELETE' });
+    } catch (e) {
+      console.error('Logout failed', e);
+    }
     sessionStorage.removeItem('my_session');
     localStorage.removeItem('my_session');
     setIsAuthenticated(false);

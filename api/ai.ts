@@ -59,11 +59,19 @@ const executeAIRequest = async (modelKey: string, systemPrompt: string, userProm
 
 interface ApiRequest {
     method: string;
+    headers: {
+        cookie?: string;
+    };
     body: {
         action: string;
         args: any[];
     };
 }
+
+const isAdmin = (req: ApiRequest) => {
+    const cookie = req.headers?.cookie || '';
+    return cookie.includes('admin_session=active');
+};
 
 interface ApiResponse {
     status: (code: number) => ApiResponse;
@@ -72,6 +80,10 @@ interface ApiResponse {
 
 export default async function handler(req: ApiRequest, res: ApiResponse) {
     if (req.method !== 'POST') return res.status(405).json({ error: 'Method Not Allowed' });
+
+    if (!isAdmin(req)) {
+        return res.status(401).json({ error: 'Unauthorized: Admin access required.' });
+    }
 
     const { action, args } = req.body;
 
