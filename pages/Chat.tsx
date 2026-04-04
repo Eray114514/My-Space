@@ -451,7 +451,7 @@ export const Chat: React.FC = () => {
 
                 {/* System Prompt Panel (Absolute Overlay) */}
                 {isSystemPromptOpen && (
-                    <div className="absolute top-20 left-1/2 -translate-x-1/2 w-full max-w-2xl px-4 z-30 animate-in slide-in-from-top-2 fade-in">
+                    <div className="fixed top-20 left-1/2 -translate-x-1/2 w-full max-w-2xl px-4 z-[60] animate-in slide-in-from-top-2 fade-in">
                         <LiquidGlass className="p-4 rounded-2xl shadow-xl">
                             <div className="flex justify-between items-center mb-2">
                                 <label className="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase">系统提示词 (System Prompt)</label>
@@ -467,7 +467,7 @@ export const Chat: React.FC = () => {
                     <div className="max-w-4xl mx-auto space-y-6">
                         {isMessagesLoading ? (
                             <div className="h-40 flex flex-col items-center justify-center text-gray-400 gap-3 animate-pulse">
-                                <LiquidGlass className="w-12 h-12 rounded-full flex items-center justify-center">
+                                <LiquidGlass className="w-12 h-12 rounded-full" innerClassName="flex items-center justify-center">
                                     <div className="w-6 h-6 border-2 border-indigo-500 border-t-transparent rounded-full animate-spin" />
                                 </LiquidGlass>
                                 <span className="text-xs font-medium tracking-wide">同步历史记录...</span>
@@ -518,11 +518,11 @@ export const Chat: React.FC = () => {
                                                     </LiquidGlass>
                                                 ) : (
                                                     <>
-                                                        <LiquidGlass className={`px-5 py-4 shadow-sm text-[15px] leading-7 relative border backdrop-blur-xl ${isUser
+                                                        <LiquidGlass className={`px-5 py-4 shadow-sm text-[15px] leading-7 relative border backdrop-blur-xl overflow-x-auto ${isUser
                                                                 ? 'bg-indigo-600/90 text-white rounded-2xl rounded-tr-sm border-indigo-400/30 shadow-indigo-500/20'
                                                                 : 'bg-white/70 dark:bg-white/5 text-gray-800 dark:text-gray-100 rounded-2xl rounded-tl-sm border-white/40 dark:border-white/10'
                                                             }`}>
-                                                            {isUser ? <p className="whitespace-pre-wrap">{getDisplayContent(msg.content)}</p> : <MarkdownRenderer content={msg.content} />}
+                                                            {isUser ? <p className="whitespace-pre-wrap break-words">{getDisplayContent(msg.content)}</p> : <MarkdownRenderer content={msg.content} />}
                                                         </LiquidGlass>
                                                         <MessageActions
                                                             role={msg.role as any}
