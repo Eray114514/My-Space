@@ -12,10 +12,11 @@ export const metadata: Metadata = {
 export default async function Blog({
   searchParams,
 }: {
-  searchParams: { tag?: string };
+  searchParams: Promise<{ tag?: string }>;
 }) {
+  const resolvedSearchParams = await searchParams;
   const articles = await ServerStorageService.getPublishedArticlesLight().catch(() => []);
-  const selectedTag = searchParams.tag || null;
+  const selectedTag = resolvedSearchParams.tag || null;
 
   const tags = (() => {
       const map = new Map<string, number>();
