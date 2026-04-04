@@ -10,7 +10,7 @@ import { LiquidGlass } from '../../components/LiquidGlass';
 
 function SearchContent() {
   const searchParams = useSearchParams();
-  const query = searchParams.get('q') || '';
+  const query = searchParams?.get('q') || '';
   
   const [articles, setArticles] = useState<Article[]>([]);
   const [projects, setProjects] = useState<Project[]>([]);

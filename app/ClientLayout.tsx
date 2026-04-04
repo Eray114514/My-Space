@@ -14,7 +14,7 @@ const SearchInput = () => {
 
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
       const val = e.target.value;
-      const params = new URLSearchParams(searchParams.toString());
+      const params = new URLSearchParams(searchParams?.toString() || '');
       if (!val) {
           params.delete('q');
       } else {
@@ -31,7 +31,7 @@ const SearchInput = () => {
               type="text" 
               placeholder="Type to search..." 
               className="w-full bg-transparent border-none outline-none text-sm text-gray-900 dark:text-white placeholder-gray-400/70 h-8 font-medium"
-              value={searchParams.get('q') || ''}
+              value={searchParams?.get('q') || ''}
               onChange={handleSearchChange}
           />
           <button onClick={() => router.push('/')} className="p-1.5 rounded-full text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 hover:bg-black/5 dark:hover:bg-white/10">

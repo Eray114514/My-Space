@@ -21,7 +21,7 @@ function remarkFixChineseBold() {
       const regex = /\*\*(.+?)\*\*/g;
       let match;
       let lastIndex = 0;
-      const children = [];
+      const children: any[] = [];
       
       while ((match = regex.exec(node.value)) !== null) {
         if (match.index > lastIndex) {

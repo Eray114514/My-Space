@@ -33,7 +33,7 @@ const generateId = () => {
 
 function ChatContent() {
     const searchParams = useSearchParams();
-    const articleId = searchParams.get('articleId');
+    const articleId = searchParams?.get('articleId') || null;
     const router = useRouter();
 
     // Data State
