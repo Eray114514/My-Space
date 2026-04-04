@@ -1,13 +1,15 @@
-import React, { useState, useEffect, useMemo } from 'react';
-import { useSearchParams, Link } from 'react-router-dom';
-import { StorageService } from '../services/storage';
-import { Article, Project } from '../types';
+"use client";
+import React, { useState, useEffect, useMemo, Suspense } from 'react';
+import { useSearchParams } from 'next/navigation';
+import Link from 'next/link';
+import { StorageService } from '../../services/storage';
+import { Article, Project } from '../../types';
 import { FileText, Layout, ExternalLink, Globe, Search as SearchIcon } from 'lucide-react';
 import * as Icons from 'lucide-react';
-import { LiquidGlass } from '../components/LiquidGlass';
+import { LiquidGlass } from '../../components/LiquidGlass';
 
-export const SearchPage: React.FC = () => {
-  const [searchParams] = useSearchParams();
+function SearchContent() {
+  const searchParams = useSearchParams();
   const query = searchParams.get('q') || '';
   
   const [articles, setArticles] = useState<Article[]>([]);
@@ -115,7 +117,7 @@ export const SearchPage: React.FC = () => {
             <div className="space-y-4">
                 {results.articles.map(article => (
                     <div key={article.id} className="block group">
-                        <Link to={`/blog/${article.id}`} className="block h-full">
+                        <Link href={`/blog/${article.id}`} className="block h-full">
                             <LiquidGlass className="p-6 rounded-2xl hover:bg-white/60 dark:hover:bg-white/10 hover:border-indigo-200/50 transition-all hover:shadow-md cursor-pointer">
                                  <div className="flex justify-between items-start mb-2">
                                      <h3 className="text-lg font-bold text-gray-900 dark:text-white group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">{article.title}</h3>
@@ -137,4 +139,4 @@ export const SearchPage: React.FC = () => {
       </div>
     </div>
   );
-};
+};export default function SearchPage() { return <Suspense fallback={<div className="flex h-screen items-center justify-center text-gray-500">Loading...</div>}><SearchContent /></Suspense>; }

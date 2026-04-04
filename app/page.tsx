@@ -1,37 +1,17 @@
-import React, { useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
+import React from 'react';
+import Link from 'next/link';
 import { ArrowRight, ExternalLink, Globe, Layout, Code, Sparkles } from 'lucide-react';
-import { StorageService } from '../services/storage';
-import { Article, Project } from '../types';
+import { ServerStorageService } from '../services/server-storage';
 import * as Icons from 'lucide-react';
 import { LiquidGlass } from '../components/LiquidGlass';
+import { Project } from '../types';
 
-export const Home: React.FC = () => {
-  const [projects, setProjects] = useState<Project[]>([]);
-  const [recentArticles, setRecentArticles] = useState<Article[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+export default async function Home() {
+  const projects = await ServerStorageService.getProjects().catch(() => []);
+  const allArticles = await ServerStorageService.getPublishedArticlesLight().catch(() => []);
+  const recentArticles = allArticles.slice(0, 3);
 
-  // Get username from env
-  const env = (import.meta as any).env;
-  const adminName = env.ADMIN_USERNAME || 'Eray';
-
-  useEffect(() => {
-    const fetchData = async () => {
-        try {
-            const allProjects = await StorageService.getProjects();
-            setProjects(allProjects);
-
-            const allArticles = await StorageService.getPublishedArticlesLight();
-            const published = allArticles.slice(0, 3);
-            setRecentArticles(published);
-        } catch (e) {
-            console.error("Failed to load home data", e);
-        } finally {
-            setIsLoading(false);
-        }
-    };
-    fetchData();
-  }, []);
+  const adminName = process.env.ADMIN_USERNAME || 'Eray';
 
   const getFaviconUrl = (url: string) => {
     try {
@@ -54,24 +34,12 @@ export const Home: React.FC = () => {
           src={getFaviconUrl(project.url)} 
           alt={project.title} 
           className="w-10 h-10 rounded-xl object-cover shadow-sm"
-          onError={(e) => {
-            (e.target as HTMLImageElement).style.display = 'none';
-            (e.target as HTMLImageElement).nextElementSibling?.classList.remove('hidden');
-          }}
         />
       );
     }
     const IconComponent = (Icons as any)[project.presetIcon || 'Globe'];
     return IconComponent ? <IconComponent size={40} className="text-indigo-600 dark:text-indigo-300 drop-shadow-sm" /> : <Globe size={40} />;
   };
-
-  const scrollToProjects = (e: React.MouseEvent) => {
-    e.preventDefault();
-    const element = document.getElementById('projects');
-    if (element) element.scrollIntoView({ behavior: 'smooth' });
-  };
-
-  if (isLoading) return <div className="min-h-[50vh] flex items-center justify-center text-gray-400 font-light tracking-widest uppercase text-sm">Loading...</div>;
 
   return (
     <div className="space-y-24 animate-in fade-in duration-700">
@@ -94,16 +62,16 @@ export const Home: React.FC = () => {
         </p>
         
         <div className="flex flex-wrap gap-4 pt-4">
-            <Link to="/blog" className="group relative inline-flex items-center gap-2 px-8 py-3.5 bg-gray-900 dark:bg-white text-white dark:text-gray-900 rounded-full font-semibold transition-all hover:scale-105 active:scale-95 shadow-lg shadow-gray-900/20 dark:shadow-white/20 z-10">
+            <Link href="/blog" className="group relative inline-flex items-center gap-2 px-8 py-3.5 bg-gray-900 dark:bg-white text-white dark:text-gray-900 rounded-full font-semibold transition-all hover:scale-105 active:scale-95 shadow-lg shadow-gray-900/20 dark:shadow-white/20 z-10">
                 阅读文章
                 <ArrowRight size={18} className="group-hover:translate-x-1 transition-transform" />
             </Link>
-            <LiquidGlass 
-              onClick={scrollToProjects}
+            <Link 
+              href="#projects"
               className="inline-flex items-center gap-2 px-8 py-3.5 rounded-full text-gray-900 dark:text-white font-semibold hover:bg-white/60 dark:hover:bg-white/10 transition-colors cursor-pointer"
             >
-                查看作品
-            </LiquidGlass>
+                <LiquidGlass>查看作品</LiquidGlass>
+            </Link>
         </div>
       </section>
 
@@ -116,25 +84,25 @@ export const Home: React.FC = () => {
         
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
           {projects.map((project) => (
-            <LiquidGlass 
-              key={project.id}
-              className="h-full flex flex-col p-6 rounded-[2rem] hover:bg-white/60 dark:hover:bg-white/10 hover:border-white/50 dark:hover:border-white/20 transition-all duration-300 hover:-translate-y-2 hover:shadow-[0_20px_40px_-15px_rgba(0,0,0,0.1)] dark:hover:shadow-[0_20px_40px_-15px_rgba(255,255,255,0.05)] cursor-pointer"
-              onClick={() => window.open(project.url, '_blank')}
-            >
-                <div className="flex items-start justify-between mb-6">
-                  <div className="p-3 bg-white/50 dark:bg-white/5 rounded-2xl group-hover:scale-110 transition-transform duration-300 shadow-sm border border-white/40 dark:border-white/10 backdrop-blur-md">
-                    {renderIcon(project)}
-                    {project.iconType === 'auto' && <Globe size={40} className="text-gray-300 hidden" />}
+            <Link href={project.url} target="_blank" key={project.id} className="block group">
+              <LiquidGlass 
+                className="h-full flex flex-col p-6 rounded-[2rem] hover:bg-white/60 dark:hover:bg-white/10 hover:border-white/50 dark:hover:border-white/20 transition-all duration-300 hover:-translate-y-2 hover:shadow-[0_20px_40px_-15px_rgba(0,0,0,0.1)] dark:hover:shadow-[0_20px_40px_-15px_rgba(255,255,255,0.05)] cursor-pointer"
+              >
+                  <div className="flex items-start justify-between mb-6">
+                    <div className="p-3 bg-white/50 dark:bg-white/5 rounded-2xl group-hover:scale-110 transition-transform duration-300 shadow-sm border border-white/40 dark:border-white/10 backdrop-blur-md">
+                      {renderIcon(project)}
+                      {project.iconType === 'auto' && <Globe size={40} className="text-gray-300 hidden" />}
+                    </div>
+                    <div className="p-2 rounded-full bg-transparent group-hover:bg-indigo-50 dark:group-hover:bg-indigo-500/20 transition-colors">
+                        <ExternalLink size={20} className="text-gray-300 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors" />
+                    </div>
                   </div>
-                  <div className="p-2 rounded-full bg-transparent group-hover:bg-indigo-50 dark:group-hover:bg-indigo-500/20 transition-colors">
-                      <ExternalLink size={20} className="text-gray-300 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors" />
-                  </div>
-                </div>
-                <h3 className="font-bold text-xl text-gray-900 dark:text-white mb-2">{project.title}</h3>
-                <p className="text-sm text-gray-500 dark:text-gray-400 line-clamp-2 leading-relaxed">
-                  {project.description}
-                </p>
-            </LiquidGlass>
+                  <h3 className="font-bold text-xl text-gray-900 dark:text-white mb-2">{project.title}</h3>
+                  <p className="text-sm text-gray-500 dark:text-gray-400 line-clamp-2 leading-relaxed">
+                    {project.description}
+                  </p>
+              </LiquidGlass>
+            </Link>
           ))}
           {projects.length === 0 && (
              <LiquidGlass className="col-span-full py-16 text-center text-gray-400 rounded-3xl">
@@ -151,16 +119,15 @@ export const Home: React.FC = () => {
                 <div className="p-2 bg-purple-500/10 rounded-lg text-purple-600 dark:text-purple-400"><Code size={24} /></div>
                 <h2 className="text-3xl font-bold text-gray-900 dark:text-white">最近更新</h2>
             </div>
-            <Link to="/blog" className="px-4 py-2 rounded-full text-sm font-semibold text-indigo-600 dark:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-900/20 transition-colors">查看全部</Link>
+            <Link href="/blog" className="px-4 py-2 rounded-full text-sm font-semibold text-indigo-600 dark:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-900/20 transition-colors">查看全部</Link>
         </div>
 
         <div className="space-y-4">
           {recentArticles.map(article => (
             <div key={article.id} className="block group">
-              <Link to={`/blog/${article.id}`} className="block h-full cursor-pointer">
+              <Link href={`/blog/${article.id}`} className="block h-full cursor-pointer">
                   <article className="relative flex flex-col sm:flex-row gap-4 sm:gap-8 sm:items-center p-6 rounded-3xl transition-all duration-300 hover:bg-white/50 dark:hover:bg-white/5 border border-transparent hover:border-white/30 dark:hover:border-white/10">
                       <div className="sm:w-32 flex-shrink-0 flex flex-col gap-1">
-                           {/* Corrected text colors for visibility */}
                            <span className="text-3xl font-bold text-gray-400 dark:text-gray-500 group-hover:text-indigo-500 dark:group-hover:text-indigo-400 transition-colors font-mono">
                                {new Date(article.createdAt).getDate().toString().padStart(2, '0')}
                            </span>
@@ -200,4 +167,4 @@ export const Home: React.FC = () => {
 
     </div>
   );
-};
+}

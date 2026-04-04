@@ -1,29 +1,23 @@
-import React, { useEffect, useState, useMemo } from 'react';
-import { Link } from 'react-router-dom';
-import { StorageService } from '../services/storage';
-import { Article } from '../types';
-import { LiquidGlass } from '../components/LiquidGlass';
+import React from 'react';
+import Link from 'next/link';
+import { ServerStorageService } from '../../services/server-storage';
+import { LiquidGlass } from '../../components/LiquidGlass';
+import { Metadata } from "next";
 
-export const Blog: React.FC = () => {
-  const [articles, setArticles] = useState<Article[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [selectedTag, setSelectedTag] = useState<string | null>(null);
+export const metadata: Metadata = {
+  title: "Blog - My Digital Garden",
+  description: "A collection of thoughts, tutorials, and insights.",
+};
 
-  useEffect(() => {
-    const fetchArticles = async () => {
-        try {
-            const published = await StorageService.getPublishedArticlesLight();
-            setArticles(published);
-        } catch (e) {
-            console.error(e);
-        } finally {
-            setIsLoading(false);
-        }
-    };
-    fetchArticles();
-  }, []);
+export default async function Blog({
+  searchParams,
+}: {
+  searchParams: { tag?: string };
+}) {
+  const articles = await ServerStorageService.getPublishedArticlesLight().catch(() => []);
+  const selectedTag = searchParams.tag || null;
 
-  const tags = useMemo(() => {
+  const tags = (() => {
       const map = new Map<string, number>();
       articles.forEach(a => {
           if (a.tags) {
@@ -31,14 +25,11 @@ export const Blog: React.FC = () => {
           }
       });
       return Array.from(map.entries()).sort((a, b) => b[1] - a[1]);
-  }, [articles]);
+  })();
 
-  const filteredArticles = useMemo(() => {
-      if (!selectedTag) return articles;
-      return articles.filter(a => a.tags && a.tags.includes(selectedTag));
-  }, [articles, selectedTag]);
-
-  if (isLoading) return <div className="py-20 text-center text-gray-400">Loading...</div>;
+  const filteredArticles = selectedTag 
+    ? articles.filter(a => a.tags && a.tags.includes(selectedTag))
+    : articles;
 
   return (
     <div className="max-w-3xl mx-auto py-10 space-y-12 animate-in fade-in slide-in-from-bottom-4 duration-700">
@@ -50,8 +41,8 @@ export const Blog: React.FC = () => {
       {/* Tag Filter - Glass Pills */}
       {tags.length > 0 && (
           <div className="flex flex-wrap justify-center gap-2">
-             <button
-                onClick={() => setSelectedTag(null)}
+             <Link
+                href="/blog"
                 className={`px-4 py-1.5 rounded-full text-xs font-semibold transition-all backdrop-blur-md border ${
                     selectedTag === null
                     ? 'bg-gray-900 text-white border-gray-900 dark:bg-white dark:text-gray-900 dark:border-white shadow-lg'
@@ -59,11 +50,11 @@ export const Blog: React.FC = () => {
                 }`}
              >
                  全部 ({articles.length})
-             </button>
+             </Link>
              {tags.map(([tag, count]) => (
-                 <button
+                 <Link
                     key={tag}
-                    onClick={() => setSelectedTag(selectedTag === tag ? null : tag)}
+                    href={selectedTag === tag ? '/blog' : `/blog?tag=${encodeURIComponent(tag)}`}
                     className={`px-4 py-1.5 rounded-full text-xs font-semibold transition-all backdrop-blur-md border ${
                         selectedTag === tag
                         ? 'bg-indigo-500 text-white border-indigo-500 shadow-lg shadow-indigo-500/30'
@@ -71,7 +62,7 @@ export const Blog: React.FC = () => {
                     }`}
                  >
                      {tag} <span className="opacity-70 ml-1 text-[10px]">{count}</span>
-                 </button>
+                 </Link>
              ))}
           </div>
       )}
@@ -87,7 +78,7 @@ export const Blog: React.FC = () => {
 
             {/* Card Content - Liquid Glass */}
             <div className="w-[calc(100%-4rem)] md:w-[calc(50%-2.5rem)]">
-                <Link to={`/blog/${article.id}`} className="block h-full">
+                <Link href={`/blog/${article.id}`} className="block h-full">
                     <LiquidGlass className="p-6 rounded-2xl hover:bg-white/60 dark:hover:bg-white/10 hover:border-indigo-200/40 dark:hover:border-indigo-500/20 transition-all duration-300 hover:shadow-lg hover:-translate-y-1">
                         <div className="flex items-center justify-between mb-3">
                             <time className="font-mono text-xs text-gray-400 font-medium">{new Date(article.createdAt).toLocaleDateString('zh-CN')}</time>
@@ -114,4 +105,4 @@ export const Blog: React.FC = () => {
       </div>
     </div>
   );
-};
+}

@@ -1,22 +1,23 @@
-import React, { useState, useRef, useEffect, useMemo } from 'react';
-import { useSearchParams, useNavigate } from 'react-router-dom';
+"use client";
+import React, { useState, useRef, useEffect, useMemo, Suspense } from 'react';
+import { useSearchParams, useRouter } from 'next/navigation';
 import {
     Send, Bot, User, Trash2, StopCircle, Sparkles, ChevronDown, Plus,
     Settings, FileText, Hash, X, ArrowLeft, Copy, RefreshCw, Edit2, Check, Save, History, Clock
 } from 'lucide-react';
-import { AIService, AI_MODELS, AIModelKey } from '../services/ai';
-import { StorageService, ChatSession, ChatMessage } from '../services/storage';
-import { MarkdownRenderer } from '../components/MarkdownRenderer';
-import { confirmToast } from '../utils/toast';
+import { AIService, AI_MODELS, AIModelKey } from '../../services/ai';
+import { StorageService, ChatSession, ChatMessage } from '../../services/storage';
+import { MarkdownRenderer } from '../../components/MarkdownRenderer';
+import { confirmToast } from '../../utils/toast';
 import toast from 'react-hot-toast';
-import { Article } from '../types';
-import { LiquidGlass } from '../components/LiquidGlass';
-import { MessageActions, getDisplayContent, CONTEXT_TAG_START, CONTEXT_TAG_END } from '../components/chat/MessageItem';
+import { Article } from '../../types';
+import { LiquidGlass } from '../../components/LiquidGlass';
+import { MessageActions, getDisplayContent, CONTEXT_TAG_START, CONTEXT_TAG_END } from '../../components/chat/MessageItem';
 
 const DEFAULT_SYSTEM_PROMPT = "你是一个智能助手，名字叫 My AI。请用简洁、优雅的 Markdown 格式回答用户的问题。";
 
-import { ChatSidebar } from '../components/chat/ChatSidebar';
-import { ChatTopBar } from '../components/chat/ChatTopBar';
+import { ChatSidebar } from '../../components/chat/ChatSidebar';
+import { ChatTopBar } from '../../components/chat/ChatTopBar';
 
 // Helper for unique IDs
 const generateId = () => {
@@ -30,10 +31,10 @@ const generateId = () => {
 
 // --- Main Component ---
 
-export const Chat: React.FC = () => {
-    const [searchParams] = useSearchParams();
+function ChatContent() {
+    const searchParams = useSearchParams();
     const articleId = searchParams.get('articleId');
-    const navigate = useNavigate();
+    const router = useRouter();
 
     // Data State
     const [sessions, setSessions] = useState<ChatSession[]>([]);
@@ -428,7 +429,7 @@ export const Chat: React.FC = () => {
                 isSystemPromptOpen={isSystemPromptOpen}
                 setIsSystemPromptOpen={setIsSystemPromptOpen}
                 onNewChat={() => { setCurrentSessionId(null); setMessages([]); }}
-                onNavigateHome={() => navigate('/')}
+                onNavigateHome={() => router.push('/')}
             />
 
             {/* --- History Drawer (Floating Glass Panel) --- */}
@@ -618,4 +619,4 @@ export const Chat: React.FC = () => {
             </div>
         </div>
     );
-};
+};export default function Chat() { return <Suspense fallback={<div className="flex h-screen items-center justify-center text-gray-500">Loading...</div>}><ChatContent /></Suspense>; }

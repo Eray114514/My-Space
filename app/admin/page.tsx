@@ -1,3 +1,4 @@
+"use client";
 import React, { useEffect, useState } from 'react';
 import { StorageService } from '../../services/storage';
 import { AIModelKey } from '../../services/ai';
@@ -11,7 +12,7 @@ import { ModelSelector } from './components/ModelSelector';
 import { ProjectEditor } from './components/ProjectEditor';
 import { ArticleEditor } from './components/ArticleEditor';
 
-export const AdminDashboard: React.FC = () => {
+export default function AdminDashboard() {
   const [tab, setTab] = useState<'articles' | 'projects' | 'settings'>('articles');
   const [articles, setArticles] = useState<Article[]>([]);
   const [projects, setProjects] = useState<Project[]>([]);

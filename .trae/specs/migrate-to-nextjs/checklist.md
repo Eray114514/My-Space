@@ -1,0 +1,8 @@
+- [x] `package.json` contains Next.js dependencies (`next`, `react`, `react-dom`).
+- [x] Vite and `react-router-dom` have been uninstalled.
+- [x] The `app/` directory replaces the `pages/` directory with App Router layout structure.
+- [x] The `ArticleDetail` page uses Server Components, directly fetching and rendering data without client-side loading states.
+- [x] SEO Metadata tags are correctly generated in the `<head>` of article pages (using `generateMetadata`).
+- [x] All `Link` and `useNavigate` imports are replaced with `next/link` and `next/navigation`.
+- [x] `npm run build` succeeds without errors.
+- [x] Changes are committed with standard format (e.g. `refactor(build): ...`) and pushed to the `main` branch.

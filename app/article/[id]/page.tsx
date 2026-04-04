@@ -1,47 +1,42 @@
-import React, { useEffect, useState } from 'react';
-import { useParams, Link, useNavigate } from 'react-router-dom';
-import { StorageService } from '../services/storage';
-import { Article } from '../types';
-import { MarkdownRenderer } from '../components/MarkdownRenderer';
-import { ArrowLeft, Calendar, Tag, MessageSquare } from 'lucide-react';
-import { LiquidGlass } from '../components/LiquidGlass';
+import React from 'react';
+import Link from 'next/link';
+import { notFound } from 'next/navigation';
+import { ServerStorageService } from '../../../services/server-storage';
+import { MarkdownRenderer } from '../../../components/MarkdownRenderer';
+import { ArrowLeft, Calendar, MessageSquare } from 'lucide-react';
+import { LiquidGlass } from '../../../components/LiquidGlass';
+import { Metadata } from 'next';
 
-export const ArticleDetail: React.FC = () => {
-  const { id } = useParams<{ id: string }>();
-  const [article, setArticle] = useState<Article | null>(null);
-  const [loading, setLoading] = useState(true);
-  const navigate = useNavigate();
+export async function generateMetadata({ params }: { params: { id: string } }): Promise<Metadata> {
+  const article = await ServerStorageService.getArticleById(params.id).catch(() => null);
+  if (!article) return { title: 'Article Not Found' };
+  
+  return {
+    title: `${article.title} - My Digital Garden`,
+    description: article.summary,
+    keywords: article.tags,
+  };
+}
 
-  useEffect(() => {
-    const fetchArticle = async () => {
-        if (!id) return;
-        try {
-            const found = await StorageService.getArticleById(id);
-            setArticle(found);
-        } catch (e) {
-            console.error(e);
-        } finally {
-            setLoading(false);
-        }
-    };
-    fetchArticle();
-  }, [id]);
+export default async function ArticleDetail({ params }: { params: { id: string } }) {
+  const article = await ServerStorageService.getArticleById(params.id).catch(() => null);
 
-  if (loading) return <div className="py-20 text-center text-gray-400">Loading...</div>;
-  if (!article) return <div className="py-20 text-center text-gray-400">文章未找到</div>;
+  if (!article) {
+    notFound();
+  }
 
   return (
     <article className="min-h-screen relative animate-in fade-in duration-500 pb-20">
       
       {/* Immersive Back Button Header */}
       <div className="fixed top-0 left-0 w-full p-6 z-50 pointer-events-none">
-          <button 
-            onClick={() => navigate('/blog')}
-            className="pointer-events-auto flex items-center justify-center w-10 h-10 rounded-full bg-white/50 dark:bg-black/20 backdrop-blur-xl border border-white/20 dark:border-white/10 text-gray-700 dark:text-gray-200 shadow-sm hover:scale-110 active:scale-95 transition-all"
+          <Link 
+            href="/blog"
+            className="pointer-events-auto inline-flex items-center justify-center w-10 h-10 rounded-full bg-white/50 dark:bg-black/20 backdrop-blur-xl border border-white/20 dark:border-white/10 text-gray-700 dark:text-gray-200 shadow-sm hover:scale-110 active:scale-95 transition-all"
             title="返回列表"
           >
             <ArrowLeft size={20} />
-          </button>
+          </Link>
       </div>
       
       {/* Content Container (Center Aligned) */}
@@ -71,13 +66,13 @@ export const ArticleDetail: React.FC = () => {
       </div>
 
       {/* Floating Chat Button */}
-      <button 
-        onClick={() => navigate(`/chat?articleId=${article.id}`)}
+      <Link 
+        href={`/chat?articleId=${article.id}`}
         className="fixed bottom-8 right-8 z-50 flex items-center gap-2 px-5 py-3 bg-indigo-600 hover:bg-indigo-700 text-white rounded-full shadow-2xl shadow-indigo-500/40 transition-all hover:scale-105 active:scale-95 font-bold"
       >
         <MessageSquare size={20} />
         <span className="hidden sm:inline">对此文章提问</span>
-      </button>
+      </Link>
     </article>
   );
-};
+}

@@ -1,3 +1,5 @@
+"use client";
+
 import React from 'react';
 import { ArrowLeft, History, Sparkles, ChevronDown, Check, Settings, Plus } from 'lucide-react';
 import { AIModelKey, AI_MODELS } from '../../services/ai';

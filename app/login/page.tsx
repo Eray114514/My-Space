@@ -1,23 +1,20 @@
+"use client";
+
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useRouter } from 'next/navigation';
 import { Lock, ArrowRight, Check } from 'lucide-react';
-import { LiquidGlass } from '../components/LiquidGlass';
+import { LiquidGlass } from '../../components/LiquidGlass';
 
-interface Props {
-  onLogin: () => void;
-}
-
-export const Login: React.FC<Props> = ({ onLogin }) => {
+export default function Login() {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [rememberMe, setRememberMe] = useState(false);
   const [error, setError] = useState('');
-  const navigate = useNavigate();
+  const router = useRouter();
 
   // Get credentials from environment variables
-  const env = (import.meta as any).env;
-  const ADMIN_USERNAME = env.ADMIN_USERNAME || 'Eray'; // Fallback to Eray if not set
-  const ADMIN_PASSWORD = env.ADMIN_PASSWORD;
+  const ADMIN_USERNAME = process.env.NEXT_PUBLIC_ADMIN_USERNAME || 'Eray'; // Fallback to Eray if not set
+  const ADMIN_PASSWORD = process.env.NEXT_PUBLIC_ADMIN_PASSWORD;
 
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
@@ -34,8 +31,7 @@ export const Login: React.FC<Props> = ({ onLogin }) => {
       } else {
         sessionStorage.setItem('my_session', 'active');
       }
-      onLogin();
-      navigate('/admin');
+      router.push('/admin');
     } else {
       setError('用户名或密码错误');
     }
@@ -105,4 +101,4 @@ export const Login: React.FC<Props> = ({ onLogin }) => {
       </LiquidGlass>
     </div>
   );
-};
+}

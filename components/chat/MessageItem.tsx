@@ -1,3 +1,5 @@
+"use client";
+
 import React, { useState } from 'react';
 import { Copy, Edit2, RefreshCw, Check, FileText } from 'lucide-react';
 import { MarkdownRenderer } from '../MarkdownRenderer';

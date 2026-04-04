@@ -1,3 +1,4 @@
+"use client";
 import React, { useState, useMemo, useEffect } from 'react';
 import { AIModelKey, AI_MODELS } from '../../../services/ai';
 import { Bot, Box, BrainCircuit, Sparkles, CheckCircle } from 'lucide-react';
