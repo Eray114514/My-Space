@@ -3,7 +3,7 @@
 .liquid-glass-wrapper {
   position: relative;
   /* Removed overflow: hidden to allow popups/dropdowns to be visible */
-  isolation: isolate;
+  /* isolation: isolate; 导致 backdrop-filter 失效，故移除 */
 }
 
 /* 1. The Distorted Rim (Outer) */
