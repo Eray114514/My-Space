@@ -174,11 +174,10 @@ export const ClientLayout = ({ children }: { children: React.ReactNode }) => {
             layout
             initial={false}
             animate={{ 
-              width: isSearchPage ? '100%' : 'auto',
-              maxWidth: isSearchPage ? '32rem' : '90vw'
+              width: isSearchPage ? '100%' : 'auto'
             }}
             transition={{ type: 'spring', stiffness: 400, damping: 30 }}
-            className="liquid-glass-wrapper pointer-events-auto rounded-full shadow-xl sm:min-w-[320px] flex-shrink-0"
+            className="liquid-glass-wrapper pointer-events-auto rounded-full shadow-xl sm:min-w-[320px] max-w-full md:max-w-2xl flex-shrink-0"
             style={{ overflow: 'hidden' }}
           >
             <div className="liquid-glass-content px-2 md:px-4 py-1.5 flex items-center justify-between w-full h-full gap-2 relative">
