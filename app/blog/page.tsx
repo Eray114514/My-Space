@@ -5,8 +5,12 @@ import { LiquidGlass } from '../../components/LiquidGlass';
 import { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Blog - My Digital Garden",
-  description: "A collection of thoughts, tutorials, and insights.",
+  title: "文章归档",
+  description: "记录生活，分享技术，沉淀思考。",
+  openGraph: {
+    title: '文章归档 - My Digital Garden',
+    description: '记录生活，分享技术，沉淀思考。',
+  }
 };
 
 export default async function Blog({

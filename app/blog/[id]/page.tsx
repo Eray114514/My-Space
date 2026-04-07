@@ -11,12 +11,24 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
   const resolvedParams = await params;
   const id = decodeURIComponent(resolvedParams.id);
   const article = await ServerStorageService.getArticleById(id).catch(() => null);
-  if (!article) return { title: 'Article Not Found' };
+  if (!article) return { title: '文章未找到' };
   
   return {
-    title: `${article.title} - My Digital Garden`,
+    title: article.title,
     description: article.summary,
     keywords: article.tags,
+    openGraph: {
+      title: article.title,
+      description: article.summary,
+      type: 'article',
+      publishedTime: article.createdAt,
+      authors: ['Eray'],
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title: article.title,
+      description: article.summary,
+    }
   };
 }
 

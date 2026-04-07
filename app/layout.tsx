@@ -10,8 +10,36 @@ import { Suspense } from 'react';
 const inter = Inter({ subsets: ['latin'] });
 
 export const metadata: Metadata = {
-  title: 'My Digital Garden',
-  description: 'Welcome to my digital garden, where I share my thoughts, code, and design.',
+  metadataBase: new URL(process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : 'http://localhost:3000'),
+  title: {
+    template: '%s | My Digital Garden',
+    default: 'My Digital Garden - 个人数字花园',
+  },
+  description: '这里是我的数字花园。在液态流动的光影中，分享设计、代码与思考。',
+  keywords: ['个人博客', '数字花园', '代码', '设计', '技术分享', '前端开发'],
+  openGraph: {
+    title: 'My Digital Garden - 个人数字花园',
+    description: '这里是我的数字花园。在液态流动的光影中，分享设计、代码与思考。',
+    type: 'website',
+    locale: 'zh_CN',
+    siteName: 'My Digital Garden',
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'My Digital Garden - 个人数字花园',
+    description: '这里是我的数字花园。在液态流动的光影中，分享设计、代码与思考。',
+  },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      'max-video-preview': -1,
+      'max-image-preview': 'large',
+      'max-snippet': -1,
+    },
+  },
 };
 
 export default function RootLayout({
