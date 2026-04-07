@@ -181,7 +181,7 @@ export const ClientLayout = ({ children }: { children: React.ReactNode }) => {
             className="liquid-glass-wrapper pointer-events-auto rounded-full shadow-xl sm:min-w-[320px] flex-shrink-0"
             style={{ overflow: 'hidden' }}
           >
-            <div className="liquid-glass-content px-2 py-1.5 flex items-center justify-between w-full h-full gap-2 relative">
+            <div className="liquid-glass-content px-2 md:px-4 py-1.5 flex items-center justify-between w-full h-full gap-2 relative">
                 <motion.div 
                   layout="position"
                   className="flex items-center gap-2 sm:pr-3 cursor-pointer rounded-full hover:bg-black/5 dark:hover:bg-white/10 transition-colors group shrink-0 z-10"
@@ -205,7 +205,7 @@ export const ClientLayout = ({ children }: { children: React.ReactNode }) => {
                 </AnimatePresence>
                 </motion.div>
 
-                <div className="flex-1 flex items-center justify-center min-w-0 relative h-8 overflow-hidden">
+                <div className="flex-1 flex items-center justify-center min-w-0 relative h-8 overflow-visible">
                   <AnimatePresence initial={false}>
                     {isSearchPage ? (
                         <motion.div 
@@ -235,7 +235,7 @@ export const ClientLayout = ({ children }: { children: React.ReactNode }) => {
                                 <Link
                                 key={link.path}
                                 href={link.path}
-                                className={`px-3 py-1.5 rounded-full text-xs font-semibold transition-all duration-300 ${
+                                className={`px-2 md:px-3 py-1.5 rounded-full text-[11px] md:text-xs font-semibold transition-all duration-300 ${
                                     isActive 
                                         ? 'text-indigo-600 dark:text-white bg-white/80 dark:bg-white/10 shadow-sm' 
                                         : 'text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-black/5 dark:hover:bg-white/5'
@@ -261,7 +261,7 @@ export const ClientLayout = ({ children }: { children: React.ReactNode }) => {
                   )}
                 </AnimatePresence>
 
-                <motion.div layout="position" className="flex items-center gap-1 shrink-0 z-10">
+                <motion.div layout="position" className="flex items-center gap-1 md:gap-2 shrink-0 z-10">
                     <AnimatePresence mode="popLayout">
                       {!isSearchPage && (
                           <motion.button 
