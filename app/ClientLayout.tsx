@@ -161,8 +161,14 @@ export const ClientLayout = ({ children }: { children: React.ReactNode }) => {
 
       {/* Floating Navigation */}
       {!isImmersive && (
-        <div 
-          className={`fixed top-4 sm:top-6 left-0 right-0 z-50 flex justify-center px-4 pointer-events-none transition-transform duration-500 ease-in-out will-change-transform ${isNavVisible ? 'translate-y-0' : '-translate-y-[200%]'}`}
+        <motion.div 
+          className="fixed top-4 sm:top-6 left-0 right-0 z-50 flex justify-center px-4 pointer-events-none"
+          initial={false}
+          animate={{ 
+            y: isNavVisible ? 0 : -100,
+            opacity: isNavVisible ? 1 : 0
+          }}
+          transition={{ type: 'spring', stiffness: 300, damping: 30 }}
         >
           <motion.div 
             layout
@@ -177,20 +183,20 @@ export const ClientLayout = ({ children }: { children: React.ReactNode }) => {
           >
             <div className="liquid-glass-content px-2 py-1.5 flex items-center justify-between w-full h-full gap-2 relative">
                 <motion.div 
-                  layout
+                  layout="position"
                   className="flex items-center gap-2 sm:pr-3 cursor-pointer rounded-full hover:bg-black/5 dark:hover:bg-white/10 transition-colors group shrink-0 z-10"
                   onClick={() => router.push('/')}
                 >
-                <div className="w-8 h-8 bg-linear-to-br from-indigo-500 via-purple-500 to-pink-500 rounded-full flex items-center justify-center text-white shadow-lg shadow-indigo-500/30 text-xs font-bold font-mono border border-white/20 group-hover:scale-105 transition-transform">
+                <div className="w-8 h-8 bg-linear-to-br from-indigo-500 via-purple-500 to-pink-500 rounded-full flex items-center justify-center text-white shadow-lg shadow-indigo-500/30 text-xs font-bold font-mono border border-white/20 group-hover:scale-105 transition-transform shrink-0">
                     {logoLetter}
                 </div>
                 <AnimatePresence mode="popLayout">
                   {!isSearchPage && (
                     <motion.span 
-                      initial={{ opacity: 0, width: 0, x: -10 }}
-                      animate={{ opacity: 1, width: 'auto', x: 0 }}
-                      exit={{ opacity: 0, width: 0, x: -10 }}
-                      transition={{ duration: 0.2 }}
+                      initial={{ opacity: 0, width: 0, filter: 'blur(4px)' }}
+                      animate={{ opacity: 1, width: 'auto', filter: 'blur(0px)' }}
+                      exit={{ opacity: 0, width: 0, filter: 'blur(4px)' }}
+                      transition={{ type: 'spring', stiffness: 400, damping: 30 }}
                       className="font-bold text-sm tracking-tight text-gray-800 dark:text-gray-100 hidden sm:block whitespace-nowrap"
                     >
                       {adminName}
@@ -199,16 +205,16 @@ export const ClientLayout = ({ children }: { children: React.ReactNode }) => {
                 </AnimatePresence>
                 </motion.div>
 
-                <div className="flex-1 flex items-center justify-center min-w-0">
-                  <AnimatePresence mode="wait">
+                <div className="flex-1 flex items-center justify-center min-w-0 relative h-8 overflow-hidden">
+                  <AnimatePresence initial={false}>
                     {isSearchPage ? (
                         <motion.div 
                           key="search-input"
-                          initial={{ opacity: 0, y: -10 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          exit={{ opacity: 0, y: 10 }}
-                          transition={{ duration: 0.2 }}
-                          className="w-full flex items-center"
+                          initial={{ opacity: 0, y: 20, filter: 'blur(4px)' }}
+                          animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
+                          exit={{ opacity: 0, y: -20, filter: 'blur(4px)' }}
+                          transition={{ type: 'spring', stiffness: 300, damping: 25 }}
+                          className="absolute inset-0 w-full flex items-center"
                         >
                             <React.Suspense fallback={<div className="h-8"></div>}>
                                 <SearchInput />
@@ -217,11 +223,11 @@ export const ClientLayout = ({ children }: { children: React.ReactNode }) => {
                     ) : (
                         <motion.nav 
                           key="nav-links"
-                          initial={{ opacity: 0, y: 10 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          exit={{ opacity: 0, y: -10 }}
-                          transition={{ duration: 0.2 }}
-                          className="hidden md:flex items-center gap-0.5 whitespace-nowrap"
+                          initial={{ opacity: 0, y: 20, filter: 'blur(4px)' }}
+                          animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
+                          exit={{ opacity: 0, y: -20, filter: 'blur(4px)' }}
+                          transition={{ type: 'spring', stiffness: 300, damping: 25 }}
+                          className="absolute inset-0 hidden md:flex items-center justify-center gap-0.5 whitespace-nowrap"
                         >
                             {navLinks.map((link) => {
                                 const isActive = pathname === link.path;
@@ -246,55 +252,56 @@ export const ClientLayout = ({ children }: { children: React.ReactNode }) => {
                 <AnimatePresence mode="popLayout">
                   {!isSearchPage && (
                     <motion.div 
-                      initial={{ opacity: 0, scale: 0.8 }}
-                      animate={{ opacity: 1, scale: 1 }}
-                      exit={{ opacity: 0, scale: 0.8 }}
-                      transition={{ duration: 0.2 }}
-                      className="w-px h-4 bg-gray-300/50 dark:bg-white/10 hidden md:block mx-2 shrink-0"
+                      initial={{ opacity: 0, scale: 0.8, width: 0, margin: 0 }}
+                      animate={{ opacity: 1, scale: 1, width: '1px', margin: '0 0.5rem' }}
+                      exit={{ opacity: 0, scale: 0.8, width: 0, margin: 0 }}
+                      transition={{ type: 'spring', stiffness: 400, damping: 30 }}
+                      className="h-4 bg-gray-300/50 dark:bg-white/10 hidden md:block shrink-0"
                     />
                   )}
                 </AnimatePresence>
 
-                <motion.div layout className="flex items-center gap-1 shrink-0 z-10">
+                <motion.div layout="position" className="flex items-center gap-1 shrink-0 z-10">
                     <AnimatePresence mode="popLayout">
                       {!isSearchPage && (
                           <motion.button 
-                            initial={{ opacity: 0, scale: 0.8 }}
-                            animate={{ opacity: 1, scale: 1 }}
-                            exit={{ opacity: 0, scale: 0.8 }}
-                            transition={{ duration: 0.2 }}
+                            initial={{ opacity: 0, scale: 0.8, width: 0 }}
+                            animate={{ opacity: 1, scale: 1, width: 'auto' }}
+                            exit={{ opacity: 0, scale: 0.8, width: 0 }}
+                            transition={{ type: 'spring', stiffness: 400, damping: 30 }}
                             onClick={() => router.push('/search')} 
-                            className="p-2 rounded-full text-gray-500 dark:text-gray-400 hover:bg-black/5 dark:hover:bg-white/10 hover:text-gray-900 dark:hover:text-white transition-all"
+                            className="p-2 rounded-full text-gray-500 dark:text-gray-400 hover:bg-black/5 dark:hover:bg-white/10 hover:text-gray-900 dark:hover:text-white transition-all overflow-hidden"
                           >
-                              <Search size={16} />
+                              <Search size={16} className="shrink-0" />
                           </motion.button>
                       )}
                     </AnimatePresence>
-                    <button onClick={toggleTheme} className="p-2 rounded-full text-gray-500 dark:text-gray-400 hover:bg-black/5 dark:hover:bg-white/10 hover:text-yellow-500 dark:hover:text-yellow-400 transition-all">
+                    <button onClick={toggleTheme} className="p-2 rounded-full text-gray-500 dark:text-gray-400 hover:bg-black/5 dark:hover:bg-white/10 hover:text-yellow-500 dark:hover:text-yellow-400 transition-all shrink-0">
                         {isDarkMode ? <Moon size={16} /> : <Sun size={16} />}
                     </button>
                     <AnimatePresence mode="popLayout">
                       {!isSearchPage && (
                           <motion.div
-                            initial={{ opacity: 0, scale: 0.8 }}
-                            animate={{ opacity: 1, scale: 1 }}
-                            exit={{ opacity: 0, scale: 0.8 }}
-                            transition={{ duration: 0.2 }}
+                            initial={{ opacity: 0, scale: 0.8, width: 0 }}
+                            animate={{ opacity: 1, scale: 1, width: 'auto' }}
+                            exit={{ opacity: 0, scale: 0.8, width: 0 }}
+                            transition={{ type: 'spring', stiffness: 400, damping: 30 }}
+                            className="overflow-hidden"
                           >
                             {isAuthenticated ? (
-                                <button onClick={handleLogout} className="p-2 rounded-full text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 transition-all"><LogOut size={16} /></button>
+                                <button onClick={handleLogout} className="p-2 rounded-full text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 transition-all shrink-0"><LogOut size={16} /></button>
                             ) : (
-                                <button onClick={() => router.push('/login')} className="hidden sm:block p-2 rounded-full text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-black/5 dark:hover:bg-white/10 transition-all"><Lock size={16} /></button>
+                                <button onClick={() => router.push('/login')} className="hidden sm:block p-2 rounded-full text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-black/5 dark:hover:bg-white/10 transition-all shrink-0"><Lock size={16} /></button>
                             )}
                           </motion.div>
                       )}
                     </AnimatePresence>
-                    <button className="md:hidden p-2 text-gray-600 dark:text-gray-300" onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}>{isMobileMenuOpen ? <X size={18} /> : <Menu size={18} />}</button>
+                    <button className="md:hidden p-2 text-gray-600 dark:text-gray-300 shrink-0" onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}>{isMobileMenuOpen ? <X size={18} /> : <Menu size={18} />}</button>
                 </motion.div>
             </div>
 
           </motion.div>
-        </div>
+        </motion.div>
       )}
 
       {/* Mobile Menu */}
