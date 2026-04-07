@@ -163,11 +163,11 @@ export const ClientLayout = ({ children }: { children: React.ReactNode }) => {
         <div 
           className={`fixed top-4 sm:top-6 left-0 right-0 z-50 flex justify-center px-4 pointer-events-none transition-transform duration-500 ease-in-out will-change-transform ${isNavVisible ? 'translate-y-0' : '-translate-y-[200%]'}`}
         >
-          <LiquidGlass className={`pointer-events-auto rounded-full px-2 py-1.5 shadow-xl transition-all duration-300 ${isSearchPage ? 'w-full max-w-lg' : 'w-fit min-w-[320px] max-w-[90vw]'}`}>
+          <LiquidGlass className={`pointer-events-auto rounded-full px-2 py-1.5 shadow-xl transition-all duration-300 ${isSearchPage ? 'w-full max-w-lg' : 'w-fit sm:min-w-[320px] max-w-[90vw]'}`}>
             
             <div className="flex items-center justify-between w-full h-full gap-2">
                 <div 
-                className="flex items-center gap-2 pl-2 pr-3 cursor-pointer rounded-full hover:bg-black/5 dark:hover:bg-white/10 transition-colors group shrink-0"
+                className="flex items-center gap-2 sm:pr-3 cursor-pointer rounded-full hover:bg-black/5 dark:hover:bg-white/10 transition-colors group shrink-0"
                 onClick={() => router.push('/')}
                 >
                 <div className="w-8 h-8 bg-gradient-to-br from-indigo-500 via-purple-500 to-pink-500 rounded-full flex items-center justify-center text-white shadow-lg shadow-indigo-500/30 text-xs font-bold font-mono border border-white/20 group-hover:scale-105 transition-transform">
@@ -208,7 +208,7 @@ export const ClientLayout = ({ children }: { children: React.ReactNode }) => {
 
                 {!isSearchPage && <div className="w-px h-4 bg-gray-300/50 dark:bg-white/10 hidden md:block mx-2 shrink-0"></div>}
 
-                <div className="flex items-center gap-1 shrink-0 pl-1 pr-1">
+                <div className="flex items-center gap-1 shrink-0">
                     {!isSearchPage && (
                         <button onClick={() => router.push('/search')} className="p-2 rounded-full text-gray-500 dark:text-gray-400 hover:bg-black/5 dark:hover:bg-white/10 hover:text-gray-900 dark:hover:text-white transition-all">
                             <Search size={16} />

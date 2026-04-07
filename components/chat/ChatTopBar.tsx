@@ -37,7 +37,7 @@ export const ChatTopBar: React.FC<ChatTopBarProps> = ({
     return (
         <div className="fixed top-4 left-0 right-0 flex justify-center z-50 pointer-events-none px-4">
             <LiquidGlass
-                className="pointer-events-auto rounded-full shadow-xl transition-all min-w-[300px]"
+                className="pointer-events-auto rounded-full shadow-xl transition-all sm:min-w-[300px]"
                 innerClassName="flex items-center gap-1 sm:gap-2 px-1.5 py-1.5"
             >
 
