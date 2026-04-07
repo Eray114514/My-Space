@@ -2,6 +2,7 @@ import React from 'react';
 import Link from 'next/link';
 import { ServerStorageService } from '../../services/server-storage';
 import { LiquidGlass } from '../../components/LiquidGlass';
+import { AnimatedSection, AnimatedItem } from '../../components/AnimatedSection';
 import { Metadata } from "next";
 
 export const metadata: Metadata = {
@@ -37,7 +38,7 @@ export default async function Blog({
     : articles;
 
   return (
-    <div className="max-w-3xl mx-auto py-10 space-y-12 animate-in fade-in slide-in-from-bottom-4 duration-700">
+    <div className="max-w-3xl mx-auto py-10 space-y-12">
       <header className="text-center space-y-4 pt-4">
         <h1 className="text-4xl font-extrabold tracking-tight text-gray-900 dark:text-white">文章归档</h1>
         <p className="text-lg text-gray-500 dark:text-gray-400 font-light">记录生活，分享技术，沉淀思考。</p>
@@ -72,9 +73,9 @@ export default async function Blog({
           </div>
       )}
 
-      <div className="space-y-12 relative before:absolute before:inset-0 before:ml-5 before:-translate-x-px md:before:mx-auto md:before:translate-x-0 before:h-full before:w-px before:bg-linear-to-b before:from-transparent before:via-gray-300/50 before:to-transparent dark:before:via-white/10">
+      <AnimatedSection className="space-y-12 relative before:absolute before:inset-0 before:ml-5 before:-translate-x-px md:before:mx-auto md:before:translate-x-0 before:h-full before:w-px before:bg-linear-to-b before:from-transparent before:via-gray-300/50 before:to-transparent dark:before:via-white/10">
         {filteredArticles.map((article) => (
-          <div key={article.id} className="relative flex items-center justify-between md:justify-normal md:odd:flex-row-reverse group is-active">
+          <AnimatedItem key={article.id} className="relative flex items-center justify-between md:justify-normal md:odd:flex-row-reverse group is-active">
             
             {/* Dot on the timeline - Glass Bead */}
             <div className="flex items-center justify-center w-8 h-8 rounded-full border border-white/50 dark:border-white/10 bg-white/30 dark:bg-white/5 backdrop-blur-md shadow-sm shrink-0 md:order-1 md:group-odd:-translate-x-1/2 md:group-even:translate-x-1/2 text-gray-500 z-10">
@@ -100,14 +101,14 @@ export default async function Blog({
                     </LiquidGlass>
                 </Link>
             </div>
-          </div>
+          </AnimatedItem>
         ))}
         {filteredArticles.length === 0 && (
              <LiquidGlass className="text-center py-12 rounded-2xl text-gray-400">
                  {selectedTag ? `标签 "${selectedTag}" 下暂无文章` : '暂无公开文章'}
              </LiquidGlass>
         )}
-      </div>
+      </AnimatedSection>
     </div>
   );
 }

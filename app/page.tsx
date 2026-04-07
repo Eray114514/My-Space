@@ -5,6 +5,7 @@ import { ServerStorageService } from '../services/server-storage';
 import * as Icons from 'lucide-react';
 import { LiquidGlass } from '../components/LiquidGlass';
 import { Project } from '../types';
+import { AnimatedSection, AnimatedItem } from '../components/AnimatedSection';
 
 export default async function Home() {
   const projects = await ServerStorageService.getProjects().catch(() => []);
@@ -42,11 +43,11 @@ export default async function Home() {
   };
 
   return (
-    <div className="space-y-24 animate-in fade-in duration-700">
+    <div className="space-y-24">
       
       {/* Hero Section */}
-      <section className="space-y-8 py-10 relative">
-        <div className="space-y-4">
+      <AnimatedSection className="space-y-8 py-10 relative">
+        <AnimatedItem className="space-y-4">
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/40 dark:bg-white/10 border border-white/30 dark:border-white/10 backdrop-blur-md text-xs font-medium text-indigo-600 dark:text-indigo-300 shadow-sm">
                 <Sparkles size={12} />
                 <span>Welcome to {new Date().getFullYear()}</span>
@@ -55,13 +56,15 @@ export default async function Home() {
               你好，我是 <br />
               <span className="text-transparent bg-clip-text bg-linear-to-r from-indigo-500 via-purple-500 to-pink-500">{adminName}</span>
             </h1>
-        </div>
+        </AnimatedItem>
         
-        <p className="text-xl sm:text-2xl text-gray-600 dark:text-gray-300 max-w-2xl leading-relaxed font-light">
-          这里是我的数字花园。在液态流动的光影中，分享设计、代码与思考。
-        </p>
+        <AnimatedItem>
+          <p className="text-xl sm:text-2xl text-gray-600 dark:text-gray-300 max-w-2xl leading-relaxed font-light">
+            这里是我的数字花园。在液态流动的光影中，分享设计、代码与思考。
+          </p>
+        </AnimatedItem>
         
-        <div className="flex flex-wrap gap-4 pt-4">
+        <AnimatedItem className="flex flex-wrap gap-4 pt-4">
             <Link href="/blog" className="group relative inline-flex items-center gap-2 px-8 py-3.5 bg-gray-900 dark:bg-white text-white dark:text-gray-900 rounded-full font-semibold transition-all hover:scale-105 active:scale-95 shadow-lg shadow-gray-900/20 dark:shadow-white/20 z-10">
                 阅读文章
                 <ArrowRight size={18} className="group-hover:translate-x-1 transition-transform" />
@@ -72,8 +75,8 @@ export default async function Home() {
             >
                 <LiquidGlass>查看作品</LiquidGlass>
             </Link>
-        </div>
-      </section>
+        </AnimatedItem>
+      </AnimatedSection>
 
       {/* Projects Grid */}
       <section id="projects" className="space-y-10">
@@ -82,34 +85,36 @@ export default async function Home() {
             <h2 className="text-3xl font-bold text-gray-900 dark:text-white">精选导航</h2>
         </div>
         
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+        <AnimatedSection className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
           {projects.map((project) => (
-            <Link href={project.url} target="_blank" key={project.id} className="block group">
-              <LiquidGlass 
-                className="h-full flex flex-col p-6 rounded-4xl hover:bg-white/60 dark:hover:bg-white/10 hover:border-white/50 dark:hover:border-white/20 transition-all duration-300 hover:-translate-y-2 hover:shadow-[0_20px_40px_-15px_rgba(0,0,0,0.1)] dark:hover:shadow-[0_20px_40px_-15px_rgba(255,255,255,0.05)] cursor-pointer"
-              >
-                  <div className="flex items-start justify-between mb-6">
-                    <div className="p-3 bg-white/50 dark:bg-white/5 rounded-2xl group-hover:scale-110 transition-transform duration-300 shadow-sm border border-white/40 dark:border-white/10 backdrop-blur-md">
-                      {renderIcon(project)}
-                      {project.iconType === 'auto' && <Globe size={40} className="text-gray-300 hidden" />}
+            <AnimatedItem key={project.id} className="block group">
+              <Link href={project.url} target="_blank" className="block h-full">
+                <LiquidGlass 
+                  className="h-full flex flex-col p-6 rounded-4xl hover:bg-white/60 dark:hover:bg-white/10 hover:border-white/50 dark:hover:border-white/20 transition-all duration-300 hover:-translate-y-2 hover:shadow-[0_20px_40px_-15px_rgba(0,0,0,0.1)] dark:hover:shadow-[0_20px_40px_-15px_rgba(255,255,255,0.05)] cursor-pointer"
+                >
+                    <div className="flex items-start justify-between mb-6">
+                      <div className="p-3 bg-white/50 dark:bg-white/5 rounded-2xl group-hover:scale-110 transition-transform duration-300 shadow-sm border border-white/40 dark:border-white/10 backdrop-blur-md">
+                        {renderIcon(project)}
+                        {project.iconType === 'auto' && <Globe size={40} className="text-gray-300 hidden" />}
+                      </div>
+                      <div className="p-2 rounded-full bg-transparent group-hover:bg-indigo-50 dark:group-hover:bg-indigo-500/20 transition-colors">
+                          <ExternalLink size={20} className="text-gray-300 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors" />
+                      </div>
                     </div>
-                    <div className="p-2 rounded-full bg-transparent group-hover:bg-indigo-50 dark:group-hover:bg-indigo-500/20 transition-colors">
-                        <ExternalLink size={20} className="text-gray-300 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors" />
-                    </div>
-                  </div>
-                  <h3 className="font-bold text-xl text-gray-900 dark:text-white mb-2">{project.title}</h3>
-                  <p className="text-sm text-gray-500 dark:text-gray-400 line-clamp-2 leading-relaxed">
-                    {project.description}
-                  </p>
-              </LiquidGlass>
-            </Link>
+                    <h3 className="font-bold text-xl text-gray-900 dark:text-white mb-2">{project.title}</h3>
+                    <p className="text-sm text-gray-500 dark:text-gray-400 line-clamp-2 leading-relaxed">
+                      {project.description}
+                    </p>
+                </LiquidGlass>
+              </Link>
+            </AnimatedItem>
           ))}
           {projects.length === 0 && (
              <LiquidGlass className="col-span-full py-16 text-center text-gray-400 rounded-3xl">
                  暂无导航链接
              </LiquidGlass>
           )}
-        </div>
+        </AnimatedSection>
       </section>
 
       {/* Recent Posts */}
@@ -122,9 +127,9 @@ export default async function Home() {
             <Link href="/blog" className="px-4 py-2 rounded-full text-sm font-semibold text-indigo-600 dark:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-900/20 transition-colors">查看全部</Link>
         </div>
 
-        <div className="space-y-4">
+        <AnimatedSection className="space-y-4">
           {recentArticles.map(article => (
-            <div key={article.id} className="block group">
+            <AnimatedItem key={article.id} className="block group">
               <Link href={`/blog/${article.id}`} className="block h-full cursor-pointer">
                   <article className="relative flex flex-col sm:flex-row gap-4 sm:gap-8 sm:items-center p-6 rounded-3xl transition-all duration-300 hover:bg-white/50 dark:hover:bg-white/5 border border-transparent hover:border-white/30 dark:hover:border-white/10">
                       <div className="sm:w-32 shrink-0 flex flex-col gap-1">
@@ -157,12 +162,12 @@ export default async function Home() {
                       </div>
                   </article>
               </Link>
-            </div>
+            </AnimatedItem>
           ))}
            {recentArticles.length === 0 && (
              <div className="py-10 text-center text-gray-400">暂无文章</div>
           )}
-        </div>
+        </AnimatedSection>
       </section>
 
     </div>

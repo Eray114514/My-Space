@@ -6,6 +6,7 @@ import { StorageService } from '../../services/storage';
 import { Article, Project } from '../../types';
 import { FileText, Layout, ExternalLink, Globe, Search as SearchIcon } from 'lucide-react';
 import * as Icons from 'lucide-react';
+import { motion } from 'framer-motion';
 import { LiquidGlass } from '../../components/LiquidGlass';
 
 function SearchContent() {
@@ -64,8 +65,21 @@ function SearchContent() {
        return <IconComp size={20} className="text-indigo-600 dark:text-indigo-400" />;
   }
 
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    show: {
+      opacity: 1,
+      transition: { staggerChildren: 0.05 }
+    }
+  };
+
+  const itemVariants = {
+    hidden: { opacity: 0, y: 10 },
+    show: { opacity: 1, y: 0, transition: { type: 'spring' as const, stiffness: 300, damping: 24 } }
+  };
+
   return (
-    <div className="max-w-3xl mx-auto py-4 animate-in fade-in duration-500 min-h-[60vh]">
+    <div className="max-w-3xl mx-auto py-4 min-h-[60vh]">
       
       {!query && (
         <div className="text-center text-gray-400 dark:text-neutral-600 mt-20 flex flex-col items-center gap-4">
@@ -88,24 +102,25 @@ function SearchContent() {
             <h2 className="text-xl font-bold mb-6 flex items-center gap-2 text-gray-900 dark:text-white px-2">
                 <Layout size={20} className="text-indigo-500" /> 网站导航
             </h2>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <motion.div variants={containerVariants} initial="hidden" animate="show" className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               {results.projects.map(project => (
-                <LiquidGlass 
-                    key={project.id}
-                    className="flex items-center gap-4 p-4 rounded-2xl hover:bg-white/60 dark:hover:bg-white/10 hover:border-indigo-200/50 transition-all hover:shadow-md cursor-pointer group"
-                    onClick={() => window.open(project.url, '_blank')}
-                >
-                    <div className="p-2.5 bg-white/50 dark:bg-white/5 rounded-xl group-hover:bg-indigo-50 dark:group-hover:bg-indigo-900/20 transition-colors backdrop-blur-sm border border-white/20">
-                        {renderProjectIcon(project)}
-                    </div>
-                    <div className="flex-1 min-w-0">
-                        <h3 className="font-semibold text-gray-900 dark:text-white truncate">{project.title}</h3>
-                        <p className="text-xs text-gray-500 dark:text-gray-400 truncate">{project.description}</p>
-                    </div>
-                    <ExternalLink size={14} className="text-gray-300 group-hover:text-indigo-500 transition-colors" />
-               </LiquidGlass>
+                <motion.div key={project.id} variants={itemVariants} whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
+                  <LiquidGlass 
+                      className="flex items-center gap-4 p-4 rounded-2xl hover:bg-white/60 dark:hover:bg-white/10 hover:border-indigo-200/50 transition-all hover:shadow-md cursor-pointer group"
+                      onClick={() => window.open(project.url, '_blank')}
+                  >
+                      <div className="p-2.5 bg-white/50 dark:bg-white/5 rounded-xl group-hover:bg-indigo-50 dark:group-hover:bg-indigo-900/20 transition-colors backdrop-blur-sm border border-white/20">
+                          {renderProjectIcon(project)}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                          <h3 className="font-semibold text-gray-900 dark:text-white truncate">{project.title}</h3>
+                          <p className="text-xs text-gray-500 dark:text-gray-400 truncate">{project.description}</p>
+                      </div>
+                      <ExternalLink size={14} className="text-gray-300 group-hover:text-indigo-500 transition-colors" />
+                 </LiquidGlass>
+                </motion.div>
               ))}
-            </div>
+            </motion.div>
           </section>
         )}
 
@@ -114,9 +129,9 @@ function SearchContent() {
             <h2 className="text-xl font-bold mb-6 flex items-center gap-2 text-gray-900 dark:text-white px-2">
                 <FileText size={20} className="text-indigo-500" /> 文章
             </h2>
-            <div className="space-y-4">
+            <motion.div variants={containerVariants} initial="hidden" animate="show" className="space-y-4">
                 {results.articles.map(article => (
-                    <div key={article.id} className="block group">
+                    <motion.div key={article.id} variants={itemVariants} whileHover={{ scale: 1.01 }} whileTap={{ scale: 0.99 }} className="block group">
                         <Link href={`/blog/${article.id}`} className="block h-full">
                             <LiquidGlass className="p-6 rounded-2xl hover:bg-white/60 dark:hover:bg-white/10 hover:border-indigo-200/50 transition-all hover:shadow-md cursor-pointer">
                                  <div className="flex justify-between items-start mb-2">
@@ -131,9 +146,9 @@ function SearchContent() {
                                  </div>
                             </LiquidGlass>
                         </Link>
-                    </div>
+                    </motion.div>
                 ))}
-            </div>
+            </motion.div>
            </section>
         )}
       </div>
