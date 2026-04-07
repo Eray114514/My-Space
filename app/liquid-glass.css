@@ -1,78 +1,50 @@
-/* --- Liquid Glass Implementation (Refined) --- */
+/* --- Apple Liquid Glass Implementation --- */
 
 .liquid-glass-wrapper {
   position: relative;
-  /* Removed overflow: hidden to allow popups/dropdowns to be visible */
-  /* isolation: isolate; 导致 backdrop-filter 失效，故移除 */
+  /* Core Glass Effect */
+  background: rgba(255, 255, 255, 0.15);
+  backdrop-filter: blur(16px) saturate(180%);
+  -webkit-backdrop-filter: blur(16px) saturate(180%);
+  
+  /* Inner borders & soft shadow */
+  box-shadow: 
+    0 8px 32px rgba(0, 0, 0, 0.05), 
+    inset 0 0 0 1px rgba(255, 255, 255, 0.3),
+    inset 0 1px 1px rgba(255, 255, 255, 0.5);
+
+  /* Force GPU compositing to fix backdrop-filter bugs during animations */
+  transform: translateZ(0);
+  -webkit-transform: translateZ(0);
+  will-change: transform, backdrop-filter;
 }
 
-/* 1. The Distorted Rim (Outer) */
-.liquid-glass-outer {
+.dark .liquid-glass-wrapper {
+  background: rgba(20, 20, 20, 0.35);
+  box-shadow: 
+    0 8px 32px rgba(0, 0, 0, 0.4), 
+    inset 0 0 0 1px rgba(255, 255, 255, 0.1),
+    inset 0 1px 1px rgba(255, 255, 255, 0.15);
+}
+
+/* Elegant light reflection / gradient overlay */
+.liquid-glass-wrapper::before {
+  content: "";
   position: absolute;
   inset: 0;
-  z-index: 1;
   border-radius: inherit;
   pointer-events: none;
-
-  padding: 4px;
-  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
-  -webkit-mask-composite: xor;
-  mask-composite: exclude;
-  opacity: 0.5;
-  /* Reduced distortion opacity */
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, transparent 100%);
+  z-index: 0;
 }
 
-/* 2. The Main Surface (Cover) */
-.liquid-glass-cover {
-  position: absolute;
-  inset: 0;
-  z-index: 2;
-  border-radius: inherit;
-  /* Reduced blur for better performance on low-end devices */
-  backdrop-filter: blur(12px) saturate(140%);
-  -webkit-backdrop-filter: blur(12px) saturate(140%);
-  background: rgba(255, 255, 255, 0.1);
-  pointer-events: none;
+.dark .liquid-glass-wrapper::before {
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.05) 0%, transparent 100%);
 }
 
-.dark .liquid-glass-cover {
-  background: rgba(20, 20, 20, 0.3);
-  box-shadow: inset 0 0 40px rgba(255, 255, 255, 0.02);
-}
-
-/* 3. The Sharp Inner Border (Sharp) */
-.liquid-glass-sharp {
-  position: absolute;
-  inset: 0;
-  z-index: 3;
-  border-radius: inherit;
-  box-shadow: inset 0.5px 0.5px 0px 0px rgba(255, 255, 255, 0.3), inset -0.5px -0.5px 0px 0px rgba(255, 255, 255, 0.1);
-  pointer-events: none;
-}
-
-.dark .liquid-glass-sharp {
-  box-shadow: inset 0.5px 0.5px 0px 0px rgba(255, 255, 255, 0.15), inset -0.5px -0.5px 0px 0px rgba(255, 255, 255, 0.05);
-}
-
-/* 4. The Reflections (Reflect) */
-.liquid-glass-reflect {
-  position: absolute;
-  inset: 1px;
-  z-index: 4;
-  border-radius: inherit;
-  box-shadow: inset 1px 1px 10px 0px rgba(255, 255, 255, 0.1);
-  pointer-events: none;
-}
-
-.dark .liquid-glass-reflect {
-  /* Very subtle highlight */
-  box-shadow: inset 1px 1px 10px 0px rgba(255, 255, 255, 0.05), inset -1px -1px 5px 0px rgba(255, 255, 255, 0.01);
-}
-
-/* 5. The Content Container - REVERTED: Removed flex center to restore normal block layout for cards */
 .liquid-glass-content {
   position: relative;
-  z-index: 10;
+  z-index: 1;
   width: 100%;
   height: 100%;
 }
