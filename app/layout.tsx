@@ -29,6 +29,11 @@ export const metadata: Metadata = {
     title: 'My Digital Garden - 个人数字花园',
     description: '这里是我的数字花园。在液态流动的光影中，分享设计、代码与思考。',
   },
+  icons: {
+    icon: 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><text y=".9em" font-size="90">🌱</text></svg>',
+    shortcut: 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><text y=".9em" font-size="90">🌱</text></svg>',
+    apple: 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><text y=".9em" font-size="90">🌱</text></svg>',
+  },
   robots: {
     index: true,
     follow: true,
