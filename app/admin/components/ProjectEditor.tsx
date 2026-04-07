@@ -118,8 +118,8 @@ export const ProjectEditor: React.FC<{
   const inputClass = "w-full px-4 py-3 bg-white/40 dark:bg-black/20 border border-white/20 dark:border-white/10 rounded-xl outline-none focus:bg-white/60 dark:focus:bg-black/40 focus:border-indigo-500/30 focus:ring-2 focus:ring-indigo-500/10 dark:text-white transition-all backdrop-blur-sm placeholder:text-gray-400/60 text-sm font-medium";
 
   return createPortal(
-    <div className="fixed inset-0 z-[9999] bg-[#eef2f6]/60 dark:bg-[#050505]/60 backdrop-blur-xl flex items-center justify-center p-4 animate-in fade-in duration-300">
-      <LiquidGlass className="w-full max-w-xl rounded-[2rem] shadow-2xl max-h-[90vh] overflow-y-auto flex flex-col border border-white/40 dark:border-white/10">
+    <div className="fixed inset-0 z-9999 bg-[#eef2f6]/60 dark:bg-[#050505]/60 backdrop-blur-xl flex items-center justify-center p-4 animate-in fade-in duration-300">
+      <LiquidGlass className="w-full max-w-xl rounded-4xl shadow-2xl max-h-[90vh] overflow-y-auto flex flex-col border border-white/40 dark:border-white/10">
 
         {/* Header */}
         <div className="p-6 pb-4 border-b border-white/20 dark:border-white/5 flex justify-between items-center bg-white/40 dark:bg-white/5">
@@ -208,7 +208,7 @@ export const ProjectEditor: React.FC<{
 
                     {formData.iconType === 'preset' && (
                       <div className="w-full">
-                        <button type="button" onClick={handleRecommendIcon} disabled={recommendingIcon} className="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-gradient-to-r from-indigo-500/10 to-purple-500/10 hover:from-indigo-500/20 hover:to-purple-500/20 text-indigo-600 dark:text-indigo-300 rounded-xl text-xs font-bold transition-all border border-indigo-100 dark:border-white/10 mb-2">
+                        <button type="button" onClick={handleRecommendIcon} disabled={recommendingIcon} className="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-linear-to-r from-indigo-500/10 to-purple-500/10 hover:from-indigo-500/20 hover:to-purple-500/20 text-indigo-600 dark:text-indigo-300 rounded-xl text-xs font-bold transition-all border border-indigo-100 dark:border-white/10 mb-2">
                           {recommendingIcon ? <Loader2 size={14} className="animate-spin" /> : <Sparkles size={14} />} 智能推荐
                         </button>
                         <IconPicker selectedIcon={formData.presetIcon || 'Globe'} onSelect={(icon) => setFormData({ ...formData, presetIcon: icon })} />
@@ -217,7 +217,7 @@ export const ProjectEditor: React.FC<{
 
                     {formData.iconType === 'generated' && (
                       <div className="w-full">
-                        <button type="button" onClick={handleGenerateSvg} disabled={generatingSvg} className="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white rounded-xl text-xs font-bold transition-all shadow-lg shadow-purple-500/20">
+                        <button type="button" onClick={handleGenerateSvg} disabled={generatingSvg} className="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-linear-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white rounded-xl text-xs font-bold transition-all shadow-lg shadow-purple-500/20">
                           {generatingSvg ? <Loader2 size={14} className="animate-spin" /> : <Wand2 size={14} />} {generatingSvg ? 'AI 正在绘制...' : 'AI 设计新图标'}
                         </button>
                         {/* Note: The shortName feature needs to be safely passed down if used. Here we keep it generic */}
@@ -234,7 +234,7 @@ export const ProjectEditor: React.FC<{
               <button type="button" onClick={onCancel} className="flex-1 px-5 py-3 text-gray-600 dark:text-gray-300 bg-gray-100 dark:bg-white/5 hover:bg-gray-200 dark:hover:bg-white/10 rounded-xl transition-colors font-bold text-sm">
                 取消
               </button>
-              <button type="submit" disabled={saving} className="flex-[2] px-5 py-3 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white rounded-xl shadow-lg shadow-indigo-500/30 transition-all hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50 disabled:scale-100 font-bold text-sm flex items-center justify-center gap-2">
+              <button type="submit" disabled={saving} className="flex-2 px-5 py-3 bg-linear-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white rounded-xl shadow-lg shadow-indigo-500/30 transition-all hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50 disabled:scale-100 font-bold text-sm flex items-center justify-center gap-2">
                 {saving ? <Loader2 size={18} className="animate-spin" /> : <Save size={18} />} {saving ? '保存中...' : '保存'}
               </button>
             </div>

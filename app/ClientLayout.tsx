@@ -148,7 +148,7 @@ export const ClientLayout = ({ children }: { children: React.ReactNode }) => {
       <div className="fixed inset-0 -z-10 bg-[#f8f9fa] dark:bg-[#020202] transition-colors duration-700">
         <div className="absolute inset-0 overflow-hidden pointer-events-none">
            {/* Top Spotlight */}
-           <div className="absolute top-[-20%] left-1/2 -translate-x-1/2 w-[80vw] h-[600px] bg-gradient-to-b from-indigo-500/10 to-transparent dark:from-indigo-600/30 dark:to-transparent filter blur-[40px] md:blur-[80px] rounded-full pointer-events-none" />
+           <div className="absolute top-[-20%] left-1/2 -translate-x-1/2 w-[80vw] h-[600px] bg-linear-to-b from-indigo-500/10 to-transparent dark:from-indigo-600/30 dark:to-transparent filter blur-2xl md:blur-[80px] rounded-full pointer-events-none" />
 
            {/* Animated Orbs */}
            <div className="absolute top-[10%] left-[10%] w-[40vw] h-[40vw] max-w-[500px] max-h-[500px] bg-purple-400/30 dark:bg-violet-600/40 rounded-full mix-blend-normal md:mix-blend-multiply dark:md:mix-blend-screen filter blur-[60px] md:blur-[90px] md:animate-pulse-slow will-change-transform" />
@@ -170,7 +170,7 @@ export const ClientLayout = ({ children }: { children: React.ReactNode }) => {
                 className="flex items-center gap-2 sm:pr-3 cursor-pointer rounded-full hover:bg-black/5 dark:hover:bg-white/10 transition-colors group shrink-0"
                 onClick={() => router.push('/')}
                 >
-                <div className="w-8 h-8 bg-gradient-to-br from-indigo-500 via-purple-500 to-pink-500 rounded-full flex items-center justify-center text-white shadow-lg shadow-indigo-500/30 text-xs font-bold font-mono border border-white/20 group-hover:scale-105 transition-transform">
+                <div className="w-8 h-8 bg-linear-to-br from-indigo-500 via-purple-500 to-pink-500 rounded-full flex items-center justify-center text-white shadow-lg shadow-indigo-500/30 text-xs font-bold font-mono border border-white/20 group-hover:scale-105 transition-transform">
                     {logoLetter}
                 </div>
                 {!isSearchPage && (
@@ -256,7 +256,7 @@ export const ClientLayout = ({ children }: { children: React.ReactNode }) => {
       )}
 
       {/* Main Content */}
-      <main className={`flex-1 w-full relative z-0 ${isChatPage ? 'h-[100dvh] overflow-hidden' : (isArticleDetailPage ? 'min-h-screen' : 'pt-28 pb-12 px-4 sm:px-6 max-w-5xl mx-auto')}`}>
+      <main className={`flex-1 w-full relative z-0 ${isChatPage ? 'h-dvh overflow-hidden' : (isArticleDetailPage ? 'min-h-screen' : 'pt-28 pb-12 px-4 sm:px-6 max-w-5xl mx-auto')}`}>
         {children}
       </main>
 

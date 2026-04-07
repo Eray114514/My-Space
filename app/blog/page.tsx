@@ -72,7 +72,7 @@ export default async function Blog({
           </div>
       )}
 
-      <div className="space-y-12 relative before:absolute before:inset-0 before:ml-5 before:-translate-x-px md:before:mx-auto md:before:translate-x-0 before:h-full before:w-px before:bg-gradient-to-b before:from-transparent before:via-gray-300/50 before:to-transparent dark:before:via-white/10">
+      <div className="space-y-12 relative before:absolute before:inset-0 before:ml-5 before:-translate-x-px md:before:mx-auto md:before:translate-x-0 before:h-full before:w-px before:bg-linear-to-b before:from-transparent before:via-gray-300/50 before:to-transparent dark:before:via-white/10">
         {filteredArticles.map((article) => (
           <div key={article.id} className="relative flex items-center justify-between md:justify-normal md:odd:flex-row-reverse group is-active">
             

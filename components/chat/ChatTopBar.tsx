@@ -8,7 +8,7 @@ import { LiquidGlass } from '../LiquidGlass';
 interface ChatTopBarProps {
     isHistoryOpen: boolean;
     setIsHistoryOpen: (open: boolean) => void;
-    historyToggleRef: React.RefObject<HTMLButtonElement>;
+    historyToggleRef: React.RefObject<HTMLButtonElement | null>;
     isModelMenuOpen: boolean;
     setIsModelMenuOpen: (open: boolean) => void;
     selectedModel: AIModelKey | null;
@@ -76,7 +76,7 @@ export const ChatTopBar: React.FC<ChatTopBarProps> = ({
 
                     {/* Model Dropdown */}
                     {isModelMenuOpen && (
-                        <div className="absolute top-full left-1/2 -translate-x-1/2 mt-3 w-64 z-[60]">
+                        <div className="absolute top-full left-1/2 -translate-x-1/2 mt-3 w-64 z-60">
                             <LiquidGlass className="rounded-2xl shadow-2xl p-1.5 flex flex-col gap-0.5 animate-in fade-in slide-in-from-top-2">
                                 {availableModels.map(([key, m]) => (
                                     <button

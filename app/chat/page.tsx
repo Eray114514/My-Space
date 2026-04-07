@@ -411,7 +411,7 @@ function ChatContent() {
 
     // --- Render ---
 
-    if (availableModels.length === 0) return <div className="h-[100dvh] flex items-center justify-center text-gray-400">Loading Configuration...</div>;
+    if (availableModels.length === 0) return <div className="h-dvh flex items-center justify-center text-gray-400">Loading Configuration...</div>;
 
     return (
         <div className="flex h-full w-full overflow-hidden bg-transparent relative">
@@ -452,7 +452,7 @@ function ChatContent() {
 
                 {/* System Prompt Panel (Absolute Overlay) */}
                 {isSystemPromptOpen && (
-                    <div className="fixed top-20 left-1/2 -translate-x-1/2 w-full max-w-2xl px-4 z-[60] animate-in slide-in-from-top-2 fade-in">
+                    <div className="fixed top-20 left-1/2 -translate-x-1/2 w-full max-w-2xl px-4 z-60 animate-in slide-in-from-top-2 fade-in">
                         <LiquidGlass className="p-4 rounded-2xl shadow-xl">
                             <div className="flex justify-between items-center mb-2">
                                 <label className="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase">系统提示词 (System Prompt)</label>
@@ -477,7 +477,7 @@ function ChatContent() {
                             <>
                                 {messages.length === 0 && attachedArticles.length === 0 && (
                                     <div className="h-[50vh] flex flex-col items-center justify-center text-gray-400 space-y-6 animate-in fade-in duration-700">
-                                        <div className="w-24 h-24 rounded-3xl bg-gradient-to-br from-white/10 to-white/5 border border-white/20 flex items-center justify-center backdrop-blur-md shadow-2xl">
+                                        <div className="w-24 h-24 rounded-3xl bg-linear-to-br from-white/10 to-white/5 border border-white/20 flex items-center justify-center backdrop-blur-md shadow-2xl">
                                             <Bot size={48} className="text-indigo-400/80 drop-shadow-lg" />
                                         </div>
                                         <div className="text-center space-y-2">
@@ -523,7 +523,7 @@ function ChatContent() {
                                                                 ? 'bg-indigo-600/90 text-white rounded-2xl rounded-tr-sm border-indigo-400/30 shadow-indigo-500/20'
                                                                 : 'bg-white/70 dark:bg-white/5 text-gray-800 dark:text-gray-100 rounded-2xl rounded-tl-sm border-white/40 dark:border-white/10'
                                                             }`}>
-                                                            {isUser ? <p className="whitespace-pre-wrap break-words">{getDisplayContent(msg.content)}</p> : <MarkdownRenderer content={msg.content} />}
+                                                            {isUser ? <p className="whitespace-pre-wrap wrap-break-word">{getDisplayContent(msg.content)}</p> : <MarkdownRenderer content={msg.content} />}
                                                         </LiquidGlass>
                                                         <MessageActions
                                                             role={msg.role as any}

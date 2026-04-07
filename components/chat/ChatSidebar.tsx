@@ -7,7 +7,7 @@ import { LiquidGlass } from '../LiquidGlass';
 
 interface ChatSidebarProps {
     isHistoryOpen: boolean;
-    historyRef: React.RefObject<HTMLDivElement>;
+    historyRef: React.RefObject<HTMLDivElement | null>;
     sessions: ChatSession[];
     currentSessionId: string | null;
     isAdmin: boolean;
@@ -31,7 +31,7 @@ export const ChatSidebar: React.FC<ChatSidebarProps> = ({
             ref={historyRef}
             className={`fixed top-20 left-4 bottom-24 w-72 z-40 transition-all duration-500 ease-[cubic-bezier(0.32,0.72,0,1)] ${isHistoryOpen ? 'translate-x-0 opacity-100' : '-translate-x-[120%] opacity-0 pointer-events-none'}`}
         >
-            <LiquidGlass className="h-full rounded-[2rem] shadow-2xl border border-white/40 dark:border-white/10 flex flex-col overflow-hidden">
+            <LiquidGlass className="h-full rounded-4xl shadow-2xl border border-white/40 dark:border-white/10 flex flex-col overflow-hidden">
                 <div className="p-4 border-b border-white/20 dark:border-white/5 flex justify-between items-center bg-white/40 dark:bg-white/5">
                     <h3 className="font-bold text-gray-900 dark:text-white flex items-center gap-2 text-sm"><Clock size={16} /> 历史记录</h3>
                     <button onClick={onClose} className="p-1 rounded-full hover:bg-black/5 dark:hover:bg-white/10"><X size={16} /></button>

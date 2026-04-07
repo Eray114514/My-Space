@@ -1,12 +1,13 @@
 # My Space - 个人空间与 AI 助手
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![React](https://img.shields.io/badge/React-18-blue)](https://reactjs.org/)
-[![Vite](https://img.shields.io/badge/Vite-5-646CFF)](https://vitejs.dev/)
-[![TypeScript](https://img.shields.io/badge/TypeScript-5-3178C6)](https://www.typescriptlang.org/)
-[![Tailwind CSS](https://img.shields.io/badge/Tailwind-3-38B2AC)](https://tailwindcss.com/)
+[![React](https://img.shields.io/badge/React-19-blue)](https://react.dev/)
+[![Next.js](https://img.shields.io/badge/Next.js-16-black)](https://nextjs.org/)
+[![TypeScript](https://img.shields.io/badge/TypeScript-6-3178C6)](https://www.typescriptlang.org/)
+[![Tailwind CSS](https://img.shields.io/badge/Tailwind-4-38B2AC)](https://tailwindcss.com/)
+[![OpenAI SDK](https://img.shields.io/badge/OpenAI-6-412991)](https://platform.openai.com/)
 
-**My Space** 是一个基于 React 和 Vite 构建的现代化个人主页项目。它不仅展示了个人博客和作品集，还集成了一个强大的多模型 AI 聊天助手，支持 Google Gemini、DeepSeek 和 OpenRouter 等多种 AI 服务。项目设计极简、高端，并配备了完整的后台管理系统，支持云端数据同步。
+**My Space** 是一个基于 React 19 和 Next.js 16 构建的现代化个人主页项目。它不仅展示了个人博客和作品集，还集成了一个强大的多模型 AI 聊天助手，支持 Google Gemini、DeepSeek 和 OpenRouter 等多种 AI 服务。项目设计极简、高端，并配备了完整的后台管理系统，支持云端数据同步。
 
 ## ✨ 功能特性
 
@@ -45,13 +46,13 @@
 
 ## 🛠️ 技术栈
 
-- **前端框架**: [React](https://react.dev/) + [Vite](https://vitejs.dev/)
-- **语言**: [TypeScript](https://www.typescriptlang.org/)
-- **样式**: [Tailwind CSS](https://tailwindcss.com/)
-- **路由**: [React Router](https://reactrouter.com/)
+- **前端框架**: [React 19](https://react.dev/) + [Next.js 16](https://nextjs.org/)
+- **语言**: [TypeScript 6](https://www.typescriptlang.org/)
+- **样式**: [Tailwind CSS 4](https://tailwindcss.com/)
+- **路由**: [Next.js App Router](https://nextjs.org/docs/app)
 - **AI SDK**:
   - `@google/genai` (Google Gemini)
-  - `openai` (DeepSeek & OpenRouter 兼容客户端)
+  - `openai@6` (DeepSeek & OpenRouter 兼容客户端)
 - **数据存储**: `@neondatabase/serverless` (Neon PostgreSQL)
 - **图标**: `lucide-react`
 

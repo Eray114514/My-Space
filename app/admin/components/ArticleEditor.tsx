@@ -27,7 +27,7 @@ export const ArticleEditor: React.FC<{
   const summaryRef = useRef<HTMLTextAreaElement>(null);
 
   // Auto-resize function
-  const autoResize = (ref: React.RefObject<HTMLTextAreaElement>) => {
+  const autoResize = (ref: React.RefObject<HTMLTextAreaElement | null>) => {
     if (ref.current) {
       ref.current.style.height = 'auto';
       ref.current.style.height = ref.current.scrollHeight + 'px';
@@ -87,7 +87,7 @@ export const ArticleEditor: React.FC<{
   };
 
   return createPortal(
-    <div className="fixed inset-0 z-[9999] bg-[#f8f9fa] dark:bg-[#050505] flex flex-col animate-in fade-in zoom-in-95 duration-300">
+    <div className="fixed inset-0 z-9999 bg-[#f8f9fa] dark:bg-[#050505] flex flex-col animate-in fade-in zoom-in-95 duration-300">
       {/* Background */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none z-0 opacity-50">
         <div className="absolute -top-[10%] -left-[10%] w-[60vw] h-[60vw] max-w-[800px] max-h-[800px] bg-indigo-300/30 dark:bg-indigo-600/20 rounded-full mix-blend-normal md:mix-blend-multiply dark:md:mix-blend-screen filter blur-[60px] md:blur-[100px]" />

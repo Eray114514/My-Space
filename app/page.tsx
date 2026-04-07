@@ -53,7 +53,7 @@ export default async function Home() {
             </div>
             <h1 className="text-5xl sm:text-7xl font-bold tracking-tight text-gray-900 dark:text-white leading-[1.1]">
               你好，我是 <br />
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500">{adminName}</span>
+              <span className="text-transparent bg-clip-text bg-linear-to-r from-indigo-500 via-purple-500 to-pink-500">{adminName}</span>
             </h1>
         </div>
         
@@ -86,7 +86,7 @@ export default async function Home() {
           {projects.map((project) => (
             <Link href={project.url} target="_blank" key={project.id} className="block group">
               <LiquidGlass 
-                className="h-full flex flex-col p-6 rounded-[2rem] hover:bg-white/60 dark:hover:bg-white/10 hover:border-white/50 dark:hover:border-white/20 transition-all duration-300 hover:-translate-y-2 hover:shadow-[0_20px_40px_-15px_rgba(0,0,0,0.1)] dark:hover:shadow-[0_20px_40px_-15px_rgba(255,255,255,0.05)] cursor-pointer"
+                className="h-full flex flex-col p-6 rounded-4xl hover:bg-white/60 dark:hover:bg-white/10 hover:border-white/50 dark:hover:border-white/20 transition-all duration-300 hover:-translate-y-2 hover:shadow-[0_20px_40px_-15px_rgba(0,0,0,0.1)] dark:hover:shadow-[0_20px_40px_-15px_rgba(255,255,255,0.05)] cursor-pointer"
               >
                   <div className="flex items-start justify-between mb-6">
                     <div className="p-3 bg-white/50 dark:bg-white/5 rounded-2xl group-hover:scale-110 transition-transform duration-300 shadow-sm border border-white/40 dark:border-white/10 backdrop-blur-md">
@@ -127,7 +127,7 @@ export default async function Home() {
             <div key={article.id} className="block group">
               <Link href={`/blog/${article.id}`} className="block h-full cursor-pointer">
                   <article className="relative flex flex-col sm:flex-row gap-4 sm:gap-8 sm:items-center p-6 rounded-3xl transition-all duration-300 hover:bg-white/50 dark:hover:bg-white/5 border border-transparent hover:border-white/30 dark:hover:border-white/10">
-                      <div className="sm:w-32 flex-shrink-0 flex flex-col gap-1">
+                      <div className="sm:w-32 shrink-0 flex flex-col gap-1">
                            <span className="text-3xl font-bold text-gray-400 dark:text-gray-500 group-hover:text-indigo-500 dark:group-hover:text-indigo-400 transition-colors font-mono">
                                {new Date(article.createdAt).getDate().toString().padStart(2, '0')}
                            </span>
