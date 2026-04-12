@@ -2,8 +2,7 @@ export const AI_MODELS = {
   'deepseek-chat': { provider: 'deepseek', modelId: 'deepseek-chat', name: 'DeepSeek 默认', shortName: '默认', description: 'V3 模型，速度快，性价比高。', isFree: false },
   'deepseek-reasoner': { provider: 'deepseek', modelId: 'deepseek-reasoner', name: 'DeepSeek 思考', shortName: '思考', description: 'R1 推理模型，擅长复杂逻辑和代码。', isFree: false },
   'gemini-flash': { provider: 'gemini', modelId: 'gemini-3-flash-preview', name: 'Gemini Flash', shortName: 'Flash', description: 'Google 最新模型，响应极快。', isFree: true },
-  'openrouter-r1': { provider: 'openrouter', modelId: 'tngtech/deepseek-r1t2-chimera:free', name: 'DeepSeek R1 (Free)', shortName: 'R1 Free', description: 'OpenRouter 免费版 R1。', isFree: true },
-  'openrouter-v3': { provider: 'openrouter', modelId: 'nex-agi/deepseek-v3.1-nex-n1:free', name: 'DeepSeek V3.1 (Free)', shortName: 'V3.1 Free', description: 'OpenRouter 免费版 V3.1。', isFree: true }
+  'openrouter-minimax': { provider: 'openrouter', modelId: 'minimax/minimax-m2.5:free', name: 'MiniMax (Free)', shortName: 'MiniMax', description: 'OpenRouter 免费版 MiniMax。', isFree: true }
 } as const;
 
 export type AIModelKey = keyof typeof AI_MODELS;

@@ -1,5 +1,6 @@
 import { GoogleGenAI } from "@google/genai";
 import OpenAI from "openai";
+import { OpenRouter } from "@openrouter/sdk";
 
 export const config = {
     runtime: 'edge'
@@ -13,8 +14,7 @@ const ALL_POTENTIAL_MODELS = {
   'deepseek-chat': { provider: 'deepseek', modelId: 'deepseek-chat' },
   'deepseek-reasoner': { provider: 'deepseek', modelId: 'deepseek-reasoner' },
   'gemini-flash': { provider: 'gemini', modelId: 'gemini-3-flash-preview' },
-  'openrouter-r1': { provider: 'openrouter', modelId: 'tngtech/deepseek-r1t2-chimera:free' },
-  'openrouter-v3': { provider: 'openrouter', modelId: 'nex-agi/deepseek-v3.1-nex-n1:free' }
+  'openrouter-minimax': { provider: 'openrouter', modelId: 'minimax/minimax-m2.5:free' }
 } as const;
 
 export default async function handler(req: Request) {
@@ -68,16 +68,43 @@ export default async function handler(req: Request) {
                     for await (const chunk of response) {
                         if (chunk.text) controller.enqueue(encoder.encode(chunk.text));
                     }
+                } else if (config.provider === 'openrouter') {
+                    const key = process.env.OPENROUTER_API_KEY;
+                    if (!isKeyValid(key)) throw new Error("OpenRouter API Key not configured");
+                    const openrouter = new OpenRouter({ apiKey: key });
+
+                    const openAiMessages = [
+                        { role: "system", content: systemPrompt },
+                        ...messages.map(m => ({ role: m.role as "user"|"assistant"|"system", content: m.content }))
+                    ];
+
+                    const options: any = {
+                        messages: openAiMessages,
+                        model: config.modelId,
+                        stream: true,
+                    };
+
+                    const isReasoningModel = config.modelId.includes('reasoner') || config.modelId.includes('r1');
+                    if (!isReasoningModel) {
+                        options.temperature = temperature;
+                    }
+
+                    const stream = (await openrouter.chat.send({ chatRequest: options })) as unknown as AsyncIterable<any>;
+                    for await (const chunk of stream) {
+                        const content = chunk.choices?.[0]?.delta?.content || '';
+                        if (content) controller.enqueue(encoder.encode(content));
+                        
+                        if (chunk.usage && chunk.usage.reasoningTokens) {
+                            // Can handle reasoning tokens if needed
+                            // console.log("\nReasoning tokens:", chunk.usage.reasoningTokens);
+                        }
+                    }
                 } else {
                     let client: OpenAI | null = null;
                     if (config.provider === 'deepseek') {
                         const key = process.env.DEEPSEEK_API_KEY;
                         if (!isKeyValid(key)) throw new Error("DeepSeek API Key not configured");
                         client = new OpenAI({ baseURL: 'https://api.deepseek.com', apiKey: key });
-                    } else {
-                        const key = process.env.OPENROUTER_API_KEY;
-                        if (!isKeyValid(key)) throw new Error("OpenRouter API Key not configured");
-                        client = new OpenAI({ baseURL: 'https://openrouter.ai/api/v1', apiKey: key });
                     }
 
                     const openAiMessages = [
@@ -96,7 +123,7 @@ export default async function handler(req: Request) {
                         options.temperature = temperature;
                     }
 
-                    const res = (await client.chat.completions.create(options)) as unknown as AsyncIterable<any>;
+                    const res = (await client!.chat.completions.create(options)) as unknown as AsyncIterable<any>;
                     for await (const chunk of res) {
                         const content = chunk.choices[0]?.delta?.content || '';
                         if (content) controller.enqueue(encoder.encode(content));

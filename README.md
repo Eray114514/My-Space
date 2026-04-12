@@ -15,7 +15,7 @@
   - **多模型支持**:
     - **Google Gemini**: 支持最新的 **Gemini 3 Flash Preview** 模型，响应极快。
     - **DeepSeek**: 集成官方 API，支持 **DeepSeek V3** (高性价比) 和 **DeepSeek R1** (推理/思考模型)。
-    - **OpenRouter**: 支持免费版 DeepSeek R1/V3 接口，降低使用门槛。
+    - **OpenRouter**: 支持免费版 MiniMax 接口，降低使用门槛。
   - **云端记忆**: 所有对话记录（会话与消息）自动同步至 **Neon PostgreSQL** 云端数据库，多端无缝切换。
   - **流式响应**: 支持打字机效果的流式回复与 Markdown 实时渲染。
   - **上下文关联**: 支持在对话中引用博客文章作为上下文进行问答。
@@ -52,7 +52,8 @@
 - **路由**: [Next.js App Router](https://nextjs.org/docs/app)
 - **AI SDK**:
   - `@google/genai` (Google Gemini)
-  - `openai@6` (DeepSeek & OpenRouter 兼容客户端)
+  - `openai@6` (DeepSeek 兼容客户端)
+  - `@openrouter/sdk` (OpenRouter 客户端)
 - **数据存储**: `@neondatabase/serverless` (Neon PostgreSQL)
 - **图标**: `lucide-react`
 
