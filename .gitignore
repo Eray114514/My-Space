@@ -24,3 +24,12 @@ dist-ssr
 *.sw?
 .next
 .trae/
+
+# Environment variables
+.env
+.env.*
+!.env.example
+
+# Build artifacts
+.vercel
+tsconfig.tsbuildinfo
