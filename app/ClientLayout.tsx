@@ -186,7 +186,7 @@ export const ClientLayout = ({ children }: { children: React.ReactNode }) => {
                   className="flex items-center gap-2 sm:pr-3 cursor-pointer rounded-full hover:bg-black/5 dark:hover:bg-white/10 transition-colors group shrink-0 z-10"
                   onClick={() => router.push('/')}
                 >
-                <div className="w-8 h-8 bg-linear-to-br from-indigo-500 via-purple-500 to-pink-500 rounded-full flex items-center justify-center text-white shadow-lg shadow-indigo-500/30 text-xs font-bold font-mono border border-white/20 group-hover:scale-105 transition-transform shrink-0">
+                <div className="w-8 h-8 bg-linear-to-br from-indigo-500 via-purple-500 to-pink-500 rounded-full overflow-hidden flex items-center justify-center text-white shadow-lg shadow-indigo-500/30 text-xs font-bold font-mono border border-white/20 group-hover:scale-105 transition-transform shrink-0">
                     {logoLetter}
                 </div>
                 <AnimatePresence mode="popLayout">
@@ -205,7 +205,7 @@ export const ClientLayout = ({ children }: { children: React.ReactNode }) => {
                 </motion.div>
 
                 <div className="flex-1 flex items-center justify-center min-w-0 relative h-8 overflow-visible">
-                  <AnimatePresence initial={false}>
+                  <AnimatePresence mode="popLayout" initial={false}>
                     {isSearchPage ? (
                         <motion.div 
                           key="search-input"
@@ -213,7 +213,7 @@ export const ClientLayout = ({ children }: { children: React.ReactNode }) => {
                           animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
                           exit={{ opacity: 0, y: -20, filter: 'blur(4px)' }}
                           transition={{ type: 'spring', stiffness: 300, damping: 25 }}
-                          className="absolute inset-0 w-full flex items-center"
+                          className="w-full flex items-center"
                         >
                             <React.Suspense fallback={<div className="h-8"></div>}>
                                 <SearchInput />
@@ -226,7 +226,7 @@ export const ClientLayout = ({ children }: { children: React.ReactNode }) => {
                           animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
                           exit={{ opacity: 0, y: -20, filter: 'blur(4px)' }}
                           transition={{ type: 'spring', stiffness: 300, damping: 25 }}
-                          className="absolute inset-0 hidden md:flex items-center justify-center gap-0.5 whitespace-nowrap"
+                          className="hidden md:flex w-full items-center justify-center gap-0.5 whitespace-nowrap"
                         >
                             {navLinks.map((link) => {
                                 const isActive = pathname === link.path;
