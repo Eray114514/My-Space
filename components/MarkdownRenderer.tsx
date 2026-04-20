@@ -184,7 +184,7 @@ export const MarkdownRenderer: React.FC<Props> = ({ content }) => {
 
   return (
     <div className="
-prose prose-zinc dark:prose-invert max-w-none wrap-break-word w-full overflow-x-auto
+prose prose-zinc dark:prose-invert max-w-none break-words w-full overflow-x-auto
       prose-headings:font-bold prose-headings:tracking-tight prose-headings:scroll-mt-24
       prose-p:leading-relaxed
       prose-a:text-indigo-600 dark:prose-a:text-indigo-400 prose-a:no-underline hover:prose-a:underline

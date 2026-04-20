@@ -42,8 +42,8 @@ export default async function ArticleDetail({ params }: { params: Promise<{ id: 
   }
 
   return (
-    <article className="min-h-screen relative animate-in fade-in duration-500 pb-20">
-      
+    <article className="min-h-screen relative animate-in fade-in duration-500 pb-20 overflow-x-hidden w-full max-w-full">
+
       {/* Immersive Back Button Header */}
       <div className="fixed top-0 left-0 w-full p-6 z-50 pointer-events-none">
           <Link 

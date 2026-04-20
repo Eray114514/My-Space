@@ -40,6 +40,11 @@
     background-color: #f8f9fa;
     overscroll-behavior-y: none;
     margin: 0;
+    overflow-x: hidden;
+  }
+
+  html {
+    overflow-x: hidden;
   }
 
   .dark body {
