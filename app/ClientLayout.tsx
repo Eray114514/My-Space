@@ -186,7 +186,7 @@ export const ClientLayout = ({ children }: { children: React.ReactNode }) => {
                   className="flex items-center gap-2 sm:pr-3 cursor-pointer rounded-full hover:bg-black/5 dark:hover:bg-white/10 transition-colors group shrink-0 z-10"
                   onClick={() => router.push('/')}
                 >
-                <div className="w-8 h-8 bg-linear-to-br from-indigo-500 via-purple-500 to-pink-500 rounded-full overflow-hidden flex items-center justify-center text-white shadow-lg shadow-indigo-500/30 text-xs font-bold font-mono border border-white/20 group-hover:scale-105 transition-transform shrink-0">
+                <div className="w-8 h-8 bg-linear-to-br from-indigo-500 via-purple-500 to-pink-500 rounded-full overflow-hidden flex items-center justify-center text-white text-xs font-bold font-mono border border-white/20 group-hover:scale-105 transition-transform shrink-0">
                     {logoLetter}
                 </div>
                 <AnimatePresence mode="popLayout">
