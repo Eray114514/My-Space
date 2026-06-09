@@ -94,7 +94,7 @@ export default function AdminDashboard() {
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-6">
         <div>
           <h1 className="text-4xl font-bold dark:text-white tracking-tight">控制台</h1>
-          <p className="text-gray-500 dark:text-gray-400 mt-2 font-light">管理你的数字花园内容</p>
+          <p className="text-gray-500 dark:text-gray-400 mt-2 font-light">管理你的博客内容</p>
         </div>
 
         {/* Glass Tabs */}

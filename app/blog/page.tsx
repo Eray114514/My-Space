@@ -4,12 +4,13 @@ import { ServerStorageService } from '../../services/server-storage';
 import { LiquidGlass } from '../../components/LiquidGlass';
 import { AnimatedSection, AnimatedItem } from '../../components/AnimatedSection';
 import { Metadata } from "next";
+import { Article } from '../../types';
 
 export const metadata: Metadata = {
   title: "文章归档",
   description: "记录生活，分享技术，沉淀思考。",
   openGraph: {
-    title: '文章归档 - My Digital Garden',
+    title: '文章归档 - Eray',
     description: '记录生活，分享技术，沉淀思考。',
   }
 };
@@ -20,7 +21,7 @@ export default async function Blog({
   searchParams: Promise<{ tag?: string }>;
 }) {
   const resolvedSearchParams = await searchParams;
-  const articles = await ServerStorageService.getPublishedArticlesLight().catch(() => []);
+  const articles: Article[] = await ServerStorageService.getPublishedArticlesLight().catch(() => []);
   const selectedTag = resolvedSearchParams.tag || null;
 
   const tags = (() => {

@@ -31,11 +31,11 @@ const SearchInput = () => {
               autoFocus
               type="text" 
               placeholder="Type to search..." 
-              className="w-full bg-transparent border-none outline-none text-sm text-gray-900 dark:text-white placeholder-gray-400/70 h-8 font-medium"
+              className="w-full bg-transparent border-none outline-none text-sm text-[var(--blog-fg)] placeholder:text-[var(--blog-muted)] h-8 font-medium"
               value={searchParams?.get('q') || ''}
               onChange={handleSearchChange}
           />
-          <button type="button" onClick={() => router.push('/')} className="p-1.5 rounded-full text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 hover:bg-black/5 dark:hover:bg-white/10" aria-label="关闭搜索">
+          <button type="button" onClick={() => router.push('/')} className="p-1.5 rounded-full text-[var(--blog-muted)] hover:text-[var(--blog-fg)] hover:bg-[var(--blog-fg-soft)]" aria-label="关闭搜索">
               <X size={14} />
           </button>
       </div>
@@ -58,12 +58,12 @@ export const ClientLayout = ({ children }: { children: React.ReactNode }) => {
   const isChatPage = pathname === '/chat';
   const isArticleDetailPage = pathname.startsWith('/blog/') && pathname !== '/blog';
   const isImmersive = isChatPage || isArticleDetailPage;
+  const isHomePage = pathname === '/';
 
   // Determine if we are in "Search Mode"
   const isSearchPage = pathname === '/search';
 
   const adminName = process.env.NEXT_PUBLIC_ADMIN_USERNAME || 'Eray';
-  const logoLetter = adminName.charAt(0).toUpperCase();
 
   useEffect(() => {
     setIsMounted(true);
@@ -143,26 +143,18 @@ export const ClientLayout = ({ children }: { children: React.ReactNode }) => {
   }
 
   return (
-    <div className={`min-h-screen flex flex-col relative overflow-x-hidden selection:bg-indigo-500/30`}>
+    <div className="blog-shell min-h-screen flex flex-col relative overflow-x-hidden selection:bg-black/10 dark:selection:bg-white/20">
       
       {/* Background */}
-      <div className="fixed inset-0 -z-10 bg-[#f8f9fa] dark:bg-[#020202] transition-colors duration-700">
-        <div className="absolute inset-0 overflow-hidden pointer-events-none">
-           {/* Top Spotlight */}
-           <div className="absolute top-[-20%] left-1/2 -translate-x-1/2 w-[80vw] h-[600px] bg-linear-to-b from-indigo-500/10 to-transparent dark:from-indigo-600/30 dark:to-transparent filter blur-2xl md:blur-[80px] rounded-full pointer-events-none" />
-
-           {/* Soft background glow */}
-           <div className="absolute top-[10%] left-[10%] hidden md:block w-[34vw] h-[34vw] max-w-[420px] max-h-[420px] bg-purple-400/18 dark:bg-violet-600/22 rounded-full mix-blend-normal md:mix-blend-multiply dark:md:mix-blend-screen blur-[72px] motion-safe:md:animate-pulse-slow" />
-           <div className="absolute top-[28%] right-[10%] hidden lg:block w-[28vw] h-[28vw] max-w-[340px] max-h-[340px] bg-blue-400/16 dark:bg-blue-600/20 rounded-full mix-blend-normal md:mix-blend-multiply dark:md:mix-blend-screen blur-[84px] motion-safe:lg:animate-float" />
-        </div>
-        {/* Noise Texture */}
-        <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-20 dark:opacity-[0.06] mix-blend-overlay pointer-events-none hidden md:block"></div>
+      <div className="blog-background fixed inset-0 -z-10 transition-colors duration-500">
+        <div className="blog-background-grid absolute inset-0 pointer-events-none" />
+        <div className="blog-background-refraction absolute inset-0 pointer-events-none" />
       </div>
 
       {/* Floating Navigation */}
       {!isImmersive && (
         <motion.div 
-          className="fixed top-4 sm:top-6 left-0 right-0 z-50 flex justify-center px-4"
+          className="fixed top-3 sm:top-5 left-0 right-0 z-50 flex justify-center px-3 sm:px-5"
           initial={false}
           animate={{ 
             y: isNavVisible ? 0 : -100,
@@ -171,30 +163,22 @@ export const ClientLayout = ({ children }: { children: React.ReactNode }) => {
           transition={{ type: 'spring', stiffness: 300, damping: 30 }}
         >
           <div
-            className={`liquid-glass-wrapper pointer-events-auto rounded-full shadow-xl max-w-full flex-shrink-0 isolate ${
-              isSearchPage ? 'w-full md:max-w-2xl' : 'sm:min-w-[320px] md:max-w-2xl'
+            data-blog-header
+            className={`glass-blog pointer-events-auto rounded-full w-full max-w-[1180px] flex-shrink-0 isolate ${
+              isSearchPage ? '' : 'md:min-w-[720px]'
             }`}
             style={{ overflow: 'hidden' }}
           >
-            <div className="liquid-glass-content px-2 md:px-4 py-1.5 flex items-center justify-between w-full h-full gap-2 relative">
+            <div className="relative z-10 px-3 sm:px-5 md:px-8 py-2.5 md:py-3 flex items-center justify-between w-full h-full gap-2 md:gap-6">
                 <Link
                   href="/"
-                  className="flex items-center gap-2 sm:pr-3 rounded-full hover:bg-black/5 dark:hover:bg-white/10 transition-colors group shrink-0 z-10"
+                  className="group shrink-0 rounded-full px-2 py-1 text-[15px] sm:text-lg font-black tracking-[0.18em] text-[var(--blog-fg)] transition-transform hover:scale-[1.02]"
+                  aria-label="返回首页"
                 >
-                <div className="relative w-8 h-8 rounded-full shrink-0 transition-transform group-hover:scale-105">
-                  <div className="absolute inset-0 rounded-full ring-1 ring-inset ring-white/30 dark:ring-white/18 shadow-[0_0_0_1px_rgba(99,102,241,0.14)] dark:shadow-[0_0_0_1px_rgba(255,255,255,0.06)]" />
-                  <div className="absolute inset-[1px] bg-linear-to-br from-indigo-500 via-purple-500 to-pink-500 rounded-full overflow-hidden flex items-center justify-center text-white text-xs font-bold font-mono">
-                      {logoLetter}
-                  </div>
-                </div>
-                  {!isSearchPage && (
-                    <span className="font-bold text-sm tracking-tight text-gray-800 dark:text-gray-100 hidden sm:block whitespace-nowrap">
-                      {adminName}
-                    </span>
-                  )}
+                  {adminName}
                 </Link>
 
-                <div className="flex-1 flex items-center justify-center min-w-0 relative h-8 overflow-visible">
+                <div className="flex-1 flex items-center justify-center min-w-0 relative min-h-9 overflow-visible">
                   {isSearchPage ? (
                     <div className="w-full flex items-center">
                       <React.Suspense fallback={<div className="h-8"></div>}>
@@ -202,17 +186,17 @@ export const ClientLayout = ({ children }: { children: React.ReactNode }) => {
                       </React.Suspense>
                     </div>
                   ) : (
-                    <nav className="hidden md:flex w-full items-center justify-center gap-0.5 whitespace-nowrap">
+                    <nav className="hidden md:flex items-center justify-center gap-2 whitespace-nowrap rounded-full">
                       {navLinks.map((link) => {
                         const isActive = pathname === link.path;
                         return (
                           <Link
                             key={link.path}
                             href={link.path}
-                            className={`px-2 md:px-3 py-1.5 rounded-full text-[11px] md:text-xs font-semibold transition-colors ${
+                            className={`blog-nav-pill px-4 py-2 rounded-full text-xs font-extrabold tracking-[0.12em] transition-all ${
                               isActive
-                                ? 'text-indigo-600 dark:text-white bg-white/80 dark:bg-white/10 shadow-sm'
-                                : 'text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-black/5 dark:hover:bg-white/5'
+                                ? 'is-active text-[var(--blog-bg)] bg-[var(--blog-fg)]'
+                                : 'text-[var(--blog-muted)] hover:text-[var(--blog-fg)] hover:bg-[var(--blog-fg-soft)]'
                             }`}
                           >
                             {link.name}
@@ -224,7 +208,7 @@ export const ClientLayout = ({ children }: { children: React.ReactNode }) => {
                 </div>
 
                 {!isSearchPage && (
-                  <div className="h-4 bg-gray-300/50 dark:bg-white/10 hidden md:block shrink-0 w-px mx-2" />
+                  <div className="h-5 bg-[var(--blog-line)] hidden md:block shrink-0 w-px" />
                 )}
 
                 <div className="flex items-center gap-1 md:gap-2 shrink-0 z-10">
@@ -232,29 +216,29 @@ export const ClientLayout = ({ children }: { children: React.ReactNode }) => {
                       <button
                         type="button"
                         onClick={() => router.push('/search')}
-                        className="p-2 rounded-full text-gray-500 dark:text-gray-400 hover:bg-black/5 dark:hover:bg-white/10 hover:text-gray-900 dark:hover:text-white transition-colors overflow-hidden"
+                        className="blog-icon-button"
                         aria-label="打开搜索"
                       >
                         <Search size={16} className="shrink-0" />
                       </button>
                     )}
-                    <button type="button" onClick={toggleTheme} className="p-2 rounded-full text-gray-500 dark:text-gray-400 hover:bg-black/5 dark:hover:bg-white/10 hover:text-yellow-500 dark:hover:text-yellow-400 transition-colors shrink-0" aria-label="切换主题">
+                    <button type="button" onClick={toggleTheme} className="blog-icon-button" aria-label="切换主题">
                         {isDarkMode ? <Moon size={16} /> : <Sun size={16} />}
                     </button>
                     {!isSearchPage && (
                       <>
                         {isAuthenticated ? (
-                          <button type="button" onClick={handleLogout} className="p-2 rounded-full text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors shrink-0" aria-label="退出登录">
+                          <button type="button" onClick={handleLogout} className="blog-icon-button hover:text-red-500" aria-label="退出登录">
                             <LogOut size={16} />
                           </button>
                         ) : (
-                          <button type="button" onClick={() => router.push('/login')} className="hidden sm:block p-2 rounded-full text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-black/5 dark:hover:bg-white/10 transition-colors shrink-0" aria-label="管理员登录">
+                          <button type="button" onClick={() => router.push('/login')} className="blog-icon-button hidden sm:inline-flex" aria-label="管理员登录">
                             <Lock size={16} />
                           </button>
                         )}
                       </>
                     )}
-                    <button type="button" className="md:hidden p-2 text-gray-600 dark:text-gray-300 shrink-0 rounded-full hover:bg-black/5 dark:hover:bg-white/10 transition-colors" onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)} aria-label={isMobileMenuOpen ? '关闭菜单' : '打开菜单'}>
+                    <button type="button" className="blog-icon-button md:hidden" onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)} aria-label={isMobileMenuOpen ? '关闭菜单' : '打开菜单'}>
                       {isMobileMenuOpen ? <X size={18} /> : <Menu size={18} />}
                     </button>
                 </div>
@@ -268,17 +252,17 @@ export const ClientLayout = ({ children }: { children: React.ReactNode }) => {
       {isMobileMenuOpen && !isImmersive && !isSearchPage && (
         <div className="fixed inset-0 z-40 pt-24 px-4 md:hidden animate-in fade-in slide-in-from-top-4 duration-200">
           <div className="absolute inset-0 bg-black/40 backdrop-blur-md" onClick={() => setIsMobileMenuOpen(false)}></div>
-          <LiquidGlass className="rounded-2xl p-2 flex flex-col gap-1 shadow-2xl relative z-50">
+          <LiquidGlass className="glass-blog rounded-2xl p-2 flex flex-col gap-1 shadow-2xl relative z-50">
             {navLinks.map((link) => {
               const isActive = pathname === link.path;
               return (
-              <Link key={link.path} href={link.path} onClick={() => setIsMobileMenuOpen(false)} className={`flex items-center gap-3 p-3 rounded-xl transition-all ${isActive ? 'bg-indigo-600 text-white shadow-md' : 'hover:bg-black/5 dark:hover:bg-white/10 text-gray-700 dark:text-gray-200'}`}>
+              <Link key={link.path} href={link.path} onClick={() => setIsMobileMenuOpen(false)} className={`flex items-center gap-3 p-3 rounded-xl transition-all ${isActive ? 'bg-[var(--blog-fg)] text-[var(--blog-bg)] shadow-md' : 'hover:bg-[var(--blog-fg-soft)] text-[var(--blog-fg)]'}`}>
                 <link.icon size={18} />
                 <span className="font-medium text-sm">{link.name}</span>
               </Link>
             )})}
              {!isAuthenticated && (
-                <Link href="/login" onClick={() => setIsMobileMenuOpen(false)} className="flex items-center gap-3 p-3 rounded-xl hover:bg-black/5 dark:hover:bg-white/10 text-gray-700 dark:text-gray-200">
+                <Link href="/login" onClick={() => setIsMobileMenuOpen(false)} className="flex items-center gap-3 p-3 rounded-xl hover:bg-[var(--blog-fg-soft)] text-[var(--blog-fg)]">
                     <Lock size={18} />
                     <span className="font-medium text-sm">管理员登录</span>
                 </Link>
@@ -288,7 +272,7 @@ export const ClientLayout = ({ children }: { children: React.ReactNode }) => {
       )}
 
       {/* Main Content */}
-      <main className={`flex-1 w-full relative z-0 ${isChatPage ? 'h-dvh overflow-hidden' : (isArticleDetailPage ? 'min-h-screen' : 'pt-28 pb-12 px-4 sm:px-6 max-w-5xl mx-auto')}`}>
+      <main className={`flex-1 w-full relative z-0 ${isChatPage ? 'h-dvh overflow-hidden' : (isArticleDetailPage ? 'min-h-screen' : (isHomePage ? 'pt-0 pb-12' : 'pt-28 pb-12 px-4 sm:px-6 max-w-5xl mx-auto'))}`}>
         {children}
       </main>
 

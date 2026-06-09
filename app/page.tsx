@@ -1,175 +1,186 @@
 import React from 'react';
 import Link from 'next/link';
-import { ArrowRight, ExternalLink, Globe, Layout, Code, Sparkles } from 'lucide-react';
+import { ArrowRight, ExternalLink, Globe, BookOpen, Link2 } from 'lucide-react';
 import { ServerStorageService } from '../services/server-storage';
 import * as Icons from 'lucide-react';
 import { LiquidGlass } from '../components/LiquidGlass';
+import { PointerLens } from '../components/PointerLens';
 import { Project } from '../types';
 import { AnimatedSection, AnimatedItem } from '../components/AnimatedSection';
 
 export default async function Home() {
   const projects = await ServerStorageService.getProjects().catch(() => []);
   const allArticles = await ServerStorageService.getPublishedArticlesLight().catch(() => []);
-  const recentArticles = allArticles.slice(0, 3);
+  const recentArticles = allArticles.slice(0, 5);
 
   const adminName = process.env.ADMIN_USERNAME || 'Eray';
 
   const getFaviconUrl = (url: string) => {
     try {
       return `https://t1.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=${encodeURIComponent(url)}&size=128`;
-    } catch { return ''; }
+    } catch {
+      return '';
+    }
   };
 
   const renderIcon = (project: Project) => {
     if (project.iconType === 'generated' && project.customSvg) {
-        return (
-            <div className="w-10 h-10 text-indigo-600 dark:text-indigo-300 [&>svg]:w-full [&>svg]:h-full drop-shadow-sm" dangerouslySetInnerHTML={{ __html: project.customSvg }} />
-        );
+      return (
+        <div
+          className="w-7 h-7 text-[var(--blog-fg)] opacity-80 [&>svg]:w-full [&>svg]:h-full"
+          dangerouslySetInnerHTML={{ __html: project.customSvg }}
+        />
+      );
     }
     if (project.iconType === 'auto' && project.imageBase64) {
-        return <img src={project.imageBase64} alt={project.title} className="w-10 h-10 rounded-xl object-cover shadow-sm" />;
+      return <img src={project.imageBase64} alt={project.title} className="w-7 h-7 rounded-lg object-cover grayscale" />;
     }
     if (project.iconType === 'auto') {
       return (
-        <img 
-          src={getFaviconUrl(project.url)} 
-          alt={project.title} 
-          className="w-10 h-10 rounded-xl object-cover shadow-sm"
+        <img
+          src={getFaviconUrl(project.url)}
+          alt={project.title}
+          className="w-7 h-7 rounded-lg object-cover grayscale"
         />
       );
     }
     const IconComponent = (Icons as any)[project.presetIcon || 'Globe'];
-    return IconComponent ? <IconComponent size={40} className="text-indigo-600 dark:text-indigo-300 drop-shadow-sm" /> : <Globe size={40} />;
+    return IconComponent ? <IconComponent size={28} className="text-[var(--blog-fg)] opacity-80" /> : <Globe size={28} />;
   };
 
   return (
-    <div className="space-y-24">
-      
-      {/* Hero Section */}
-      <AnimatedSection className="space-y-8 py-10 relative">
-        <AnimatedItem className="space-y-4">
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/40 dark:bg-white/10 border border-white/30 dark:border-white/10 backdrop-blur-md text-xs font-medium text-indigo-600 dark:text-indigo-300 shadow-sm">
-                <Sparkles size={12} />
-                <span>Welcome to {new Date().getFullYear()}</span>
-            </div>
-            <h1 className="text-5xl sm:text-7xl font-bold tracking-tight text-gray-900 dark:text-white leading-[1.1]">
-              你好，我是 <br />
-              <span className="text-transparent bg-clip-text bg-linear-to-r from-indigo-500 via-purple-500 to-pink-500">{adminName}</span>
-            </h1>
-        </AnimatedItem>
-        
-        <AnimatedItem>
-          <p className="text-xl sm:text-2xl text-gray-600 dark:text-gray-300 max-w-2xl leading-relaxed font-light">
-            这里是我的数字花园。在液态流动的光影中，分享设计、代码与思考。
-          </p>
-        </AnimatedItem>
-        
-        <AnimatedItem className="flex flex-wrap gap-4 pt-4">
-            <Link href="/blog" className="group relative inline-flex items-center gap-2 px-8 py-3.5 bg-gray-900 dark:bg-white text-white dark:text-gray-900 rounded-full font-semibold transition-all hover:scale-105 active:scale-95 shadow-lg shadow-gray-900/20 dark:shadow-white/20 z-10">
-                阅读文章
-                <ArrowRight size={18} className="group-hover:translate-x-1 transition-transform" />
-            </Link>
-            <Link 
-              href="#projects"
-              className="inline-flex items-center gap-2 px-8 py-3.5 rounded-full text-gray-900 dark:text-white font-semibold hover:bg-white/60 dark:hover:bg-white/10 transition-colors cursor-pointer"
-            >
-                <LiquidGlass>查看作品</LiquidGlass>
-            </Link>
-        </AnimatedItem>
-      </AnimatedSection>
+    <div className="relative">
+      <PointerLens adminName={adminName} />
 
-      {/* Projects Grid */}
-      <section id="projects" className="space-y-10">
-        <div className="flex items-center gap-3">
-            <div className="p-2 bg-indigo-500/10 rounded-lg text-indigo-600 dark:text-indigo-400"><Layout size={24} /></div>
-            <h2 className="text-3xl font-bold text-gray-900 dark:text-white">精选导航</h2>
+      <section className="blog-hero min-h-screen px-5 sm:px-8 pt-32 pb-16 flex items-center justify-center">
+        <div className="hero-copy hero-copy-base w-full max-w-6xl text-center">
+          <p className="mb-8 text-xs sm:text-sm font-extrabold tracking-[0.22em] text-[var(--blog-muted)]">
+            文章 · 想法 · 技术实践
+          </p>
+          <h1
+            className="hero-title mx-auto max-w-6xl text-[clamp(3.4rem,10.8vw,10rem)] font-black leading-[0.86] tracking-[-0.075em] text-[var(--blog-fg)]"
+            aria-label={`HELLO, THIS IS ${adminName.toUpperCase()}`}
+          >
+            <span className="block">HELLO, THIS IS</span>
+            <span className="block">{adminName.toUpperCase()}</span>
+          </h1>
+          <p className="mx-auto mt-8 max-w-xl text-base sm:text-lg font-semibold leading-8 text-[var(--blog-muted)]">
+            文章、想法与技术记录。保持简洁，留住锋利。
+          </p>
+          <div className="mt-10 flex flex-wrap items-center justify-center gap-3">
+            <Link
+              href="/blog"
+              className="inline-flex items-center gap-2 rounded-full bg-[var(--blog-fg)] px-6 py-3 text-sm font-extrabold text-[var(--blog-bg)] transition-transform hover:scale-[1.03] active:scale-[0.98]"
+            >
+              阅读文章
+              <ArrowRight size={17} />
+            </Link>
+            <Link
+              href="#latest"
+              className="inline-flex items-center gap-2 rounded-full border border-[var(--blog-line)] px-6 py-3 text-sm font-extrabold text-[var(--blog-fg)] transition-colors hover:bg-[var(--blog-fg-soft)]"
+            >
+              最近更新
+            </Link>
+          </div>
         </div>
-        
-        <AnimatedSection className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-          {projects.map((project) => (
-            <AnimatedItem key={project.id} className="block group">
-              <Link href={project.url} target="_blank" className="block h-full">
-                <LiquidGlass 
-                  className="h-full flex flex-col p-6 rounded-4xl hover:bg-white/60 dark:hover:bg-white/10 hover:border-white/50 dark:hover:border-white/20 transition-all duration-300 hover:-translate-y-2 hover:shadow-[0_20px_40px_-15px_rgba(0,0,0,0.1)] dark:hover:shadow-[0_20px_40px_-15px_rgba(255,255,255,0.05)] cursor-pointer"
-                >
-                    <div className="flex items-start justify-between mb-6">
-                      <div className="p-3 bg-white/50 dark:bg-white/5 rounded-2xl group-hover:scale-110 transition-transform duration-300 shadow-sm border border-white/40 dark:border-white/10 backdrop-blur-md">
-                        {renderIcon(project)}
-                        {project.iconType === 'auto' && <Globe size={40} className="text-gray-300 hidden" />}
-                      </div>
-                      <div className="p-2 rounded-full bg-transparent group-hover:bg-indigo-50 dark:group-hover:bg-indigo-500/20 transition-colors">
-                          <ExternalLink size={20} className="text-gray-300 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors" />
-                      </div>
+        <p className="absolute bottom-8 left-1/2 -translate-x-1/2 text-[11px] font-bold tracking-[0.18em] text-[var(--blog-muted)]">
+          SCROLL FOR POSTS
+        </p>
+      </section>
+
+      <section id="latest" className="px-5 sm:px-8 py-20 sm:py-28">
+        <div className="mx-auto max-w-5xl">
+          <div className="mb-10 flex items-end justify-between gap-6 border-b border-[var(--blog-line)] pb-6">
+            <div>
+              <div className="mb-3 inline-flex items-center gap-2 text-xs font-extrabold tracking-[0.2em] text-[var(--blog-muted)]">
+                <BookOpen size={15} />
+                LATEST
+              </div>
+              <h2 className="text-3xl sm:text-5xl font-black tracking-[-0.055em] text-[var(--blog-fg)]">最新文章</h2>
+            </div>
+            <Link href="/blog" className="hidden sm:inline-flex items-center gap-2 rounded-full px-4 py-2 text-sm font-extrabold text-[var(--blog-muted)] transition-colors hover:bg-[var(--blog-fg-soft)] hover:text-[var(--blog-fg)]">
+              全部文章
+              <ArrowRight size={16} />
+            </Link>
+          </div>
+
+          <AnimatedSection className="space-y-3">
+            {recentArticles.map((article) => (
+              <AnimatedItem key={article.id} className="group">
+                <Link href={`/blog/${article.id}`} className="block">
+                  <article className="grid gap-4 rounded-[28px] border border-transparent px-5 py-5 transition-all duration-300 hover:border-[var(--blog-line)] hover:bg-[var(--blog-panel)] sm:grid-cols-[120px_1fr_auto] sm:items-center sm:px-6">
+                    <div className="font-mono text-sm font-bold text-[var(--blog-muted)]">
+                      {new Date(article.createdAt).toLocaleDateString('en-US', { month: 'short', day: '2-digit' })}
                     </div>
-                    <h3 className="font-bold text-xl text-gray-900 dark:text-white mb-2">{project.title}</h3>
-                    <p className="text-sm text-gray-500 dark:text-gray-400 line-clamp-2 leading-relaxed">
+                    <div className="min-w-0">
+                      <h3 className="text-xl sm:text-2xl font-black tracking-[-0.04em] text-[var(--blog-fg)] transition-transform group-hover:translate-x-1">
+                        {article.title}
+                      </h3>
+                      <p className="mt-2 line-clamp-2 text-sm sm:text-base leading-7 text-[var(--blog-muted)]">
+                        {article.summary}
+                      </p>
+                      {article.tags.length > 0 && (
+                        <div className="mt-3 flex flex-wrap gap-2">
+                          {article.tags.slice(0, 3).map((tag) => (
+                            <span key={tag} className="rounded-full bg-[var(--blog-fg-soft)] px-2.5 py-1 text-[11px] font-bold text-[var(--blog-muted)]">
+                              #{tag}
+                            </span>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                    <div className="hidden h-10 w-10 items-center justify-center rounded-full border border-[var(--blog-line)] text-[var(--blog-muted)] transition-all group-hover:border-[var(--blog-fg)] group-hover:text-[var(--blog-fg)] sm:flex">
+                      <ArrowRight size={17} />
+                    </div>
+                  </article>
+                </Link>
+              </AnimatedItem>
+            ))}
+            {recentArticles.length === 0 && (
+              <div className="rounded-[28px] border border-[var(--blog-line)] py-16 text-center text-[var(--blog-muted)]">
+                暂无文章
+              </div>
+            )}
+          </AnimatedSection>
+        </div>
+      </section>
+
+      <section className="px-5 sm:px-8 pb-24 sm:pb-32">
+        <div className="mx-auto max-w-5xl">
+          <div className="mb-8 flex items-center gap-3 text-[var(--blog-fg)]">
+            <div className="flex h-9 w-9 items-center justify-center rounded-full bg-[var(--blog-fg-soft)]">
+              <Link2 size={18} />
+            </div>
+            <h2 className="text-2xl sm:text-3xl font-black tracking-[-0.045em]">精选链接</h2>
+          </div>
+
+          <AnimatedSection className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            {projects.map((project) => (
+              <AnimatedItem key={project.id} className="group">
+                <Link href={project.url} target="_blank" className="block h-full">
+                  <LiquidGlass className="glass-blog h-full rounded-[28px] p-5 transition-transform duration-300 group-hover:-translate-y-1">
+                    <div className="mb-7 flex items-start justify-between gap-4">
+                      <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[var(--blog-fg-soft)]">
+                        {renderIcon(project)}
+                      </div>
+                      <ExternalLink size={18} className="text-[var(--blog-muted)] transition-colors group-hover:text-[var(--blog-fg)]" />
+                    </div>
+                    <h3 className="text-lg font-black tracking-[-0.035em] text-[var(--blog-fg)]">{project.title}</h3>
+                    <p className="mt-2 line-clamp-2 text-sm leading-6 text-[var(--blog-muted)]">
                       {project.description}
                     </p>
-                </LiquidGlass>
-              </Link>
-            </AnimatedItem>
-          ))}
-          {projects.length === 0 && (
-             <LiquidGlass className="col-span-full py-16 text-center text-gray-400 rounded-3xl">
-                 暂无导航链接
-             </LiquidGlass>
-          )}
-        </AnimatedSection>
-      </section>
-
-      {/* Recent Posts */}
-      <section className="space-y-10">
-        <div className="flex items-baseline justify-between border-b border-gray-200/50 dark:border-white/10 pb-6">
-             <div className="flex items-center gap-3">
-                <div className="p-2 bg-purple-500/10 rounded-lg text-purple-600 dark:text-purple-400"><Code size={24} /></div>
-                <h2 className="text-3xl font-bold text-gray-900 dark:text-white">最近更新</h2>
-            </div>
-            <Link href="/blog" className="px-4 py-2 rounded-full text-sm font-semibold text-indigo-600 dark:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-900/20 transition-colors">查看全部</Link>
+                  </LiquidGlass>
+                </Link>
+              </AnimatedItem>
+            ))}
+            {projects.length === 0 && (
+              <LiquidGlass className="glass-blog col-span-full rounded-[28px] py-14 text-center text-[var(--blog-muted)]">
+                暂无链接
+              </LiquidGlass>
+            )}
+          </AnimatedSection>
         </div>
-
-        <AnimatedSection className="space-y-4">
-          {recentArticles.map(article => (
-            <AnimatedItem key={article.id} className="block group">
-              <Link href={`/blog/${article.id}`} className="block h-full cursor-pointer">
-                  <article className="relative flex flex-col sm:flex-row gap-4 sm:gap-8 sm:items-center p-6 rounded-3xl transition-all duration-300 hover:bg-white/50 dark:hover:bg-white/5 border border-transparent hover:border-white/30 dark:hover:border-white/10">
-                      <div className="sm:w-32 shrink-0 flex flex-col gap-1">
-                           <span className="text-3xl font-bold text-gray-400 dark:text-gray-500 group-hover:text-indigo-500 dark:group-hover:text-indigo-400 transition-colors font-mono">
-                               {new Date(article.createdAt).getDate().toString().padStart(2, '0')}
-                           </span>
-                           <span className="text-sm font-medium text-gray-400 uppercase tracking-wider">
-                               {new Date(article.createdAt).toLocaleDateString('en-US', { month: 'short', year: 'numeric' })}
-                           </span>
-                      </div>
-                      
-                      <div className="flex-1 space-y-2">
-                           <div className="flex flex-wrap items-center gap-3">
-                              <h3 className="text-xl font-bold text-gray-900 dark:text-gray-100 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">
-                                  {article.title}
-                              </h3>
-                              {article.tags.map(tag => (
-                                  <span key={tag} className="px-2 py-0.5 rounded-md bg-gray-100/80 dark:bg-white/5 border border-gray-200 dark:border-white/5 text-[10px] font-medium text-gray-500 dark:text-gray-400">
-                                      #{tag}
-                                  </span>
-                              ))}
-                          </div>
-                          <p className="text-gray-500 dark:text-gray-400 leading-relaxed line-clamp-2 pr-4">
-                              {article.summary}
-                          </p>
-                      </div>
-                      
-                      <div className="hidden sm:flex items-center justify-center w-10 h-10 rounded-full border border-gray-200 dark:border-neutral-800 text-gray-300 group-hover:border-indigo-500 group-hover:text-indigo-500 transition-all opacity-0 group-hover:opacity-100 transform translate-x-[-10px] group-hover:translate-x-0">
-                          <ArrowRight size={18} />
-                      </div>
-                  </article>
-              </Link>
-            </AnimatedItem>
-          ))}
-           {recentArticles.length === 0 && (
-             <div className="py-10 text-center text-gray-400">暂无文章</div>
-          )}
-        </AnimatedSection>
       </section>
-
     </div>
   );
 }
