@@ -4,7 +4,7 @@ import React, { useEffect, useState, useRef } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { Moon, Sun, Lock, LogOut, Menu, X, LayoutGrid, FileText, Search, MessageSquare, Settings } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 import { LiquidGlass } from '@/components/LiquidGlass';
 import { StorageService } from '@/services/storage';
 
@@ -35,7 +35,7 @@ const SearchInput = () => {
               value={searchParams?.get('q') || ''}
               onChange={handleSearchChange}
           />
-          <button onClick={() => router.push('/')} className="p-1.5 rounded-full text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 hover:bg-black/5 dark:hover:bg-white/10">
+          <button type="button" onClick={() => router.push('/')} className="p-1.5 rounded-full text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 hover:bg-black/5 dark:hover:bg-white/10" aria-label="关闭搜索">
               <X size={14} />
           </button>
       </div>
@@ -151,9 +151,9 @@ export const ClientLayout = ({ children }: { children: React.ReactNode }) => {
            {/* Top Spotlight */}
            <div className="absolute top-[-20%] left-1/2 -translate-x-1/2 w-[80vw] h-[600px] bg-linear-to-b from-indigo-500/10 to-transparent dark:from-indigo-600/30 dark:to-transparent filter blur-2xl md:blur-[80px] rounded-full pointer-events-none" />
 
-           {/* Animated Orbs */}
-           <div className="absolute top-[10%] left-[10%] w-[40vw] h-[40vw] max-w-[500px] max-h-[500px] bg-purple-400/30 dark:bg-violet-600/40 rounded-full mix-blend-normal md:mix-blend-multiply dark:md:mix-blend-screen filter blur-[60px] md:blur-[90px] md:animate-pulse-slow will-change-transform" />
-           <div className="absolute top-[30%] right-[10%] w-[35vw] h-[35vw] max-w-[400px] max-h-[400px] bg-blue-400/30 dark:bg-blue-600/30 rounded-full mix-blend-normal md:mix-blend-multiply dark:md:mix-blend-screen filter blur-[60px] md:blur-[100px] md:animate-float will-change-transform" />
+           {/* Soft background glow */}
+           <div className="absolute top-[10%] left-[10%] hidden md:block w-[34vw] h-[34vw] max-w-[420px] max-h-[420px] bg-purple-400/18 dark:bg-violet-600/22 rounded-full mix-blend-normal md:mix-blend-multiply dark:md:mix-blend-screen blur-[72px] motion-safe:md:animate-pulse-slow" />
+           <div className="absolute top-[28%] right-[10%] hidden lg:block w-[28vw] h-[28vw] max-w-[340px] max-h-[340px] bg-blue-400/16 dark:bg-blue-600/20 rounded-full mix-blend-normal md:mix-blend-multiply dark:md:mix-blend-screen blur-[84px] motion-safe:lg:animate-float" />
         </div>
         {/* Noise Texture */}
         <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-20 dark:opacity-[0.06] mix-blend-overlay pointer-events-none hidden md:block"></div>
@@ -162,7 +162,7 @@ export const ClientLayout = ({ children }: { children: React.ReactNode }) => {
       {/* Floating Navigation */}
       {!isImmersive && (
         <motion.div 
-          className="fixed top-4 sm:top-6 left-0 right-0 z-50 flex justify-center px-4 pointer-events-none"
+          className="fixed top-4 sm:top-6 left-0 right-0 z-50 flex justify-center px-4"
           initial={false}
           animate={{ 
             y: isNavVisible ? 0 : -100,
@@ -170,136 +170,97 @@ export const ClientLayout = ({ children }: { children: React.ReactNode }) => {
           }}
           transition={{ type: 'spring', stiffness: 300, damping: 30 }}
         >
-          <motion.div 
-            layout
-            initial={false}
-            animate={{ 
-              width: isSearchPage ? '100%' : 'auto'
-            }}
-            transition={{ type: 'spring', stiffness: 400, damping: 30 }}
-            className="liquid-glass-wrapper pointer-events-auto rounded-full shadow-xl sm:min-w-[320px] max-w-full md:max-w-2xl flex-shrink-0"
+          <div
+            className={`liquid-glass-wrapper pointer-events-auto rounded-full shadow-xl max-w-full flex-shrink-0 isolate ${
+              isSearchPage ? 'w-full md:max-w-2xl' : 'sm:min-w-[320px] md:max-w-2xl'
+            }`}
             style={{ overflow: 'hidden' }}
           >
             <div className="liquid-glass-content px-2 md:px-4 py-1.5 flex items-center justify-between w-full h-full gap-2 relative">
-                <motion.div 
-                  layout="position"
-                  className="flex items-center gap-2 sm:pr-3 cursor-pointer rounded-full hover:bg-black/5 dark:hover:bg-white/10 transition-colors group shrink-0 z-10"
-                  onClick={() => router.push('/')}
+                <Link
+                  href="/"
+                  className="flex items-center gap-2 sm:pr-3 rounded-full hover:bg-black/5 dark:hover:bg-white/10 transition-colors group shrink-0 z-10"
                 >
-                <div className="w-8 h-8 bg-linear-to-br from-indigo-500 via-purple-500 to-pink-500 rounded-full overflow-hidden flex items-center justify-center text-white text-xs font-bold font-mono border border-white/20 group-hover:scale-105 transition-transform shrink-0">
-                    {logoLetter}
+                <div className="relative w-8 h-8 rounded-full shrink-0 transition-transform group-hover:scale-105">
+                  <div className="absolute inset-0 rounded-full ring-1 ring-inset ring-white/30 dark:ring-white/18 shadow-[0_0_0_1px_rgba(99,102,241,0.14)] dark:shadow-[0_0_0_1px_rgba(255,255,255,0.06)]" />
+                  <div className="absolute inset-[1px] bg-linear-to-br from-indigo-500 via-purple-500 to-pink-500 rounded-full overflow-hidden flex items-center justify-center text-white text-xs font-bold font-mono">
+                      {logoLetter}
+                  </div>
                 </div>
-                <AnimatePresence mode="popLayout">
                   {!isSearchPage && (
-                    <motion.span 
-                      initial={{ opacity: 0, width: 0, filter: 'blur(4px)' }}
-                      animate={{ opacity: 1, width: 'auto', filter: 'blur(0px)' }}
-                      exit={{ opacity: 0, width: 0, filter: 'blur(4px)' }}
-                      transition={{ type: 'spring', stiffness: 400, damping: 30 }}
-                      className="font-bold text-sm tracking-tight text-gray-800 dark:text-gray-100 hidden sm:block whitespace-nowrap"
-                    >
+                    <span className="font-bold text-sm tracking-tight text-gray-800 dark:text-gray-100 hidden sm:block whitespace-nowrap">
                       {adminName}
-                    </motion.span>
+                    </span>
                   )}
-                </AnimatePresence>
-                </motion.div>
+                </Link>
 
                 <div className="flex-1 flex items-center justify-center min-w-0 relative h-8 overflow-visible">
-                  <AnimatePresence mode="popLayout" initial={false}>
-                    {isSearchPage ? (
-                        <motion.div 
-                          key="search-input"
-                          initial={{ opacity: 0, y: 20, filter: 'blur(4px)' }}
-                          animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
-                          exit={{ opacity: 0, y: -20, filter: 'blur(4px)' }}
-                          transition={{ type: 'spring', stiffness: 300, damping: 25 }}
-                          className="w-full flex items-center"
-                        >
-                            <React.Suspense fallback={<div className="h-8"></div>}>
-                                <SearchInput />
-                            </React.Suspense>
-                        </motion.div>
-                    ) : (
-                        <motion.nav 
-                          key="nav-links"
-                          initial={{ opacity: 0, y: 20, filter: 'blur(4px)' }}
-                          animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
-                          exit={{ opacity: 0, y: -20, filter: 'blur(4px)' }}
-                          transition={{ type: 'spring', stiffness: 300, damping: 25 }}
-                          className="hidden md:flex w-full items-center justify-center gap-0.5 whitespace-nowrap"
-                        >
-                            {navLinks.map((link) => {
-                                const isActive = pathname === link.path;
-                                return (
-                                <Link
-                                key={link.path}
-                                href={link.path}
-                                className={`px-2 md:px-3 py-1.5 rounded-full text-[11px] md:text-xs font-semibold transition-all duration-300 ${
-                                    isActive 
-                                        ? 'text-indigo-600 dark:text-white bg-white/80 dark:bg-white/10 shadow-sm' 
-                                        : 'text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-black/5 dark:hover:bg-white/5'
-                                    }`}
-                                >
-                                {link.name}
-                                </Link>
-                            )})}
-                        </motion.nav>
-                    )}
-                  </AnimatePresence>
+                  {isSearchPage ? (
+                    <div className="w-full flex items-center">
+                      <React.Suspense fallback={<div className="h-8"></div>}>
+                        <SearchInput />
+                      </React.Suspense>
+                    </div>
+                  ) : (
+                    <nav className="hidden md:flex w-full items-center justify-center gap-0.5 whitespace-nowrap">
+                      {navLinks.map((link) => {
+                        const isActive = pathname === link.path;
+                        return (
+                          <Link
+                            key={link.path}
+                            href={link.path}
+                            className={`px-2 md:px-3 py-1.5 rounded-full text-[11px] md:text-xs font-semibold transition-colors ${
+                              isActive
+                                ? 'text-indigo-600 dark:text-white bg-white/80 dark:bg-white/10 shadow-sm'
+                                : 'text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-black/5 dark:hover:bg-white/5'
+                            }`}
+                          >
+                            {link.name}
+                          </Link>
+                        );
+                      })}
+                    </nav>
+                  )}
                 </div>
 
-                <AnimatePresence mode="popLayout">
-                  {!isSearchPage && (
-                    <motion.div 
-                      initial={{ opacity: 0, scale: 0.8, width: 0, margin: 0 }}
-                      animate={{ opacity: 1, scale: 1, width: '1px', margin: '0 0.5rem' }}
-                      exit={{ opacity: 0, scale: 0.8, width: 0, margin: 0 }}
-                      transition={{ type: 'spring', stiffness: 400, damping: 30 }}
-                      className="h-4 bg-gray-300/50 dark:bg-white/10 hidden md:block shrink-0"
-                    />
-                  )}
-                </AnimatePresence>
+                {!isSearchPage && (
+                  <div className="h-4 bg-gray-300/50 dark:bg-white/10 hidden md:block shrink-0 w-px mx-2" />
+                )}
 
-                <motion.div layout="position" className="flex items-center gap-1 md:gap-2 shrink-0 z-10">
-                    <AnimatePresence mode="popLayout">
-                      {!isSearchPage && (
-                          <motion.button 
-                            initial={{ opacity: 0, scale: 0.8, width: 0 }}
-                            animate={{ opacity: 1, scale: 1, width: 'auto' }}
-                            exit={{ opacity: 0, scale: 0.8, width: 0 }}
-                            transition={{ type: 'spring', stiffness: 400, damping: 30 }}
-                            onClick={() => router.push('/search')} 
-                            className="p-2 rounded-full text-gray-500 dark:text-gray-400 hover:bg-black/5 dark:hover:bg-white/10 hover:text-gray-900 dark:hover:text-white transition-all overflow-hidden"
-                          >
-                              <Search size={16} className="shrink-0" />
-                          </motion.button>
-                      )}
-                    </AnimatePresence>
-                    <button onClick={toggleTheme} className="p-2 rounded-full text-gray-500 dark:text-gray-400 hover:bg-black/5 dark:hover:bg-white/10 hover:text-yellow-500 dark:hover:text-yellow-400 transition-all shrink-0">
+                <div className="flex items-center gap-1 md:gap-2 shrink-0 z-10">
+                    {!isSearchPage && (
+                      <button
+                        type="button"
+                        onClick={() => router.push('/search')}
+                        className="p-2 rounded-full text-gray-500 dark:text-gray-400 hover:bg-black/5 dark:hover:bg-white/10 hover:text-gray-900 dark:hover:text-white transition-colors overflow-hidden"
+                        aria-label="打开搜索"
+                      >
+                        <Search size={16} className="shrink-0" />
+                      </button>
+                    )}
+                    <button type="button" onClick={toggleTheme} className="p-2 rounded-full text-gray-500 dark:text-gray-400 hover:bg-black/5 dark:hover:bg-white/10 hover:text-yellow-500 dark:hover:text-yellow-400 transition-colors shrink-0" aria-label="切换主题">
                         {isDarkMode ? <Moon size={16} /> : <Sun size={16} />}
                     </button>
-                    <AnimatePresence mode="popLayout">
-                      {!isSearchPage && (
-                          <motion.div
-                            initial={{ opacity: 0, scale: 0.8, width: 0 }}
-                            animate={{ opacity: 1, scale: 1, width: 'auto' }}
-                            exit={{ opacity: 0, scale: 0.8, width: 0 }}
-                            transition={{ type: 'spring', stiffness: 400, damping: 30 }}
-                            className="overflow-hidden"
-                          >
-                            {isAuthenticated ? (
-                                <button onClick={handleLogout} className="p-2 rounded-full text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 transition-all shrink-0"><LogOut size={16} /></button>
-                            ) : (
-                                <button onClick={() => router.push('/login')} className="hidden sm:block p-2 rounded-full text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-black/5 dark:hover:bg-white/10 transition-all shrink-0"><Lock size={16} /></button>
-                            )}
-                          </motion.div>
-                      )}
-                    </AnimatePresence>
-                    <button className="md:hidden p-2 text-gray-600 dark:text-gray-300 shrink-0" onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}>{isMobileMenuOpen ? <X size={18} /> : <Menu size={18} />}</button>
-                </motion.div>
+                    {!isSearchPage && (
+                      <>
+                        {isAuthenticated ? (
+                          <button type="button" onClick={handleLogout} className="p-2 rounded-full text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors shrink-0" aria-label="退出登录">
+                            <LogOut size={16} />
+                          </button>
+                        ) : (
+                          <button type="button" onClick={() => router.push('/login')} className="hidden sm:block p-2 rounded-full text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-black/5 dark:hover:bg-white/10 transition-colors shrink-0" aria-label="管理员登录">
+                            <Lock size={16} />
+                          </button>
+                        )}
+                      </>
+                    )}
+                    <button type="button" className="md:hidden p-2 text-gray-600 dark:text-gray-300 shrink-0 rounded-full hover:bg-black/5 dark:hover:bg-white/10 transition-colors" onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)} aria-label={isMobileMenuOpen ? '关闭菜单' : '打开菜单'}>
+                      {isMobileMenuOpen ? <X size={18} /> : <Menu size={18} />}
+                    </button>
+                </div>
             </div>
 
-          </motion.div>
+          </div>
         </motion.div>
       )}
 
