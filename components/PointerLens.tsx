@@ -42,10 +42,10 @@ export function PointerLens() {
       root.style.setProperty("--lens-header-scale", shouldShow && isHeaderHover ? "1" : "0");
       root.style.setProperty("--lens-over-header", (shouldShow ? headerOverlap : 0).toFixed(3));
       root.style.setProperty("--glass-overlap", (shouldShow ? headerOverlap : 0).toFixed(3));
-      root.style.setProperty("--glass-bubble-opacity", (shouldShow ? headerOverlap * 0.52 : 0).toFixed(3));
-      root.style.setProperty("--glass-bubble-scale", (0.94 + headerOverlap * 0.05).toFixed(3));
-      root.style.setProperty("--glass-bubble-scale-x", (1 + headerOverlap * 0.12).toFixed(3));
-      root.style.setProperty("--glass-bubble-scale-y", (1 - headerOverlap * 0.12).toFixed(3));
+      root.style.setProperty("--glass-bubble-opacity", (shouldShow ? headerOverlap * 0.84 : 0).toFixed(3));
+      root.style.setProperty("--glass-bubble-scale", (0.98 + headerOverlap * 0.02).toFixed(3));
+      root.style.setProperty("--glass-bubble-scale-x", (1 + headerOverlap * 0.05).toFixed(3));
+      root.style.setProperty("--glass-bubble-scale-y", (1 - headerOverlap * 0.05).toFixed(3));
       root.style.setProperty("--glass-grid-opacity", (0.28 + headerOverlap * 0.2).toFixed(3));
       root.style.setProperty("--glass-grid-scale", (1.012 + headerOverlap * 0.018).toFixed(3));
       root.style.setProperty("--glass-grid-shift-x", `${(headerOverlap * 4).toFixed(2)}px`);

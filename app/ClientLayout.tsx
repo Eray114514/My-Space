@@ -165,10 +165,10 @@ export const ClientLayout = ({ children }: { children: React.ReactNode }) => {
           className="fixed top-3 sm:top-5 left-0 right-0 z-50 flex justify-center px-4 sm:px-6 pointer-events-none"
           initial={false}
           animate={{ 
-            y: isNavVisible ? 0 : -100,
-            opacity: isNavVisible ? 1 : 0
+            y: isNavVisible ? 0 : -88,
+            scale: isNavVisible ? 1 : 0.985
           }}
-          transition={{ type: 'spring', stiffness: 300, damping: 30 }}
+          transition={{ type: 'tween', duration: 0.22, ease: [0.16, 1, 0.3, 1] }}
         >
           <div
             data-blog-header
