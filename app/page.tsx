@@ -50,7 +50,7 @@ export default async function Home() {
 
   return (
     <div className="relative">
-      <PointerLens adminName={adminName} />
+      <PointerLens />
 
       <section className="blog-hero min-h-screen px-5 sm:px-8 pt-32 pb-16 flex items-center justify-center">
         <div className="hero-copy hero-copy-base w-full max-w-6xl text-center">

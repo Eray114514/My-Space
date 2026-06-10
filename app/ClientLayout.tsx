@@ -151,6 +151,14 @@ export const ClientLayout = ({ children }: { children: React.ReactNode }) => {
         <div className="blog-background-refraction absolute inset-0 pointer-events-none" />
       </div>
 
+      <svg className="fixed h-0 w-0 pointer-events-none" aria-hidden="true" focusable="false">
+        <filter id="liquid-glass-refraction" x="-18%" y="-80%" width="136%" height="260%" colorInterpolationFilters="sRGB">
+          <feTurbulence type="fractalNoise" baseFrequency="0.014 0.026" numOctaves="2" seed="11" result="noise" />
+          <feGaussianBlur in="noise" stdDeviation="1.4" result="softNoise" />
+          <feDisplacementMap in="SourceGraphic" in2="softNoise" scale="12" xChannelSelector="R" yChannelSelector="G" />
+        </filter>
+      </svg>
+
       {/* Floating Navigation */}
       {!isImmersive && (
         <motion.div 

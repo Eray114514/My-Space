@@ -2,11 +2,7 @@
 
 import { useEffect } from "react";
 
-interface PointerLensProps {
-  adminName: string;
-}
-
-export function PointerLens({ adminName }: PointerLensProps) {
+export function PointerLens() {
   useEffect(() => {
     const root = document.documentElement;
     const finePointer = window.matchMedia("(any-pointer: fine)");
@@ -38,8 +34,8 @@ export function PointerLens({ adminName }: PointerLensProps) {
       root.classList.toggle("pointer-lens-active", shouldShow);
       root.classList.toggle("pointer-lens-header", shouldShow && isHeaderHover);
       root.classList.toggle("pointer-lens-native", isPastHero);
-      root.style.setProperty("--lens-opacity", shouldShow ? (isHeaderHover ? "0.16" : "1") : "0");
-      root.style.setProperty("--lens-scale", shouldShow ? (isHeaderHover ? "0.16" : "1") : "0.12");
+      root.style.setProperty("--lens-opacity", shouldShow ? (isHeaderHover ? "0" : "1") : "0");
+      root.style.setProperty("--lens-scale", shouldShow ? (isHeaderHover ? "0.34" : "1") : "0.12");
     };
 
     const updateScrollState = () => {
@@ -61,6 +57,9 @@ export function PointerLens({ adminName }: PointerLensProps) {
         x <= rect.right + padding &&
         y >= rect.top - padding &&
         y <= rect.bottom + padding;
+
+      root.style.setProperty("--glass-pointer-x", `${Math.max(0, Math.min(100, ((x - rect.left) / rect.width) * 100)).toFixed(2)}%`);
+      root.style.setProperty("--glass-pointer-y", `${Math.max(0, Math.min(100, ((y - rect.top) / rect.height) * 100)).toFixed(2)}%`);
     };
 
     const writePointerVars = () => {
@@ -142,6 +141,8 @@ export function PointerLens({ adminName }: PointerLensProps) {
       root.style.removeProperty("--blog-grid-y");
       root.style.removeProperty("--blog-grid-tilt-x");
       root.style.removeProperty("--blog-grid-tilt-y");
+      root.style.removeProperty("--glass-pointer-x");
+      root.style.removeProperty("--glass-pointer-y");
       window.removeEventListener("pointermove", handleMove);
       window.removeEventListener("mousemove", handleMove);
       root.removeEventListener("pointerleave", handlePointerLeave);
@@ -152,12 +153,6 @@ export function PointerLens({ adminName }: PointerLensProps) {
   }, []);
 
   return (
-    <div className="pointer-lens" aria-hidden="true">
-      <div className="pointer-lens-stage">
-        <p className="pointer-lens-eyebrow">文章 · 想法 · 技术实践</p>
-        <p className="pointer-lens-title">HELLO, THIS IS {adminName.toUpperCase()}</p>
-        <p className="pointer-lens-subtitle">写给现在，也写给以后。</p>
-      </div>
-    </div>
+    <div className="pointer-lens" aria-hidden="true" />
   );
 }

@@ -42,6 +42,8 @@
     --blog-grid-y: 0px;
     --blog-grid-tilt-x: 0deg;
     --blog-grid-tilt-y: 0deg;
+    --glass-pointer-x: 50%;
+    --glass-pointer-y: 50%;
   }
 
   .dark {
@@ -107,12 +109,20 @@
 
 .blog-background-grid {
   inset: -5vh -5vw;
-  background-image: radial-gradient(circle at center, var(--blog-dot) 0 1px, transparent 1.2px);
-  background-position: var(--blog-grid-x) var(--blog-grid-y);
-  background-size: 36px 36px;
-  opacity: 0.62;
-  mask-image: radial-gradient(circle at center, #000 0 24%, rgba(0, 0, 0, 0.72) 48%, transparent 82%);
-  -webkit-mask-image: radial-gradient(circle at center, #000 0 24%, rgba(0, 0, 0, 0.72) 48%, transparent 82%);
+  background-image:
+    radial-gradient(circle at center, color-mix(in srgb, var(--blog-dot) 72%, transparent) 0 0.85px, transparent 1.25px),
+    radial-gradient(circle at center, color-mix(in srgb, var(--blog-dot) 32%, transparent) 0 0.7px, transparent 1.15px);
+  background-position:
+    var(--blog-grid-x) var(--blog-grid-y),
+    calc(var(--blog-grid-x) * -0.42 + 18px) calc(var(--blog-grid-y) * -0.42 + 18px);
+  background-size: 38px 38px, 152px 152px;
+  opacity: 0.46;
+  mask-image:
+    linear-gradient(180deg, rgba(0, 0, 0, 0.2), #000 18%, #000 70%, transparent 100%),
+    radial-gradient(circle at center, #000 0 22%, rgba(0, 0, 0, 0.7) 48%, transparent 86%);
+  -webkit-mask-image:
+    linear-gradient(180deg, rgba(0, 0, 0, 0.2), #000 18%, #000 70%, transparent 100%),
+    radial-gradient(circle at center, #000 0 22%, rgba(0, 0, 0, 0.7) 48%, transparent 86%);
   transform: perspective(900px) rotateX(var(--blog-grid-tilt-x)) rotateY(var(--blog-grid-tilt-y)) scale(1.04);
   transform-origin: center;
   transition: opacity 400ms ease, background-position 120ms linear, transform 120ms ease-out;
@@ -201,16 +211,15 @@
   border-radius: 999px;
   pointer-events: none;
   opacity: var(--lens-opacity);
-  color: var(--blog-bg);
-  background:
-    radial-gradient(circle at 32% 24%, rgba(255, 255, 255, 0.18), transparent 18%),
-    var(--blog-fg);
+  background: var(--blog-fg);
+  mix-blend-mode: difference;
   transform:
     translate3d(calc(var(--lens-x) - var(--lens-size) / 2), calc(var(--lens-y) - var(--lens-size) / 2), 0)
     scale(var(--lens-scale));
   box-shadow:
-    inset 0 1px 1px rgba(255, 255, 255, 0.2),
-    0 24px 60px color-mix(in srgb, var(--blog-fg) 22%, transparent);
+    inset 0 1px 1px rgba(255, 255, 255, 0.26),
+    inset 0 -18px 34px rgba(0, 0, 0, 0.18),
+    0 18px 48px color-mix(in srgb, var(--blog-fg) 14%, transparent);
   transition:
     opacity 180ms ease,
     transform 180ms cubic-bezier(0.16, 1, 0.3, 1),
@@ -220,13 +229,23 @@
 }
 
 .dark .pointer-lens {
-  color: #050505;
-  background:
-    radial-gradient(circle at 32% 24%, rgba(0, 0, 0, 0.14), transparent 18%),
-    var(--blog-fg);
+  background: var(--blog-fg);
   box-shadow:
-    inset 0 1px 1px rgba(255, 255, 255, 0.2),
-    0 24px 70px rgba(255, 255, 255, 0.08);
+    inset 0 1px 1px rgba(255, 255, 255, 0.24),
+    inset 0 -18px 34px rgba(0, 0, 0, 0.22),
+    0 20px 56px rgba(255, 255, 255, 0.08);
+}
+
+.pointer-lens::before {
+  content: "";
+  position: absolute;
+  inset: 1px;
+  border-radius: inherit;
+  background:
+    radial-gradient(circle at 30% 22%, rgba(255, 255, 255, 0.28), transparent 20%),
+    radial-gradient(circle at 72% 76%, rgba(0, 0, 0, 0.2), transparent 34%);
+  opacity: 0.64;
+  pointer-events: none;
 }
 
 .pointer-lens::after {
@@ -240,48 +259,6 @@
   mix-blend-mode: screen;
   opacity: 0.58;
   pointer-events: none;
-}
-
-.pointer-lens-stage {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100vw;
-  height: 100vh;
-  display: grid;
-  place-content: center;
-  padding: 132px 24px 72px;
-  text-align: center;
-  transform: translate3d(var(--lens-inner-x), var(--lens-inner-y), 0);
-  will-change: transform;
-}
-
-.pointer-lens-eyebrow,
-.pointer-lens-subtitle {
-  margin: 0;
-  color: color-mix(in srgb, currentColor 68%, transparent);
-  font-weight: 800;
-}
-
-.pointer-lens-eyebrow {
-  margin-bottom: 22px;
-  font-size: 12px;
-  letter-spacing: 0.2em;
-}
-
-.pointer-lens-title {
-  margin: 0;
-  max-width: 1100px;
-  color: currentColor;
-  font-size: clamp(3.4rem, 10.8vw, 10rem);
-  font-weight: 950;
-  line-height: 0.86;
-  letter-spacing: -0.075em;
-}
-
-.pointer-lens-subtitle {
-  margin-top: 22px;
-  font-size: 15px;
 }
 
 .pointer-lens-active:not(.pointer-lens-native) body:has(.blog-hero),
