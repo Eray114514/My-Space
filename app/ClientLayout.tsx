@@ -187,14 +187,16 @@ export const ClientLayout = ({ children }: { children: React.ReactNode }) => {
           >
             <div className="glass-refract-grid" aria-hidden="true" />
             <div className="glass-cursor-bubble" aria-hidden="true" />
-            <div className="relative z-10 px-3 sm:px-4 md:px-5 py-1.5 md:py-2 flex items-center justify-between w-full h-full gap-2 md:gap-4">
-                <Link
-                  href="/"
-                  className="group shrink-0 rounded-full px-2 py-1 text-sm sm:text-base font-black tracking-[0.16em] text-[var(--blog-fg)] transition-transform hover:scale-[1.02]"
-                  aria-label="返回首页"
-                >
-                  {adminName}
-                </Link>
+            <div className="relative z-10 px-3 sm:px-4 md:px-5 py-1.5 md:py-2 flex items-center w-full h-full gap-2 md:gap-4">
+                <div className="flex-1 flex justify-start">
+                  <Link
+                    href="/"
+                    className="group shrink-0 rounded-full px-2 py-1 text-sm sm:text-base font-black tracking-[0.16em] text-[var(--blog-fg)] transition-transform hover:scale-[1.02]"
+                    aria-label="返回首页"
+                  >
+                    {adminName}
+                  </Link>
+                </div>
 
                 <div className={`${isSearchPage ? 'flex-1' : 'shrink-0'} flex items-center justify-center min-w-0 relative min-h-8 overflow-visible`}>
                   {isSearchPage ? (
@@ -229,7 +231,7 @@ export const ClientLayout = ({ children }: { children: React.ReactNode }) => {
                   <div className="h-4 bg-[var(--blog-line)] hidden md:block shrink-0 w-px" />
                 )}
 
-                <div className="flex items-center gap-1 shrink-0 z-10">
+                <div className="flex-1 flex justify-end items-center gap-1 z-10">
                     {!isSearchPage && (
                       <button
                         type="button"

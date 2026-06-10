@@ -6,6 +6,25 @@ import { MarkdownRenderer } from '../../../components/MarkdownRenderer';
 import { ArrowLeft, Calendar, MessageSquare } from 'lucide-react';
 import { LiquidGlass } from '../../../components/LiquidGlass';
 import { Metadata } from 'next';
+import { useCallback, startTransition, useRouter } from 'react';
+
+function BackButton() {
+  const router = useRouter();
+  const handleBack = useCallback(() => {
+    startTransition(() => {
+      router.back();
+    });
+  }, [router]);
+  return (
+    <button
+      onClick={handleBack}
+      className="blog-control pointer-events-auto h-10 w-10 p-0"
+      title="返回列表"
+    >
+      <ArrowLeft size={20} />
+    </button>
+  );
+}
 
 export async function generateMetadata({ params }: { params: Promise<{ id: string }> }): Promise<Metadata> {
   const resolvedParams = await params;
@@ -46,13 +65,7 @@ export default async function ArticleDetail({ params }: { params: Promise<{ id: 
 
       {/* Immersive Back Button Header */}
       <div className="fixed top-0 left-0 w-full p-6 z-50 pointer-events-none">
-          <Link 
-            href="/blog"
-            className="blog-control pointer-events-auto h-10 w-10 p-0"
-            title="返回列表"
-          >
-            <ArrowLeft size={20} />
-          </Link>
+          <BackButton />
       </div>
       
       {/* Content Container (Center Aligned) */}

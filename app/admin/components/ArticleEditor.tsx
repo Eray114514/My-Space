@@ -1,5 +1,5 @@
 "use client";
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useDeferredValue } from 'react';
 import { createPortal } from 'react-dom';
 import { Article } from '../../../types';
 import { AIModelKey, AIService } from '../../../services/ai';
@@ -21,6 +21,11 @@ export const ArticleEditor: React.FC<{
   const [saving, setSaving] = useState(false);
   const [isGeneratingSummary, setIsGeneratingSummary] = useState(false);
   const [isAutoTagging, setIsAutoTagging] = useState(false);
+
+  // Deferred values for heavy preview rendering
+  const deferredContent = useDeferredValue(formData.content);
+  const deferredTitle = useDeferredValue(formData.title);
+  const deferredSummary = useDeferredValue(formData.summary);
 
   // Refs for auto-resize textareas
   const contentRef = useRef<HTMLTextAreaElement>(null);
@@ -180,10 +185,10 @@ export const ArticleEditor: React.FC<{
         <div className="hidden md:block w-1/2 p-10 overflow-y-auto bg-white/40 dark:bg-white/5 backdrop-blur-md custom-scrollbar">
           <div className="max-w-2xl mx-auto prose dark:prose-invert">
             <div className="mb-10 pb-6 border-b border-gray-200/50 dark:border-white/10">
-              <h1 className="text-4xl font-extrabold mb-4 text-gray-900 dark:text-white leading-tight">{formData.title || '预览标题'}</h1>
-              {formData.summary && <div className="p-6 bg-white/50 dark:bg-white/5 rounded-2xl border border-gray-100 dark:border-white/5 shadow-sm"><p className="text-gray-600 dark:text-gray-300 text-lg leading-relaxed italic m-0">{formData.summary}</p></div>}
+              <h1 className="text-4xl font-extrabold mb-4 text-gray-900 dark:text-white leading-tight">{deferredTitle || '预览标题'}</h1>
+              {deferredSummary && <div className="p-6 bg-white/50 dark:bg-white/5 rounded-2xl border border-gray-100 dark:border-white/5 shadow-sm"><p className="text-gray-600 dark:text-gray-300 text-lg leading-relaxed italic m-0">{deferredSummary}</p></div>}
             </div>
-            <MarkdownRenderer content={formData.content || '暂无内容...'} />
+            <MarkdownRenderer content={deferredContent || '暂无内容...'} />
           </div>
         </div>
       </div>
