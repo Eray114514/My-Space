@@ -3,28 +3,10 @@ import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { ServerStorageService } from '../../../services/server-storage';
 import { MarkdownRenderer } from '../../../components/MarkdownRenderer';
-import { ArrowLeft, Calendar, MessageSquare } from 'lucide-react';
+import { Calendar, MessageSquare } from 'lucide-react';
 import { LiquidGlass } from '../../../components/LiquidGlass';
 import { Metadata } from 'next';
-import { useCallback, startTransition, useRouter } from 'react';
-
-function BackButton() {
-  const router = useRouter();
-  const handleBack = useCallback(() => {
-    startTransition(() => {
-      router.back();
-    });
-  }, [router]);
-  return (
-    <button
-      onClick={handleBack}
-      className="blog-control pointer-events-auto h-10 w-10 p-0"
-      title="返回列表"
-    >
-      <ArrowLeft size={20} />
-    </button>
-  );
-}
+import { BackButton } from './BackButton';
 
 export async function generateMetadata({ params }: { params: Promise<{ id: string }> }): Promise<Metadata> {
   const resolvedParams = await params;
