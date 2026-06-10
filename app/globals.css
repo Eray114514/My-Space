@@ -37,6 +37,9 @@
     --lens-stretch-y: 1;
     --lens-header-scale: 0;
     --lens-over-header: 0;
+    --lens-visual-fill: #050505;
+    --lens-visual-blend: normal;
+    --lens-under-glass-fill: #050505;
     --lens-opacity: 0;
     --hero-tilt-x: 0deg;
     --hero-tilt-y: 0deg;
@@ -73,6 +76,9 @@
     --glass-shadow: rgba(0, 0, 0, 0.48);
     --glass-chroma-a: rgba(77, 159, 255, 0.18);
     --glass-chroma-b: rgba(190, 119, 255, 0.13);
+    --lens-visual-fill: #fffdf6;
+    --lens-visual-blend: difference;
+    --lens-under-glass-fill: #fffdf6;
   }
 
   ::-webkit-scrollbar {
@@ -263,8 +269,8 @@
   border-radius: 999px;
   pointer-events: none;
   opacity: var(--lens-opacity);
-  background: #fff;
-  mix-blend-mode: difference;
+  background: var(--lens-visual-fill);
+  mix-blend-mode: var(--lens-visual-blend);
   transform:
     translate3d(calc(var(--lens-x) - var(--lens-size) / 2), calc(var(--lens-y) - var(--lens-size) / 2), 0)
     scale(var(--lens-scale))
