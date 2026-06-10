@@ -183,6 +183,41 @@
   box-shadow: 0 10px 26px color-mix(in srgb, var(--blog-fg) 16%, transparent);
 }
 
+.blog-shell [class*="text-indigo"],
+.blog-shell [class*="text-purple"],
+.blog-shell [class*="text-pink"] {
+  color: var(--blog-fg) !important;
+}
+
+.blog-shell [class*="bg-indigo"],
+.blog-shell [class*="bg-purple"],
+.blog-shell [class*="bg-pink"] {
+  background: var(--blog-fg) !important;
+  color: var(--blog-bg) !important;
+}
+
+.blog-shell [class*="border-indigo"],
+.blog-shell [class*="border-purple"],
+.blog-shell [class*="border-pink"] {
+  border-color: color-mix(in srgb, var(--blog-fg) 24%, var(--blog-line)) !important;
+}
+
+.blog-shell [class*="shadow-indigo"],
+.blog-shell [class*="shadow-purple"],
+.blog-shell [class*="shadow-pink"] {
+  box-shadow: 0 14px 34px color-mix(in srgb, var(--blog-fg) 13%, transparent) !important;
+}
+
+.blog-shell [class*="from-indigo"],
+.blog-shell [class*="from-purple"],
+.blog-shell [class*="from-pink"],
+.blog-shell [class*="to-indigo"],
+.blog-shell [class*="to-purple"],
+.blog-shell [class*="to-pink"] {
+  --tw-gradient-from: var(--blog-fg) !important;
+  --tw-gradient-to: color-mix(in srgb, var(--blog-fg) 78%, var(--blog-bg)) !important;
+}
+
 .blog-hero {
   perspective: 900px;
 }

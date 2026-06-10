@@ -35,7 +35,7 @@ export default function AdminDashboard() {
       setGeneralAiProvider(await StorageService.getGeneralAIModel());
       setSvgAiProvider(await StorageService.getSvgAIModel());
     } catch (e) {
-      console.error("Failed to load admin data", e);
+      console.warn("Admin data unavailable", e);
     } finally {
       setLoading(false);
     }
@@ -93,45 +93,45 @@ export default function AdminDashboard() {
       {/* Header Area */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-6">
         <div>
-          <h1 className="text-4xl font-bold dark:text-white tracking-tight">控制台</h1>
-          <p className="text-gray-500 dark:text-gray-400 mt-2 font-light">管理你的博客内容</p>
+          <h1 className="text-4xl font-black tracking-[-0.055em] text-[var(--blog-fg)]">控制台</h1>
+          <p className="text-[var(--blog-muted)] mt-2">管理你的博客内容</p>
         </div>
 
         {/* Glass Tabs */}
-        <div className="flex bg-white/40 dark:bg-white/5 p-1.5 rounded-full border border-white/40 dark:border-white/10 backdrop-blur-md shadow-sm">
-          <button onClick={() => setTab('articles')} className={`px-6 py-2 rounded-full text-sm font-bold transition-all ${tab === 'articles' ? 'bg-white dark:bg-white/10 shadow-md text-indigo-600 dark:text-indigo-400' : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200'}`}>文章</button>
-          <button onClick={() => setTab('projects')} className={`px-6 py-2 rounded-full text-sm font-bold transition-all ${tab === 'projects' ? 'bg-white dark:bg-white/10 shadow-md text-indigo-600 dark:text-indigo-400' : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200'}`}>导航</button>
-          <button onClick={() => setTab('settings')} className={`px-6 py-2 rounded-full text-sm font-bold transition-all flex items-center gap-2 ${tab === 'settings' ? 'bg-white dark:bg-white/10 shadow-md text-indigo-600 dark:text-indigo-400' : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200'}`}><Settings size={16} /> 设置</button>
+        <div className="glass-surface flex p-1.5 rounded-full">
+          <button onClick={() => setTab('articles')} className={`px-6 py-2 rounded-full text-sm font-bold transition-all ${tab === 'articles' ? 'bg-[var(--blog-fg)] text-[var(--blog-bg)] shadow-md' : 'text-[var(--blog-muted)] hover:text-[var(--blog-fg)] hover:bg-[var(--blog-fg-soft)]'}`}>文章</button>
+          <button onClick={() => setTab('projects')} className={`px-6 py-2 rounded-full text-sm font-bold transition-all ${tab === 'projects' ? 'bg-[var(--blog-fg)] text-[var(--blog-bg)] shadow-md' : 'text-[var(--blog-muted)] hover:text-[var(--blog-fg)] hover:bg-[var(--blog-fg-soft)]'}`}>导航</button>
+          <button onClick={() => setTab('settings')} className={`px-6 py-2 rounded-full text-sm font-bold transition-all flex items-center gap-2 ${tab === 'settings' ? 'bg-[var(--blog-fg)] text-[var(--blog-bg)] shadow-md' : 'text-[var(--blog-muted)] hover:text-[var(--blog-fg)] hover:bg-[var(--blog-fg-soft)]'}`}><Settings size={16} /> 设置</button>
         </div>
       </div>
 
       {/* Content Area */}
       {tab === 'articles' && (
-        <LiquidGlass className="rounded-3xl overflow-hidden shadow-lg animate-in slide-in-from-bottom-4 duration-500">
-          <div className="p-6 border-b border-white/20 dark:border-white/5 flex justify-between items-center bg-white/30 dark:bg-white/5 backdrop-blur-sm">
-            <h3 className="font-bold text-lg dark:text-white flex items-center gap-2"><Layout size={20} className="text-indigo-500" /> 文章列表 <span className="text-xs bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 px-2 py-0.5 rounded-full">{articles.length}</span></h3>
-            <button onClick={() => { setCurrentArticle(undefined); setIsEditingArticle(true); }} className="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white px-5 py-2.5 rounded-full text-sm transition-all shadow-lg shadow-indigo-500/20 font-bold hover:scale-105 active:scale-95"><Plus size={18} /> 写文章</button>
+        <LiquidGlass className="glass-panel overflow-hidden animate-in slide-in-from-bottom-4 duration-500">
+          <div className="p-6 border-b border-[var(--blog-line)] flex justify-between items-center">
+            <h3 className="font-black text-lg text-[var(--blog-fg)] flex items-center gap-2"><Layout size={20} /> 文章列表 <span className="blog-tag px-2 py-0.5">{articles.length}</span></h3>
+            <button onClick={() => { setCurrentArticle(undefined); setIsEditingArticle(true); }} className="blog-button-primary px-5 py-2.5 text-sm"><Plus size={18} /> 写文章</button>
           </div>
-          <div className="divide-y divide-white/20 dark:divide-white/5">
+          <div className="divide-y divide-[var(--blog-line)]">
             {articles.map(article => (
-              <div key={article.id} className="p-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4 hover:bg-white/40 dark:hover:bg-white/5 transition-colors group">
+              <div key={article.id} className="p-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4 hover:bg-[var(--blog-fg-soft)] transition-colors group">
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-3 mb-2">
                     <span className={`w-2.5 h-2.5 rounded-full shrink-0 shadow-sm ${article.isPublished ? 'bg-green-500 shadow-green-500/50' : 'bg-yellow-500 shadow-yellow-500/50'}`}></span>
-                    <h4 className="font-bold text-gray-900 dark:text-white truncate text-lg group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">{article.title}</h4>
+                    <h4 className="font-black text-[var(--blog-fg)] truncate text-lg">{article.title}</h4>
                     <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider ${article.isPublished ? 'bg-green-100/50 text-green-700 dark:bg-green-900/30 dark:text-green-400' : 'bg-yellow-100/50 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400'}`}>{article.isPublished ? 'Published' : 'Draft'}</span>
                   </div>
                   <div className="flex items-center gap-3 text-xs text-gray-500 dark:text-gray-400">
                     <span className="font-mono">{new Date(article.updatedAt).toLocaleDateString()}</span>
-                    <span className="w-1 h-1 rounded-full bg-gray-300 dark:bg-gray-600"></span>
+                    <span className="w-1 h-1 rounded-full bg-[var(--blog-line)]"></span>
                     <div className="flex gap-1">
-                      {article.tags.map(t => <span key={t} className="bg-white/50 dark:bg-white/10 px-1.5 py-0.5 rounded border border-white/20 dark:border-white/5">#{t}</span>)}
+                      {article.tags.map(t => <span key={t} className="blog-tag px-1.5 py-0.5">#{t}</span>)}
                     </div>
                   </div>
                 </div>
                 <div className="flex items-center gap-3 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-all transform sm:translate-x-4 sm:group-hover:translate-x-0">
-                  <button onClick={() => { setCurrentArticle(article); setIsEditingArticle(true); }} className="p-2.5 bg-white/50 dark:bg-white/10 text-gray-600 dark:text-gray-300 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-white dark:hover:bg-white/20 rounded-xl transition-all shadow-sm"><Edit2 size={18} /></button>
-                  <button onClick={() => handleDeleteArticle(article.id)} className="p-2.5 bg-white/50 dark:bg-white/10 text-gray-600 dark:text-gray-300 hover:text-red-600 hover:bg-white dark:hover:bg-white/20 rounded-xl transition-all shadow-sm"><Trash2 size={18} /></button>
+                  <button onClick={() => { setCurrentArticle(article); setIsEditingArticle(true); }} className="blog-control h-10 w-10 p-0"><Edit2 size={18} /></button>
+                  <button onClick={() => handleDeleteArticle(article.id)} className="blog-control h-10 w-10 p-0 hover:text-red-600"><Trash2 size={18} /></button>
                 </div>
               </div>
             ))}
@@ -140,16 +140,16 @@ export default function AdminDashboard() {
       )}
 
       {tab === 'projects' && (
-        <LiquidGlass className="rounded-3xl overflow-hidden shadow-lg animate-in slide-in-from-bottom-4 duration-500">
-          <div className="p-6 border-b border-white/20 dark:border-white/5 flex justify-between items-center bg-white/30 dark:bg-white/5 backdrop-blur-sm">
-            <h3 className="font-bold text-lg dark:text-white flex items-center gap-2"><Globe size={20} className="text-indigo-500" /> 导航链接 <span className="text-xs bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 px-2 py-0.5 rounded-full">{projects.length}</span></h3>
-            <button onClick={() => { setCurrentProject(undefined); setIsEditingProject(true); }} className="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white px-5 py-2.5 rounded-full text-sm transition-all shadow-lg shadow-indigo-500/20 font-bold hover:scale-105 active:scale-95"><Plus size={18} /> 添加链接</button>
+        <LiquidGlass className="glass-panel overflow-hidden animate-in slide-in-from-bottom-4 duration-500">
+          <div className="p-6 border-b border-[var(--blog-line)] flex justify-between items-center">
+            <h3 className="font-black text-lg text-[var(--blog-fg)] flex items-center gap-2"><Globe size={20} /> 导航链接 <span className="blog-tag px-2 py-0.5">{projects.length}</span></h3>
+            <button onClick={() => { setCurrentProject(undefined); setIsEditingProject(true); }} className="blog-button-primary px-5 py-2.5 text-sm"><Plus size={18} /> 添加链接</button>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 p-6">
             {projects.map(project => {
               let IconDisplay: React.ReactNode = <Globe size={24} />;
               if (project.iconType === 'generated' && project.customSvg) {
-                IconDisplay = <div className="w-7 h-7 text-indigo-600 dark:text-indigo-400" dangerouslySetInnerHTML={{ __html: project.customSvg }} />;
+                IconDisplay = <div className="w-7 h-7 text-[var(--blog-fg)]" dangerouslySetInnerHTML={{ __html: project.customSvg }} />;
               } else if (project.iconType === 'auto' && project.imageBase64) {
                 IconDisplay = <img src={project.imageBase64} alt="icon" className="w-7 h-7 object-cover rounded-md shadow-sm" />;
               } else {
@@ -157,17 +157,17 @@ export default function AdminDashboard() {
                 IconDisplay = <IconComp size={24} />;
               }
               return (
-                <div key={project.id} className="flex items-center justify-between p-4 border border-white/40 dark:border-white/5 rounded-2xl hover:border-indigo-300 dark:hover:border-indigo-500/50 bg-white/40 dark:bg-white/5 hover:bg-white/60 dark:hover:bg-white/10 transition-all hover:shadow-lg group backdrop-blur-sm">
+                <div key={project.id} className="glass-card flex items-center justify-between p-4 border border-[var(--blog-line)] hover:bg-[var(--blog-fg-soft)] transition-all group">
                   <div className="flex items-center gap-4 overflow-hidden">
-                    <div className="w-14 h-14 rounded-xl bg-white/80 dark:bg-white/10 flex items-center justify-center text-indigo-600 dark:text-indigo-400 shadow-sm shrink-0 border border-white/50 dark:border-white/5 p-2 backdrop-blur-md">{IconDisplay}</div>
+                    <div className="w-14 h-14 rounded-xl bg-[var(--blog-fg-soft)] flex items-center justify-center text-[var(--blog-fg)] shadow-sm shrink-0 border border-[var(--blog-line)] p-2">{IconDisplay}</div>
                     <div className="truncate flex-1">
-                      <h4 className="font-bold text-gray-900 dark:text-white truncate text-lg">{project.title}</h4>
-                      <p className="text-xs text-gray-500 dark:text-gray-400 truncate mt-1 opacity-80">{project.url}</p>
+                      <h4 className="font-black text-[var(--blog-fg)] truncate text-lg">{project.title}</h4>
+                      <p className="text-xs text-[var(--blog-muted)] truncate mt-1 opacity-80">{project.url}</p>
                     </div>
                   </div>
                   <div className="flex shrink-0 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-all transform sm:translate-x-2 sm:group-hover:translate-x-0 gap-2">
-                    <button onClick={() => { setCurrentProject(project); setIsEditingProject(true); }} className="p-2 text-gray-500 hover:text-indigo-600 bg-white/50 dark:bg-white/5 rounded-lg hover:bg-white dark:hover:bg-white/20 transition-all"><Edit2 size={16} /></button>
-                    <button onClick={() => handleDeleteProject(project.id)} className="p-2 text-gray-500 hover:text-red-600 bg-white/50 dark:bg-white/5 rounded-lg hover:bg-white dark:hover:bg-white/20 transition-all"><Trash2 size={16} /></button>
+                    <button onClick={() => { setCurrentProject(project); setIsEditingProject(true); }} className="blog-control h-9 w-9 p-0"><Edit2 size={16} /></button>
+                    <button onClick={() => handleDeleteProject(project.id)} className="blog-control h-9 w-9 p-0 hover:text-red-600"><Trash2 size={16} /></button>
                   </div>
                 </div>
               )
@@ -177,8 +177,8 @@ export default function AdminDashboard() {
       )}
 
       {tab === 'settings' && (
-        <LiquidGlass className="rounded-3xl overflow-hidden shadow-lg animate-in slide-in-from-bottom-4 duration-500">
-          <div className="p-6 border-b border-white/20 dark:border-white/5 bg-white/30 dark:bg-white/5 backdrop-blur-sm"><h3 className="font-bold text-lg dark:text-white flex items-center gap-2"><Settings size={20} className="text-indigo-500" /> 系统设置</h3></div>
+        <LiquidGlass className="glass-panel overflow-hidden animate-in slide-in-from-bottom-4 duration-500">
+          <div className="p-6 border-b border-[var(--blog-line)]"><h3 className="font-black text-lg text-[var(--blog-fg)] flex items-center gap-2"><Settings size={20} /> 系统设置</h3></div>
           <div className="p-8 max-w-3xl space-y-10">
             <ModelSelector
               label="全局 AI 写作模型"

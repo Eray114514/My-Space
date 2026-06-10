@@ -35,7 +35,7 @@ export const Mermaid: React.FC<Props> = ({ chart }) => {
   return (
     <div 
       ref={containerRef} 
-      className="mermaid flex justify-center my-8 p-4 rounded-xl bg-white dark:bg-neutral-900 border border-gray-200 dark:border-neutral-800 shadow-sm overflow-x-auto"
+      className="mermaid flex justify-center my-8 p-4 rounded-2xl bg-[var(--blog-panel)] border border-[var(--blog-line)] overflow-x-auto"
       dangerouslySetInnerHTML={{ __html: svg }} 
     />
   );

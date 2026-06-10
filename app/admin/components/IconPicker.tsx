@@ -22,7 +22,7 @@ export const IconPicker: React.FC<{
         <input
           type="text"
           placeholder="搜索图标名称..."
-          className="w-full pl-9 pr-3 py-2 text-xs bg-white/50 dark:bg-black/20 border border-white/20 dark:border-white/10 rounded-xl outline-none focus:bg-white/80 dark:focus:bg-black/40 focus:border-indigo-500/30 transition-all dark:text-white"
+          className="blog-input w-full pl-9 pr-3 py-2 text-xs rounded-xl"
           value={search}
           onChange={(e) => setSearch(e.target.value)}
         />
@@ -40,7 +40,7 @@ export const IconPicker: React.FC<{
               type="button"
               onClick={() => onSelect(name)}
               className={`aspect-square flex flex-col items-center justify-center p-1.5 rounded-xl transition-all ${isSelected
-                  ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-500/30 scale-110 z-10'
+                  ? 'bg-[var(--blog-fg)] text-[var(--blog-bg)] shadow-lg scale-110 z-10'
                   : 'bg-white/40 dark:bg-white/5 text-gray-500 dark:text-gray-400 hover:bg-white/80 dark:hover:bg-white/10 hover:scale-105'
                 }`}
               title={name}

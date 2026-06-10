@@ -38,11 +38,11 @@ export const ModelSelector: React.FC<{
   }, [selectedProvider]);
 
   return (
-    <div className="bg-white/40 dark:bg-white/5 border border-white/40 dark:border-white/10 rounded-3xl p-6 backdrop-blur-md">
+    <div className="glass-card border border-[var(--blog-line)] p-6">
       <div className="mb-6">
         <h4 className="text-lg font-bold text-gray-900 dark:text-white flex items-center gap-3">
           {label}
-          <span className="text-xs font-medium text-indigo-600 dark:text-indigo-300 bg-indigo-50 dark:bg-indigo-900/30 px-2 py-0.5 rounded-full border border-indigo-100 dark:border-indigo-800/30">当前: {currentModel?.name || '未设置'}</span>
+          <span className="blog-tag px-2 py-0.5">当前: {currentModel?.name || '未设置'}</span>
         </h4>
         <p className="text-sm text-gray-500 dark:text-gray-400 mt-2 font-light leading-relaxed">{description}</p>
       </div>
@@ -56,7 +56,7 @@ export const ModelSelector: React.FC<{
               key={p}
               onClick={() => setSelectedProvider(p)}
               className={`flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap transition-all border ${isActive
-                  ? 'bg-indigo-600 text-white border-indigo-500 shadow-md shadow-indigo-500/20'
+                  ? 'bg-[var(--blog-fg)] text-[var(--blog-bg)] border-[var(--blog-fg)] shadow-md'
                   : 'bg-white/50 dark:bg-white/5 border-transparent text-gray-600 dark:text-gray-400 hover:bg-white/80 dark:hover:bg-white/10'
                 }`}
             >
@@ -75,7 +75,7 @@ export const ModelSelector: React.FC<{
               key={key}
               onClick={() => onChange(key as AIModelKey)}
               className={`relative text-left p-4 rounded-2xl border transition-all duration-300 ${isSelected
-                  ? 'border-indigo-500 bg-indigo-50/80 dark:bg-indigo-500/20 shadow-sm'
+                  ? 'border-[var(--blog-fg)] bg-[var(--blog-fg-soft)] shadow-sm'
                   : 'border-transparent bg-white/40 dark:bg-white/5 hover:bg-white/60 dark:hover:bg-white/10 hover:border-white/20'
                 }`}
             >
@@ -84,7 +84,7 @@ export const ModelSelector: React.FC<{
                   <div className="font-bold text-sm text-gray-900 dark:text-white">{model.name}</div>
                   <div className="text-xs text-gray-500 dark:text-gray-400 mt-1 line-clamp-2 opacity-80">{model.description}</div>
                 </div>
-                {isSelected && <CheckCircle size={18} className="text-indigo-600 dark:text-indigo-400 shrink-0" />}
+                {isSelected && <CheckCircle size={18} className="text-[var(--blog-fg)] shrink-0" />}
               </div>
             </button>
           );

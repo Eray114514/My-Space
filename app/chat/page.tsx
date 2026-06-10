@@ -453,12 +453,12 @@ function ChatContent() {
                 {/* System Prompt Panel (Absolute Overlay) */}
                 {isSystemPromptOpen && (
                     <div className="fixed top-20 left-1/2 -translate-x-1/2 w-full max-w-2xl px-4 z-60 animate-in slide-in-from-top-2 fade-in">
-                        <LiquidGlass className="p-4 rounded-2xl shadow-xl">
+                        <LiquidGlass className="glass-popover p-4">
                             <div className="flex justify-between items-center mb-2">
                                 <label className="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase">系统提示词 (System Prompt)</label>
                                 <button onClick={() => setIsSystemPromptOpen(false)} className="text-gray-400 hover:text-gray-600"><X size={14} /></button>
                             </div>
-                            <textarea value={systemPrompt} onChange={e => setSystemPrompt(e.target.value)} className="w-full h-24 bg-white/40 dark:bg-black/20 border border-white/20 dark:border-white/10 rounded-xl p-3 text-sm text-gray-800 dark:text-gray-100 outline-none focus:border-indigo-500 transition-colors resize-none backdrop-blur-sm" />
+                            <textarea value={systemPrompt} onChange={e => setSystemPrompt(e.target.value)} className="blog-input w-full h-24 rounded-xl p-3 text-sm resize-none" />
                         </LiquidGlass>
                     </div>
                 )}
@@ -469,20 +469,20 @@ function ChatContent() {
                         {isMessagesLoading ? (
                             <div className="h-40 flex flex-col items-center justify-center text-gray-400 gap-3 animate-pulse">
                                 <LiquidGlass className="w-12 h-12 rounded-full" innerClassName="flex items-center justify-center">
-                                    <div className="w-6 h-6 border-2 border-indigo-500 border-t-transparent rounded-full animate-spin" />
+                                    <div className="w-6 h-6 border-2 border-[var(--blog-fg)] border-t-transparent rounded-full animate-spin" />
                                 </LiquidGlass>
                                 <span className="text-xs font-medium tracking-wide">同步历史记录...</span>
                             </div>
                         ) : (
                             <>
                                 {messages.length === 0 && attachedArticles.length === 0 && (
-                                    <div className="h-[50vh] flex flex-col items-center justify-center text-gray-400 space-y-6 animate-in fade-in duration-700">
-                                        <div className="w-24 h-24 rounded-3xl bg-linear-to-br from-white/10 to-white/5 border border-white/20 flex items-center justify-center backdrop-blur-md shadow-2xl">
-                                            <Bot size={48} className="text-indigo-400/80 drop-shadow-lg" />
-                                        </div>
+                                    <div className="h-[50vh] flex flex-col items-center justify-center text-[var(--blog-muted)] space-y-6 animate-in fade-in duration-700">
+                                        <LiquidGlass className="glass-card w-24 h-24" innerClassName="flex items-center justify-center">
+                                            <Bot size={48} className="text-[var(--blog-fg)]/80 drop-shadow-lg" />
+                                        </LiquidGlass>
                                         <div className="text-center space-y-2">
-                                            <p className="font-light tracking-wide text-lg text-gray-600 dark:text-gray-300">How can I help you today?</p>
-                                            <p className="text-xs text-gray-400 font-mono">Powered by {selectedModel ? (AI_MODELS[selectedModel] as any)?.shortName : 'AI'}</p>
+                                            <p className="font-semibold tracking-wide text-lg text-[var(--blog-fg)]">How can I help you today?</p>
+                                            <p className="text-xs text-[var(--blog-muted)] font-mono">Powered by {selectedModel ? (AI_MODELS[selectedModel] as any)?.shortName : 'AI'}</p>
                                         </div>
                                     </div>
                                 )}
@@ -495,33 +495,33 @@ function ChatContent() {
                                     return (
                                         <div key={msg.id} className={`group flex gap-4 ${isUser ? 'flex-row-reverse' : ''} ${isEditing ? 'relative z-50' : 'relative'}`}>
                                             {/* Avatar */}
-                                            <div className={`w-10 h-10 rounded-2xl flex items-center justify-center shrink-0 border border-white/20 shadow-lg backdrop-blur-md transition-transform hover:scale-105 ${isUser ? 'bg-indigo-600 text-white' : 'bg-white/60 dark:bg-white/10 text-indigo-500'}`}>
+                                            <div className={`w-10 h-10 rounded-2xl flex items-center justify-center shrink-0 border border-[var(--blog-line)] shadow-lg backdrop-blur-md transition-transform hover:scale-105 ${isUser ? 'bg-[var(--blog-fg)] text-[var(--blog-bg)]' : 'bg-[var(--blog-fg-soft)] text-[var(--blog-fg)]'}`}>
                                                 {isUser ? <User size={20} /> : <Bot size={22} />}
                                             </div>
 
                                             {/* Message Bubble */}
                                             <div className={`flex flex-col max-w-[85%] sm:max-w-[75%] ${isUser ? 'items-end' : 'items-start'}`}>
                                                 {isEditing ? (
-                                                    <LiquidGlass className="w-full min-w-[300px] rounded-2xl p-3 shadow-2xl animate-in fade-in zoom-in-95 duration-200 border-indigo-500/30">
+                                                    <LiquidGlass className="glass-card w-full min-w-[300px] p-3 animate-in fade-in zoom-in-95 duration-200">
                                                         {/* Edit Mode Content */}
                                                         <textarea
                                                             value={editContent}
                                                             onChange={e => setEditContent(e.target.value)}
-                                                            className="w-full bg-transparent outline-none text-[15px] resize-none mb-2 min-h-[100px] p-1 text-gray-800 dark:text-gray-100 font-mono"
+                                                            className="w-full bg-transparent outline-none text-[15px] resize-none mb-2 min-h-[100px] p-1 text-[var(--blog-fg)] font-mono"
                                                             autoFocus
                                                         />
                                                         <div className="flex justify-end gap-2 pt-2 border-t border-black/5 dark:border-white/5">
                                                             <button onClick={() => setEditingMessageId(null)} className="px-3 py-1.5 text-xs font-medium rounded-lg hover:bg-black/5 dark:hover:bg-white/10 transition-colors">取消</button>
-                                                            <button onClick={submitEdit} className="px-4 py-1.5 text-xs font-bold bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 shadow-lg shadow-indigo-500/20 flex items-center gap-1.5">
+                                                            <button onClick={submitEdit} className="blog-button-primary px-4 py-1.5 text-xs">
                                                                 <Save size={12} /> 保存
                                                             </button>
                                                         </div>
                                                     </LiquidGlass>
                                                 ) : (
                                                     <>
-                                                        <LiquidGlass className={`px-5 py-4 shadow-sm text-[15px] leading-7 relative border backdrop-blur-xl overflow-x-auto ${isUser
-                                                                ? 'bg-indigo-600/90 text-white rounded-2xl rounded-tr-sm border-indigo-400/30 shadow-indigo-500/20'
-                                                                : 'bg-white/70 dark:bg-white/5 text-gray-800 dark:text-gray-100 rounded-2xl rounded-tl-sm border-white/40 dark:border-white/10'
+                                                        <LiquidGlass className={`px-5 py-4 text-[15px] leading-7 relative overflow-x-auto ${isUser
+                                                                ? 'bg-[var(--blog-fg)] text-[var(--blog-bg)] rounded-2xl rounded-tr-sm'
+                                                                : 'glass-card text-[var(--blog-fg)] rounded-2xl rounded-tl-sm'
                                                             }`}>
                                                             {isUser ? <p className="whitespace-pre-wrap wrap-break-word">{getDisplayContent(msg.content)}</p> : <MarkdownRenderer content={msg.content} />}
                                                         </LiquidGlass>
@@ -552,7 +552,7 @@ function ChatContent() {
                         {attachedArticles.length > 0 && (
                             <div className="absolute bottom-full left-4 mb-3 flex flex-wrap gap-2 animate-in slide-in-from-bottom-2">
                                 {attachedArticles.map(a => (
-                                    <LiquidGlass key={a.id} className="flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-bold text-indigo-600 dark:text-indigo-300 border-indigo-200 dark:border-indigo-800/50 bg-white/80 dark:bg-black/40">
+                                    <LiquidGlass key={a.id} className="flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-bold text-[var(--blog-fg)]">
                                         <FileText size={12} />
                                         <span className="truncate max-w-[150px]">{a.title}</span>
                                         <button onClick={() => setAttachedArticles(prev => prev.filter(x => x.id !== a.id))} className="hover:text-red-500 ml-1 p-0.5 rounded-full hover:bg-black/5 dark:hover:bg-white/10 transition-colors"><X size={12} /></button>
@@ -564,14 +564,14 @@ function ChatContent() {
                         {/* Article Picker Popover */}
                         {isArticlePickerOpen && (
                             <div className="absolute bottom-full left-0 mb-3 w-72 z-50">
-                                <LiquidGlass className="rounded-2xl shadow-2xl overflow-hidden animate-in fade-in slide-in-from-bottom-2 bg-white/80 dark:bg-black/80 backdrop-blur-xl">
-                                    <div className="p-3 border-b border-black/5 dark:border-white/5 text-xs font-bold text-gray-500 dark:text-gray-400 flex items-center gap-2"><Hash size={12} /> 引用文章上下文</div>
+                                <LiquidGlass className="glass-popover overflow-hidden animate-in fade-in slide-in-from-bottom-2">
+                                    <div className="p-3 border-b border-[var(--blog-line)] text-xs font-bold text-[var(--blog-muted)] flex items-center gap-2"><Hash size={12} /> 引用文章上下文</div>
                                     <div className="max-h-56 overflow-y-auto custom-scrollbar p-1.5 space-y-1">
                                         {availableArticles.map(article => {
                                             const isSelected = attachedArticles.some(a => a.id === article.id);
                                             return (
-                                                <button key={article.id} onClick={() => handleArticleClick(article)} className={`w-full text-left px-3 py-2.5 text-sm rounded-xl truncate transition-all flex items-center gap-2 group ${isSelected ? 'bg-indigo-600 text-white shadow-md' : 'hover:bg-black/5 dark:hover:bg-white/10 text-gray-700 dark:text-gray-200'}`}>
-                                                    <div className={`w-4 h-4 rounded flex items-center justify-center shrink-0 border transition-colors ${isSelected ? 'border-white bg-transparent' : 'border-gray-400 dark:border-gray-600'}`}>
+                                                <button key={article.id} onClick={() => handleArticleClick(article)} className={`w-full text-left px-3 py-2.5 text-sm rounded-xl truncate transition-all flex items-center gap-2 group ${isSelected ? 'bg-[var(--blog-fg)] text-[var(--blog-bg)] shadow-md' : 'hover:bg-[var(--blog-fg-soft)] text-[var(--blog-fg)]'}`}>
+                                                    <div className={`w-4 h-4 rounded flex items-center justify-center shrink-0 border transition-colors ${isSelected ? 'border-[var(--blog-bg)] bg-transparent' : 'border-[var(--blog-line)]'}`}>
                                                         {isSelected && <Check size={10} />}
                                                     </div>
                                                     <span className="truncate font-medium">{article.title}</span>
@@ -585,12 +585,12 @@ function ChatContent() {
 
                         {/* Input Capsule - High Quality Texture */}
                         <LiquidGlass
-                            className="rounded-[2.5rem] shadow-[0_0_50px_-12px_rgba(0,0,0,0.12)] dark:shadow-[0_0_50px_-12px_rgba(255,255,255,0.05)] border border-white/50 dark:border-white/10 bg-white/70 dark:bg-[#121212]/80 backdrop-blur-xl transition-all duration-300 focus-within:scale-[1.01] focus-within:bg-white/90 dark:focus-within:bg-black/90 focus-within:border-indigo-500/40 focus-within:shadow-[0_10px_40px_-10px_rgba(79,70,229,0.2)]"
+                            className="rounded-[2.5rem] transition-all duration-300 focus-within:scale-[1.01]"
                             innerClassName="flex items-end gap-2 p-2"
                         >
                             <button
                                 onClick={() => setIsArticlePickerOpen(!isArticlePickerOpen)}
-                                className={`p-3 rounded-full h-[46px] w-[46px] flex items-center justify-center transition-all ${attachedArticles.length > 0 ? 'bg-indigo-100 text-indigo-600 dark:bg-indigo-900/40 dark:text-indigo-300' : 'text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 hover:bg-black/5 dark:hover:bg-white/10'}`}
+                                className={`p-3 rounded-full h-[46px] w-[46px] flex items-center justify-center transition-all ${attachedArticles.length > 0 ? 'bg-[var(--blog-fg)] text-[var(--blog-bg)]' : 'text-[var(--blog-muted)] hover:text-[var(--blog-fg)] hover:bg-[var(--blog-fg-soft)]'}`}
                                 title="引用文章 (#)"
                             >
                                 <Hash size={20} />
@@ -602,13 +602,13 @@ function ChatContent() {
                                 onKeyDown={(e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSend(); } }}
                                 placeholder={isLoading ? "AI 正在思考..." : "输入消息..."}
                                 disabled={isLoading || isMessagesLoading}
-                                className="flex-1 bg-transparent border-none outline-none py-3 max-h-[150px] min-h-[46px] resize-none text-[15px] text-gray-900 dark:text-white placeholder-gray-500/50 custom-scrollbar font-medium"
+                                className="flex-1 bg-transparent border-none outline-none py-3 max-h-[150px] min-h-[46px] resize-none text-[15px] text-[var(--blog-fg)] placeholder:text-[var(--blog-muted)]/60 custom-scrollbar font-medium"
                                 rows={1}
                             />
                             <button
                                 onClick={handleSend}
                                 disabled={(!input.trim() && attachedArticles.length === 0) || isLoading || isMessagesLoading}
-                                className={`p-3 rounded-full h-[46px] w-[46px] flex items-center justify-center transition-all duration-300 ${(!input.trim() && attachedArticles.length === 0) || isLoading || isMessagesLoading ? 'text-gray-300 dark:text-gray-600 bg-transparent' : 'bg-indigo-600 text-white shadow-lg shadow-indigo-500/30 hover:scale-105 active:scale-95'}`}
+                                className={`p-3 rounded-full h-[46px] w-[46px] flex items-center justify-center transition-all duration-300 ${(!input.trim() && attachedArticles.length === 0) || isLoading || isMessagesLoading ? 'text-[var(--blog-muted)]/45 bg-transparent' : 'bg-[var(--blog-fg)] text-[var(--blog-bg)] shadow-lg hover:scale-105 active:scale-95'}`}
                             >
                                 {isLoading ? <StopCircle size={20} className="animate-pulse" /> : <Send size={20} className="ml-0.5" />}
                             </button>

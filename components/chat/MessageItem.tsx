@@ -31,10 +31,10 @@ export const getDisplayContent = (content: string) => {
                 {titles.length > 0 && (
                     <div className="mt-3 flex flex-wrap gap-2">
                         {titles.map((title, i) => (
-                            <div key={i} className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-indigo-50/50 dark:bg-indigo-500/10 border border-indigo-100 dark:border-indigo-500/20 text-xs font-medium text-indigo-600 dark:text-indigo-300 select-none hover:bg-indigo-100/50 dark:hover:bg-indigo-500/20">
+                            <div key={i} className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-[var(--blog-fg-soft)] border border-[var(--blog-line)] text-xs font-medium text-[var(--blog-fg)] select-none">
                                 <FileText size={12} />
                                 <span className="opacity-70">引用:</span>
-                                <span className="font-bold border-b border-indigo-500/30">{title}</span>
+                                <span className="font-bold border-b border-[var(--blog-line)]">{title}</span>
                             </div>
                         ))}
                     </div>
@@ -70,13 +70,13 @@ export const MessageActions: React.FC<MessageActionsProps> = ({ role, isLast, on
             </button>
 
             {role === 'user' && onEdit && (
-                <button onClick={onEdit} className="p-1.5 rounded-full text-gray-400 hover:text-indigo-500 hover:bg-black/5 dark:hover:bg-white/10 transition-colors" title="编辑">
+                <button onClick={onEdit} className="p-1.5 rounded-full text-gray-400 hover:text-[var(--blog-fg)] hover:bg-black/5 dark:hover:bg-white/10 transition-colors" title="编辑">
                     <Edit2 size={12} />
                 </button>
             )}
 
             {role === 'assistant' && onRegenerate && (
-                <button onClick={onRegenerate} className="p-1.5 rounded-full text-gray-400 hover:text-indigo-500 hover:bg-black/5 dark:hover:bg-white/10 transition-colors" title="重新生成">
+                <button onClick={onRegenerate} className="p-1.5 rounded-full text-gray-400 hover:text-[var(--blog-fg)] hover:bg-black/5 dark:hover:bg-white/10 transition-colors" title="重新生成">
                     <RefreshCw size={12} />
                 </button>
             )}

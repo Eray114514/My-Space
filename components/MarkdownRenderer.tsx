@@ -151,7 +151,7 @@ const PreBlock = ({ children }: any) => {
 const InlineCode = ({ children, className, ...props }: any) => {
   return (
     <code 
-      className={`${className || ''} bg-gray-100 dark:bg-neutral-800 text-indigo-600 dark:text-indigo-400 px-1.5 py-0.5 rounded text-sm font-mono border border-gray-200 dark:border-neutral-700 align-middle`} 
+      className={`${className || ''} bg-[var(--blog-fg-soft)] text-[var(--blog-fg)] px-1.5 py-0.5 rounded text-sm font-mono border border-[var(--blog-line)] align-middle`} 
       {...props}
     >
       {children}
@@ -187,9 +187,9 @@ export const MarkdownRenderer: React.FC<Props> = ({ content }) => {
 prose prose-zinc dark:prose-invert max-w-none break-words w-full overflow-x-auto
       prose-headings:font-bold prose-headings:tracking-tight prose-headings:scroll-mt-24
       prose-p:leading-relaxed
-      prose-a:text-indigo-600 dark:prose-a:text-indigo-400 prose-a:no-underline hover:prose-a:underline
+      prose-a:text-[var(--blog-fg)] prose-a:font-bold prose-a:no-underline hover:prose-a:underline
       prose-blockquote:not-italic prose-blockquote:font-normal prose-blockquote:text-gray-500 dark:prose-blockquote:text-gray-400
-      prose-blockquote:border-l-4 prose-blockquote:border-indigo-500 prose-blockquote:bg-gray-50 dark:prose-blockquote:bg-neutral-900/50 prose-blockquote:py-1 prose-blockquote:px-4 prose-blockquote:rounded-r-lg
+      prose-blockquote:border-l-4 prose-blockquote:border-[var(--blog-fg)] prose-blockquote:bg-[var(--blog-fg-soft)] prose-blockquote:py-1 prose-blockquote:px-4 prose-blockquote:rounded-r-lg
       prose-img:rounded-xl prose-img:shadow-md
       prose-table:border-collapse prose-th:border-b prose-th:border-gray-200 dark:prose-th:border-neutral-800 prose-th:bg-gray-50 dark:prose-th:bg-neutral-900 prose-th:p-3 prose-td:p-3 prose-td:border-b prose-td:border-gray-100 dark:prose-td:border-neutral-800
       

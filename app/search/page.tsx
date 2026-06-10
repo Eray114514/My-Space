@@ -56,13 +56,13 @@ function SearchContent() {
 
   const renderProjectIcon = (project: Project) => {
       if (project.iconType === 'generated' && project.customSvg) {
-        return <div className="w-5 h-5 text-indigo-600 dark:text-indigo-400 [&>svg]:w-full [&>svg]:h-full" dangerouslySetInnerHTML={{ __html: project.customSvg }} />;
+        return <div className="w-5 h-5 text-[var(--blog-fg)] [&>svg]:w-full [&>svg]:h-full" dangerouslySetInnerHTML={{ __html: project.customSvg }} />;
       }
       if (project.iconType === 'auto' && project.imageBase64) {
         return <img src={project.imageBase64} alt={project.title} className="w-5 h-5 rounded object-cover" />;
       }
        const IconComp = (Icons as any)[project.presetIcon || 'Globe'] || Globe;
-       return <IconComp size={20} className="text-indigo-600 dark:text-indigo-400" />;
+       return <IconComp size={20} className="text-[var(--blog-fg)]" />;
   }
 
   const containerVariants = {
@@ -79,19 +79,19 @@ function SearchContent() {
   };
 
   return (
-    <div className="max-w-3xl mx-auto py-4 min-h-[60vh]">
+    <div className="max-w-4xl mx-auto py-4 min-h-[60vh]">
       
       {!query && (
-        <div className="text-center text-gray-400 dark:text-neutral-600 mt-20 flex flex-col items-center gap-4">
-            <div className="p-6 rounded-full bg-white/30 dark:bg-white/5 backdrop-blur-md">
+        <div className="text-center text-[var(--blog-muted)] mt-20 flex flex-col items-center gap-4">
+            <LiquidGlass className="h-24 w-24 rounded-full" innerClassName="flex items-center justify-center">
                  <SearchIcon size={48} className="opacity-30" />
-            </div>
-            <p className="font-light tracking-wide">请在顶部搜索框输入关键词</p>
+            </LiquidGlass>
+            <p className="font-semibold tracking-wide">请在顶部搜索框输入关键词</p>
         </div>
       )}
 
       {query && (results.articles.length === 0 && results.projects.length === 0) && (
-        <div className="text-center text-gray-500 dark:text-neutral-500 mt-20">
+        <div className="text-center text-[var(--blog-muted)] mt-20">
             <p>未找到与 "{query}" 相关的内容</p>
         </div>
       )}
@@ -99,24 +99,24 @@ function SearchContent() {
       <div className="space-y-12 mt-4">
         {results.projects.length > 0 && (
           <section>
-            <h2 className="text-xl font-bold mb-6 flex items-center gap-2 text-gray-900 dark:text-white px-2">
-                <Layout size={20} className="text-indigo-500" /> 网站导航
+            <h2 className="text-xl font-black tracking-[-0.035em] mb-6 flex items-center gap-2 text-[var(--blog-fg)] px-2">
+                <Layout size={20} /> 网站导航
             </h2>
             <motion.div variants={containerVariants} initial="hidden" animate="show" className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               {results.projects.map(project => (
                 <motion.div key={project.id} variants={itemVariants} whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
                   <LiquidGlass 
-                      className="flex items-center gap-4 p-4 rounded-2xl hover:bg-white/60 dark:hover:bg-white/10 hover:border-indigo-200/50 transition-all hover:shadow-md cursor-pointer group"
+                      className="glass-card flex items-center gap-4 p-4 transition-transform hover:-translate-y-1 cursor-pointer group"
                       onClick={() => window.open(project.url, '_blank')}
                   >
-                      <div className="p-2.5 bg-white/50 dark:bg-white/5 rounded-xl group-hover:bg-indigo-50 dark:group-hover:bg-indigo-900/20 transition-colors backdrop-blur-sm border border-white/20">
+                      <div className="p-2.5 rounded-xl bg-[var(--blog-fg-soft)] border border-[var(--blog-line)]">
                           {renderProjectIcon(project)}
                       </div>
                       <div className="flex-1 min-w-0">
-                          <h3 className="font-semibold text-gray-900 dark:text-white truncate">{project.title}</h3>
-                          <p className="text-xs text-gray-500 dark:text-gray-400 truncate">{project.description}</p>
+                          <h3 className="font-black text-[var(--blog-fg)] truncate">{project.title}</h3>
+                          <p className="text-xs text-[var(--blog-muted)] truncate">{project.description}</p>
                       </div>
-                      <ExternalLink size={14} className="text-gray-300 group-hover:text-indigo-500 transition-colors" />
+                      <ExternalLink size={14} className="text-[var(--blog-muted)] group-hover:text-[var(--blog-fg)] transition-colors" />
                  </LiquidGlass>
                 </motion.div>
               ))}
@@ -126,22 +126,22 @@ function SearchContent() {
 
         {results.articles.length > 0 && (
            <section>
-            <h2 className="text-xl font-bold mb-6 flex items-center gap-2 text-gray-900 dark:text-white px-2">
-                <FileText size={20} className="text-indigo-500" /> 文章
+            <h2 className="text-xl font-black tracking-[-0.035em] mb-6 flex items-center gap-2 text-[var(--blog-fg)] px-2">
+                <FileText size={20} /> 文章
             </h2>
             <motion.div variants={containerVariants} initial="hidden" animate="show" className="space-y-4">
                 {results.articles.map(article => (
                     <motion.div key={article.id} variants={itemVariants} whileHover={{ scale: 1.01 }} whileTap={{ scale: 0.99 }} className="block group">
                         <Link href={`/blog/${article.id}`} className="block h-full">
-                            <LiquidGlass className="p-6 rounded-2xl hover:bg-white/60 dark:hover:bg-white/10 hover:border-indigo-200/50 transition-all hover:shadow-md cursor-pointer">
+                            <LiquidGlass className="glass-card p-6 transition-transform hover:-translate-y-1 cursor-pointer">
                                  <div className="flex justify-between items-start mb-2">
-                                     <h3 className="text-lg font-bold text-gray-900 dark:text-white group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">{article.title}</h3>
-                                     <span className="text-xs text-gray-400 font-mono py-1 px-2 bg-black/5 dark:bg-white/5 rounded-md">{new Date(article.createdAt).toLocaleDateString()}</span>
+                                     <h3 className="text-lg font-black text-[var(--blog-fg)]">{article.title}</h3>
+                                     <span className="text-xs text-[var(--blog-muted)] font-mono py-1 px-2 rounded-full bg-[var(--blog-fg-soft)]">{new Date(article.createdAt).toLocaleDateString()}</span>
                                  </div>
-                                 <p className="text-sm text-gray-600 dark:text-gray-300 line-clamp-2 leading-relaxed">{article.summary}</p>
+                                 <p className="text-sm text-[var(--blog-muted)] line-clamp-2 leading-relaxed">{article.summary}</p>
                                  <div className="flex gap-2 mt-4">
                                      {article.tags.map(t => (
-                                         <span key={t} className="text-[10px] px-2 py-0.5 bg-white/50 dark:bg-white/5 backdrop-blur-sm text-gray-500 dark:text-gray-400 rounded-md border border-white/20">#{t}</span>
+                                         <span key={t} className="blog-tag px-2.5 py-1">#{t}</span>
                                      ))}
                                  </div>
                             </LiquidGlass>

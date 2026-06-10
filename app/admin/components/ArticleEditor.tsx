@@ -90,8 +90,7 @@ export const ArticleEditor: React.FC<{
     <div className="fixed inset-0 z-9999 bg-[#f8f9fa] dark:bg-[#050505] flex flex-col animate-in fade-in zoom-in-95 duration-300">
       {/* Background */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none z-0 opacity-50">
-        <div className="absolute -top-[10%] -left-[10%] w-[60vw] h-[60vw] max-w-[800px] max-h-[800px] bg-indigo-300/30 dark:bg-indigo-600/20 rounded-full mix-blend-normal md:mix-blend-multiply dark:md:mix-blend-screen filter blur-[60px] md:blur-[100px]" />
-        <div className="absolute -bottom-[10%] -right-[10%] w-[60vw] h-[60vw] max-w-[800px] max-h-[800px] bg-pink-300/30 dark:bg-purple-600/20 rounded-full mix-blend-normal md:mix-blend-multiply dark:md:mix-blend-screen filter blur-[60px] md:blur-[100px]" />
+        <div className="blog-background-grid absolute inset-0" />
       </div>
 
       {/* Top Toolbar */}
@@ -102,7 +101,7 @@ export const ArticleEditor: React.FC<{
         </div>
         <div className="flex items-center gap-3">
           <button onClick={() => setFormData({ ...formData, isPublished: !formData.isPublished })} className={`px-4 py-2 rounded-full text-xs font-bold border transition-all ${formData.isPublished ? 'bg-green-100 text-green-700 border-green-200 dark:bg-green-900/30 dark:text-green-400 dark:border-green-800' : 'bg-gray-100 text-gray-600 border-gray-200 dark:bg-white/10 dark:text-gray-300 dark:border-white/10'}`}>{formData.isPublished ? '已发布' : '草稿'}</button>
-          <button onClick={handleSubmit} disabled={saving} className="px-6 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-full flex items-center gap-2 shadow-lg shadow-indigo-500/30 transition-all hover:scale-105 active:scale-95 font-bold disabled:opacity-50"><Save size={18} /> {saving ? '保存中...' : '保存'}</button>
+          <button onClick={handleSubmit} disabled={saving} className="blog-button-primary px-6 py-2 text-xs disabled:opacity-50"><Save size={18} /> {saving ? '保存中...' : '保存'}</button>
         </div>
       </div>
 
@@ -126,7 +125,7 @@ export const ArticleEditor: React.FC<{
               <div className="flex items-center justify-between mb-2">
                 <label className="text-sm font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide">文章摘要</label>
                 {/* AI Summary Button - Moved Outside */}
-                <button type="button" onClick={handleGenerateSummary} disabled={isGeneratingSummary} className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold rounded-lg shadow-sm border bg-white dark:bg-neutral-800 border-gray-200 dark:border-white/10 text-indigo-600 dark:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-900/30 transition-colors">
+                <button type="button" onClick={handleGenerateSummary} disabled={isGeneratingSummary} className="blog-button-secondary px-3 py-1.5 text-xs rounded-lg">
                   {isGeneratingSummary ? <Loader2 size={12} className="animate-spin" /> : <Sparkles size={12} />}
                   AI 生成
                 </button>
@@ -134,7 +133,7 @@ export const ArticleEditor: React.FC<{
               <textarea
                 ref={summaryRef}
                 placeholder="输入摘要..."
-                className="w-full bg-white/60 dark:bg-black/20 border-l-4 border-gray-300 dark:border-white/20 rounded-r-lg outline-none resize-none px-4 py-3 text-gray-600 dark:text-gray-300 text-lg italic leading-relaxed focus:border-indigo-500 transition-all overflow-hidden"
+                className="blog-input w-full border-l-4 rounded-r-lg outline-none resize-none px-4 py-3 text-lg italic leading-relaxed overflow-hidden"
                 rows={1}
                 value={formData.summary}
                 onChange={e => setFormData({ ...formData, summary: e.target.value })}
@@ -149,7 +148,7 @@ export const ArticleEditor: React.FC<{
                   <button onClick={() => setFormData({ ...formData, tags: formData.tags.filter(t => t !== tag) })} className="hover:text-red-500"><X size={12} /></button>
                 </span>
               ))}
-              <div className="flex items-center gap-2 bg-white dark:bg-white/5 px-3 py-1 rounded-full border border-gray-200 dark:border-white/10 focus-within:border-indigo-500/50 focus-within:ring-2 focus-within:ring-indigo-500/20 transition-all shadow-sm">
+              <div className="flex items-center gap-2 bg-[var(--blog-panel)] px-3 py-1 rounded-full border border-[var(--blog-line)] focus-within:border-[var(--blog-fg)]/40 transition-all shadow-sm">
                 <Plus size={14} className="text-gray-400" />
                 <input
                   className="bg-transparent text-sm outline-none w-20 py-0.5 dark:text-white placeholder-gray-400"
@@ -159,7 +158,7 @@ export const ArticleEditor: React.FC<{
                   onKeyDown={e => { if (e.key === 'Enter') { addTag(tagInput); setTagInput(''); } }}
                 />
               </div>
-              <button type="button" onClick={handleAutoTag} disabled={isAutoTagging} className="flex items-center gap-1 px-3 py-1 text-xs rounded-full font-bold text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-900/30 hover:bg-indigo-100 dark:hover:bg-indigo-900/50 transition-colors">
+              <button type="button" onClick={handleAutoTag} disabled={isAutoTagging} className="blog-button-secondary px-3 py-1 text-xs rounded-full">
                 {isAutoTagging ? <Loader2 size={12} className="animate-spin" /> : <Zap size={12} />} 自动
               </button>
             </div>

@@ -108,38 +108,40 @@ export default async function Home() {
             {recentArticles.map((article) => (
               <AnimatedItem key={article.id} className="group">
                 <Link href={`/blog/${article.id}`} className="block">
-                  <article className="grid gap-4 rounded-[28px] border border-transparent px-5 py-5 transition-all duration-300 hover:border-[var(--blog-line)] hover:bg-[var(--blog-panel)] sm:grid-cols-[120px_1fr_auto] sm:items-center sm:px-6">
-                    <div className="font-mono text-sm font-bold text-[var(--blog-muted)]">
-                      {new Date(article.createdAt).toLocaleDateString('en-US', { month: 'short', day: '2-digit' })}
-                    </div>
-                    <div className="min-w-0">
-                      <h3 className="text-xl sm:text-2xl font-black tracking-[-0.04em] text-[var(--blog-fg)] transition-transform group-hover:translate-x-1">
-                        {article.title}
-                      </h3>
-                      <p className="mt-2 line-clamp-2 text-sm sm:text-base leading-7 text-[var(--blog-muted)]">
-                        {article.summary}
-                      </p>
-                      {article.tags.length > 0 && (
-                        <div className="mt-3 flex flex-wrap gap-2">
-                          {article.tags.slice(0, 3).map((tag) => (
-                            <span key={tag} className="rounded-full bg-[var(--blog-fg-soft)] px-2.5 py-1 text-[11px] font-bold text-[var(--blog-muted)]">
-                              #{tag}
-                            </span>
-                          ))}
-                        </div>
-                      )}
-                    </div>
-                    <div className="hidden h-10 w-10 items-center justify-center rounded-full border border-[var(--blog-line)] text-[var(--blog-muted)] transition-all group-hover:border-[var(--blog-fg)] group-hover:text-[var(--blog-fg)] sm:flex">
-                      <ArrowRight size={17} />
-                    </div>
-                  </article>
+                  <LiquidGlass className="glass-card px-5 py-5 transition-transform duration-300 group-hover:-translate-y-1 sm:px-6">
+                    <article className="grid gap-4 sm:grid-cols-[120px_1fr_auto] sm:items-center">
+                      <div className="font-mono text-sm font-bold text-[var(--blog-muted)]">
+                        {new Date(article.createdAt).toLocaleDateString('en-US', { month: 'short', day: '2-digit' })}
+                      </div>
+                      <div className="min-w-0">
+                        <h3 className="text-xl sm:text-2xl font-black tracking-[-0.04em] text-[var(--blog-fg)]">
+                          {article.title}
+                        </h3>
+                        <p className="mt-2 line-clamp-2 text-sm sm:text-base leading-7 text-[var(--blog-muted)]">
+                          {article.summary}
+                        </p>
+                        {article.tags.length > 0 && (
+                          <div className="mt-3 flex flex-wrap gap-2">
+                            {article.tags.slice(0, 3).map((tag) => (
+                              <span key={tag} className="blog-tag px-2.5 py-1">
+                                #{tag}
+                              </span>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                      <div className="hidden h-10 w-10 items-center justify-center rounded-full border border-[var(--blog-line)] text-[var(--blog-muted)] transition-all group-hover:border-[var(--blog-fg)] group-hover:text-[var(--blog-fg)] sm:flex">
+                        <ArrowRight size={17} />
+                      </div>
+                    </article>
+                  </LiquidGlass>
                 </Link>
               </AnimatedItem>
             ))}
             {recentArticles.length === 0 && (
-              <div className="rounded-[28px] border border-[var(--blog-line)] py-16 text-center text-[var(--blog-muted)]">
+              <LiquidGlass className="glass-card py-16 text-center text-[var(--blog-muted)]">
                 暂无文章
-              </div>
+              </LiquidGlass>
             )}
           </AnimatedSection>
         </div>
@@ -158,7 +160,7 @@ export default async function Home() {
             {projects.map((project) => (
               <AnimatedItem key={project.id} className="group">
                 <Link href={project.url} target="_blank" className="block h-full">
-                  <LiquidGlass className="glass-blog h-full rounded-[28px] p-5 transition-transform duration-300 group-hover:-translate-y-1">
+                  <LiquidGlass className="glass-card h-full p-5 transition-transform duration-300 group-hover:-translate-y-1">
                     <div className="mb-7 flex items-start justify-between gap-4">
                       <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[var(--blog-fg-soft)]">
                         {renderIcon(project)}
@@ -174,7 +176,7 @@ export default async function Home() {
               </AnimatedItem>
             ))}
             {projects.length === 0 && (
-              <LiquidGlass className="glass-blog col-span-full rounded-[28px] py-14 text-center text-[var(--blog-muted)]">
+              <LiquidGlass className="glass-card col-span-full py-14 text-center text-[var(--blog-muted)]">
                 暂无链接
               </LiquidGlass>
             )}

@@ -115,7 +115,7 @@ export const ProjectEditor: React.FC<{
   // Helper styles
   const inputGroupClass = "space-y-1.5";
   const labelClass = "block text-[10px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider pl-1";
-  const inputClass = "w-full px-4 py-3 bg-white/40 dark:bg-black/20 border border-white/20 dark:border-white/10 rounded-xl outline-none focus:bg-white/60 dark:focus:bg-black/40 focus:border-indigo-500/30 focus:ring-2 focus:ring-indigo-500/10 dark:text-white transition-all backdrop-blur-sm placeholder:text-gray-400/60 text-sm font-medium";
+  const inputClass = "blog-input w-full px-4 py-3 rounded-xl placeholder:text-gray-400/60 text-sm font-medium";
 
   return createPortal(
     <div className="fixed inset-0 z-9999 bg-[#eef2f6]/60 dark:bg-[#050505]/60 backdrop-blur-xl flex items-center justify-center p-4 animate-in fade-in duration-300">
@@ -154,7 +154,7 @@ export const ProjectEditor: React.FC<{
             {/* Icon Section - Reimagined */}
             <div className="pt-2">
               <label className={`${labelClass} mb-3 flex items-center gap-2`}>
-                <Sparkles size={10} className="text-indigo-500" /> 图标设置
+                <Sparkles size={10} /> 图标设置
               </label>
 
               <div className="bg-white/30 dark:bg-white/5 rounded-2xl p-1.5 border border-white/20 dark:border-white/5 backdrop-blur-md">
@@ -165,7 +165,7 @@ export const ProjectEditor: React.FC<{
                       type="button"
                       onClick={() => setFormData({ ...formData, iconType: type as any })}
                       className={`flex items-center justify-center gap-2 py-2 text-xs font-bold rounded-lg transition-all duration-300 ${formData.iconType === type
-                          ? 'bg-white dark:bg-neutral-800 text-indigo-600 dark:text-indigo-400 shadow-sm scale-[1.02]'
+                          ? 'bg-[var(--blog-fg)] text-[var(--blog-bg)] shadow-sm scale-[1.02]'
                           : 'text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200'
                         }`}
                     >
@@ -177,7 +177,7 @@ export const ProjectEditor: React.FC<{
                 {/* Preview Stage */}
                 <div className="flex flex-col items-center justify-center p-6 relative">
                   {/* Spotlight Effect */}
-                  <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-32 h-32 bg-indigo-500/10 dark:bg-indigo-500/20 blur-[50px] rounded-full pointer-events-none"></div>
+                  <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-32 h-32 bg-[var(--blog-fg-soft)] blur-[42px] rounded-full pointer-events-none"></div>
 
                   <div className="relative w-20 h-20 bg-white dark:bg-[#1a1a1a] rounded-2xl shadow-xl flex items-center justify-center border border-white/60 dark:border-white/5 mb-4 group overflow-hidden">
                     {/* Icon Render */}
@@ -188,11 +188,11 @@ export const ProjectEditor: React.FC<{
                           : <Globe className="text-gray-300 dark:text-neutral-600" size={40} />
                       )}
                       {formData.iconType === 'preset' && (
-                        <SelectedIconComp className="text-indigo-600 dark:text-indigo-400 drop-shadow-md" size={40} />
+                        <SelectedIconComp className="text-[var(--blog-fg)] drop-shadow-md" size={40} />
                       )}
                       {formData.iconType === 'generated' && (
                         formData.customSvg
-                          ? <div className="w-10 h-10 text-indigo-600 dark:text-indigo-400 [&>svg]:w-full [&>svg]:h-full drop-shadow-md" dangerouslySetInnerHTML={{ __html: formData.customSvg }} />
+                          ? <div className="w-10 h-10 text-[var(--blog-fg)] [&>svg]:w-full [&>svg]:h-full drop-shadow-md" dangerouslySetInnerHTML={{ __html: formData.customSvg }} />
                           : <Wand2 className="text-gray-300 dark:text-neutral-600" size={40} />
                       )}
                     </div>
@@ -201,14 +201,14 @@ export const ProjectEditor: React.FC<{
                   {/* Action Buttons based on type */}
                   <div className="w-full relative z-10">
                     {formData.iconType === 'auto' && (
-                      <button type="button" onClick={handleFetchFavicon} disabled={fetchingFavicon} className="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-white/60 dark:bg-white/10 hover:bg-indigo-50 dark:hover:bg-indigo-900/20 text-indigo-600 dark:text-indigo-300 rounded-xl text-xs font-bold transition-all border border-indigo-100 dark:border-white/10">
+                      <button type="button" onClick={handleFetchFavicon} disabled={fetchingFavicon} className="blog-button-secondary w-full px-4 py-2.5 text-xs rounded-xl">
                         {fetchingFavicon ? <Loader2 size={14} className="animate-spin" /> : <DownloadCloud size={14} />} {fetchingFavicon ? '抓取中...' : '抓取网站图标'}
                       </button>
                     )}
 
                     {formData.iconType === 'preset' && (
                       <div className="w-full">
-                        <button type="button" onClick={handleRecommendIcon} disabled={recommendingIcon} className="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-linear-to-r from-indigo-500/10 to-purple-500/10 hover:from-indigo-500/20 hover:to-purple-500/20 text-indigo-600 dark:text-indigo-300 rounded-xl text-xs font-bold transition-all border border-indigo-100 dark:border-white/10 mb-2">
+                        <button type="button" onClick={handleRecommendIcon} disabled={recommendingIcon} className="blog-button-secondary w-full px-4 py-2.5 text-xs rounded-xl mb-2">
                           {recommendingIcon ? <Loader2 size={14} className="animate-spin" /> : <Sparkles size={14} />} 智能推荐
                         </button>
                         <IconPicker selectedIcon={formData.presetIcon || 'Globe'} onSelect={(icon) => setFormData({ ...formData, presetIcon: icon })} />
@@ -217,7 +217,7 @@ export const ProjectEditor: React.FC<{
 
                     {formData.iconType === 'generated' && (
                       <div className="w-full">
-                        <button type="button" onClick={handleGenerateSvg} disabled={generatingSvg} className="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-linear-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white rounded-xl text-xs font-bold transition-all shadow-lg shadow-purple-500/20">
+                        <button type="button" onClick={handleGenerateSvg} disabled={generatingSvg} className="blog-button-primary w-full px-4 py-2.5 text-xs rounded-xl">
                           {generatingSvg ? <Loader2 size={14} className="animate-spin" /> : <Wand2 size={14} />} {generatingSvg ? 'AI 正在绘制...' : 'AI 设计新图标'}
                         </button>
                         {/* Note: The shortName feature needs to be safely passed down if used. Here we keep it generic */}
@@ -234,7 +234,7 @@ export const ProjectEditor: React.FC<{
               <button type="button" onClick={onCancel} className="flex-1 px-5 py-3 text-gray-600 dark:text-gray-300 bg-gray-100 dark:bg-white/5 hover:bg-gray-200 dark:hover:bg-white/10 rounded-xl transition-colors font-bold text-sm">
                 取消
               </button>
-              <button type="submit" disabled={saving} className="flex-2 px-5 py-3 bg-linear-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white rounded-xl shadow-lg shadow-indigo-500/30 transition-all hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50 disabled:scale-100 font-bold text-sm flex items-center justify-center gap-2">
+              <button type="submit" disabled={saving} className="blog-button-primary flex-2 px-5 py-3 rounded-xl disabled:opacity-50 disabled:scale-100 text-sm">
                 {saving ? <Loader2 size={18} className="animate-spin" /> : <Save size={18} />} {saving ? '保存中...' : '保存'}
               </button>
             </div>

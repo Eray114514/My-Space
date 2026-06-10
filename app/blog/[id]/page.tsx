@@ -48,7 +48,7 @@ export default async function ArticleDetail({ params }: { params: Promise<{ id: 
       <div className="fixed top-0 left-0 w-full p-6 z-50 pointer-events-none">
           <Link 
             href="/blog"
-            className="pointer-events-auto inline-flex items-center justify-center w-10 h-10 rounded-full bg-white/50 dark:bg-black/20 backdrop-blur-xl border border-white/20 dark:border-white/10 text-gray-700 dark:text-gray-200 shadow-sm hover:scale-110 active:scale-95 transition-all"
+            className="blog-control pointer-events-auto h-10 w-10 p-0"
             title="返回列表"
           >
             <ArrowLeft size={20} />
@@ -56,20 +56,20 @@ export default async function ArticleDetail({ params }: { params: Promise<{ id: 
       </div>
       
       {/* Content Container (Center Aligned) */}
-      <div className="max-w-3xl mx-auto pt-24 px-4 sm:px-6">
-        <LiquidGlass className="rounded-3xl p-8 sm:p-12 shadow-2xl relative">
-            <header className="mb-10 pb-8 border-b border-gray-200/50 dark:border-white/10">
+      <div className="max-w-4xl mx-auto pt-24 px-4 sm:px-6">
+        <LiquidGlass className="glass-panel p-6 sm:p-10 lg:p-12 relative">
+            <header className="mb-10 pb-8 border-b border-[var(--blog-line)]">
                 <div className="flex flex-wrap gap-2 mb-6">
                     {article.tags.map(tag => (
-                        <span key={tag} className="inline-flex items-center text-xs font-bold px-2.5 py-1 rounded-md bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-300 border border-indigo-100 dark:border-indigo-800/30 tracking-wide uppercase">
+                        <span key={tag} className="blog-tag px-3 py-1 uppercase tracking-wide">
                         {tag}
                         </span>
                     ))}
                 </div>
-                <h1 className="text-4xl sm:text-5xl font-extrabold text-gray-900 dark:text-white leading-[1.2] mb-6 tracking-tight">
+                <h1 className="text-4xl sm:text-6xl font-black text-[var(--blog-fg)] leading-[1.05] mb-6 tracking-[-0.06em]">
                 {article.title}
                 </h1>
-                <div className="flex items-center text-gray-500 dark:text-gray-400 text-sm gap-4 font-mono">
+                <div className="flex items-center text-[var(--blog-muted)] text-sm gap-4 font-mono">
                 <span className="flex items-center gap-2">
                     <Calendar size={14} />
                     {new Date(article.createdAt).toLocaleDateString('zh-CN', { year: 'numeric', month: 'long', day: 'numeric' })}
@@ -84,7 +84,7 @@ export default async function ArticleDetail({ params }: { params: Promise<{ id: 
       {/* Floating Chat Button */}
       <Link 
         href={`/chat?articleId=${article.id}`}
-        className="fixed bottom-8 right-8 z-50 flex items-center gap-2 px-5 py-3 bg-indigo-600 hover:bg-indigo-700 text-white rounded-full shadow-2xl shadow-indigo-500/40 transition-all hover:scale-105 active:scale-95 font-bold"
+        className="blog-button-primary fixed bottom-8 right-8 z-50 px-5 py-3 text-sm"
       >
         <MessageSquare size={20} />
         <span className="hidden sm:inline">对此文章提问</span>
