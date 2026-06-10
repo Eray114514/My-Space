@@ -22,8 +22,8 @@
     --blog-panel: rgba(255, 255, 255, 0.55);
     --blog-fg-soft: rgba(7, 7, 7, 0.055);
     --blog-dot: rgba(7, 7, 7, 0.24);
-    --glass-edge: rgba(7, 7, 7, 0.13);
-    --glass-shine: rgba(255, 255, 255, 0.78);
+    --glass-edge: rgba(7, 7, 7, 0.095);
+    --glass-shine: rgba(255, 255, 255, 0.58);
     --glass-shadow: rgba(7, 7, 7, 0.12);
     --glass-chroma-a: rgba(95, 164, 255, 0.16);
     --glass-chroma-b: rgba(205, 126, 255, 0.11);
@@ -57,7 +57,7 @@
     --glass-grid-scale: 1.018;
     --glass-grid-shift-x: 0px;
     --glass-grid-shift-y: 0px;
-    --glass-chroma-opacity: 0.14;
+    --glass-chroma-opacity: 0.08;
   }
 
   .dark {
@@ -68,8 +68,8 @@
     --blog-panel: rgba(255, 255, 255, 0.045);
     --blog-fg-soft: rgba(246, 244, 238, 0.08);
     --blog-dot: rgba(246, 244, 238, 0.42);
-    --glass-edge: rgba(246, 244, 238, 0.18);
-    --glass-shine: rgba(255, 255, 255, 0.52);
+    --glass-edge: rgba(246, 244, 238, 0.12);
+    --glass-shine: rgba(255, 255, 255, 0.34);
     --glass-shadow: rgba(0, 0, 0, 0.48);
     --glass-chroma-a: rgba(77, 159, 255, 0.18);
     --glass-chroma-b: rgba(190, 119, 255, 0.13);
@@ -263,16 +263,16 @@
   border-radius: 999px;
   pointer-events: none;
   opacity: var(--lens-opacity);
-  background: #060606;
+  background: #050505;
   transform:
     translate3d(calc(var(--lens-x) - var(--lens-size) / 2), calc(var(--lens-y) - var(--lens-size) / 2), 0)
     scale(var(--lens-scale))
     scaleX(var(--lens-stretch-x))
     scaleY(var(--lens-stretch-y));
   box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.14),
-    inset 0 -18px 30px rgba(255, 255, 255, 0.04),
-    0 18px 48px rgba(0, 0, 0, 0.18);
+    inset 0 1px 0 rgba(255, 255, 255, 0.08),
+    inset 0 -18px 28px rgba(255, 255, 255, 0.025),
+    0 14px 34px rgba(0, 0, 0, 0.14);
   transition:
     opacity 180ms ease,
     background-color 400ms ease;
@@ -281,11 +281,11 @@
 }
 
 .dark .pointer-lens {
-  background: #f3f0e7;
+  background: #f2efe7;
   box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.36),
-    inset 0 -20px 34px rgba(0, 0, 0, 0.08),
-    0 20px 56px rgba(255, 255, 255, 0.07);
+    inset 0 1px 0 rgba(255, 255, 255, 0.18),
+    inset 0 -18px 28px rgba(0, 0, 0, 0.06),
+    0 14px 34px rgba(255, 255, 255, 0.035);
 }
 
 .pointer-lens::before {
@@ -294,9 +294,9 @@
   inset: 1px;
   border-radius: inherit;
   background:
-    radial-gradient(circle at 30% 22%, rgba(255, 255, 255, 0.12), transparent 19%),
+    radial-gradient(circle at 30% 22%, rgba(255, 255, 255, 0.08), transparent 19%),
     radial-gradient(circle at 72% 76%, rgba(0, 0, 0, 0.1), transparent 34%);
-  opacity: 0.46;
+  opacity: 0.34;
   pointer-events: none;
 }
 
@@ -306,10 +306,10 @@
   inset: 0;
   border-radius: inherit;
   background:
-    radial-gradient(circle at 16% 22%, rgba(88, 166, 255, 0.14), transparent 28%),
-    radial-gradient(circle at 84% 72%, rgba(216, 133, 255, 0.1), transparent 32%);
+    radial-gradient(circle at 16% 22%, rgba(88, 166, 255, 0.08), transparent 28%),
+    radial-gradient(circle at 84% 72%, rgba(216, 133, 255, 0.06), transparent 32%);
   mix-blend-mode: screen;
-  opacity: 0.58;
+  opacity: 0.34;
   pointer-events: none;
 }
 
@@ -335,12 +335,6 @@
     transition: none !important;
   }
 
-  .pointer-lens {
-    display: none;
-  }
-}
-
-@media (any-pointer: coarse), (hover: none) {
   .pointer-lens {
     display: none;
   }

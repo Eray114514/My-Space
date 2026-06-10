@@ -42,15 +42,15 @@ export function PointerLens() {
       root.style.setProperty("--lens-header-scale", shouldShow && isHeaderHover ? "1" : "0");
       root.style.setProperty("--lens-over-header", (shouldShow ? headerOverlap : 0).toFixed(3));
       root.style.setProperty("--glass-overlap", (shouldShow ? headerOverlap : 0).toFixed(3));
-      root.style.setProperty("--glass-bubble-opacity", (shouldShow ? headerOverlap * 0.9 : 0).toFixed(3));
-      root.style.setProperty("--glass-bubble-scale", (0.92 + headerOverlap * 0.08).toFixed(3));
-      root.style.setProperty("--glass-bubble-scale-x", (1 + headerOverlap * 0.18).toFixed(3));
-      root.style.setProperty("--glass-bubble-scale-y", (1 - headerOverlap * 0.18).toFixed(3));
-      root.style.setProperty("--glass-grid-opacity", (0.34 + headerOverlap * 0.28).toFixed(3));
-      root.style.setProperty("--glass-grid-scale", (1.018 + headerOverlap * 0.025).toFixed(3));
-      root.style.setProperty("--glass-grid-shift-x", `${(headerOverlap * 6).toFixed(2)}px`);
-      root.style.setProperty("--glass-grid-shift-y", `${(headerOverlap * -2).toFixed(2)}px`);
-      root.style.setProperty("--glass-chroma-opacity", (0.14 + headerOverlap * 0.42).toFixed(3));
+      root.style.setProperty("--glass-bubble-opacity", (shouldShow ? headerOverlap * 0.52 : 0).toFixed(3));
+      root.style.setProperty("--glass-bubble-scale", (0.94 + headerOverlap * 0.05).toFixed(3));
+      root.style.setProperty("--glass-bubble-scale-x", (1 + headerOverlap * 0.12).toFixed(3));
+      root.style.setProperty("--glass-bubble-scale-y", (1 - headerOverlap * 0.12).toFixed(3));
+      root.style.setProperty("--glass-grid-opacity", (0.28 + headerOverlap * 0.2).toFixed(3));
+      root.style.setProperty("--glass-grid-scale", (1.012 + headerOverlap * 0.018).toFixed(3));
+      root.style.setProperty("--glass-grid-shift-x", `${(headerOverlap * 4).toFixed(2)}px`);
+      root.style.setProperty("--glass-grid-shift-y", `${(headerOverlap * -1.4).toFixed(2)}px`);
+      root.style.setProperty("--glass-chroma-opacity", (0.08 + headerOverlap * 0.2).toFixed(3));
     };
 
     const updateScrollState = () => {
@@ -110,7 +110,7 @@ export function PointerLens() {
 
     const handleMove = (event: PointerEvent | MouseEvent) => {
       const isPointerEvent = "pointerType" in event;
-      const isMouseLike = !isPointerEvent || event.pointerType === "mouse";
+      const isMouseLike = !isPointerEvent || event.pointerType !== "touch";
       if (!isMouseLike) return;
 
       enableLens();
