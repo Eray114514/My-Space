@@ -42,15 +42,15 @@ export function PointerLens() {
       root.style.setProperty("--lens-header-scale", shouldShow && isHeaderHover ? "1" : "0");
       root.style.setProperty("--lens-over-header", (shouldShow ? headerOverlap : 0).toFixed(3));
       root.style.setProperty("--glass-overlap", (shouldShow ? headerOverlap : 0).toFixed(3));
-      root.style.setProperty("--glass-bubble-opacity", shouldShow && headerOverlap > 0 ? "0.96" : "0");
-      root.style.setProperty("--glass-bubble-scale", (0.995 + headerOverlap * 0.01).toFixed(3));
-      root.style.setProperty("--glass-bubble-scale-x", (1 + headerOverlap * 0.025).toFixed(3));
-      root.style.setProperty("--glass-bubble-scale-y", (1 - headerOverlap * 0.035).toFixed(3));
-      root.style.setProperty("--glass-grid-opacity", (0.28 + headerOverlap * 0.2).toFixed(3));
-      root.style.setProperty("--glass-grid-scale", (1.012 + headerOverlap * 0.018).toFixed(3));
-      root.style.setProperty("--glass-grid-shift-x", `${(headerOverlap * 4).toFixed(2)}px`);
-      root.style.setProperty("--glass-grid-shift-y", `${(headerOverlap * -1.4).toFixed(2)}px`);
-      root.style.setProperty("--glass-chroma-opacity", (headerOverlap * 0.13).toFixed(3));
+      root.style.setProperty("--glass-bubble-opacity", shouldShow && headerOverlap > 0 ? "1" : "0");
+      root.style.setProperty("--glass-bubble-scale", (1 + headerOverlap * 0.004).toFixed(3));
+      root.style.setProperty("--glass-bubble-scale-x", (1 + headerOverlap * 0.012).toFixed(3));
+      root.style.setProperty("--glass-bubble-scale-y", (1 - headerOverlap * 0.018).toFixed(3));
+      root.style.setProperty("--glass-grid-opacity", (0.16 + headerOverlap * 0.08).toFixed(3));
+      root.style.setProperty("--glass-grid-scale", (1.006 + headerOverlap * 0.008).toFixed(3));
+      root.style.setProperty("--glass-grid-shift-x", `${(headerOverlap * 2.2).toFixed(2)}px`);
+      root.style.setProperty("--glass-grid-shift-y", `${(headerOverlap * -0.8).toFixed(2)}px`);
+      root.style.setProperty("--glass-chroma-opacity", (headerOverlap * 0.08).toFixed(3));
     };
 
     const updateScrollState = () => {
@@ -98,6 +98,8 @@ export function PointerLens() {
       root.style.setProperty("--blog-grid-y", `${(-dy * 22).toFixed(2)}px`);
       root.style.setProperty("--blog-grid-tilt-x", `${Math.max(-4, Math.min(4, dy * 4)).toFixed(2)}deg`);
       root.style.setProperty("--blog-grid-tilt-y", `${Math.max(-5, Math.min(5, -dx * 5)).toFixed(2)}deg`);
+      updateHeaderState(visualX, visualY);
+      setLensState();
 
       if (isVisible && !isPastHero) {
         frame = window.requestAnimationFrame(writePointerVars);
@@ -117,7 +119,6 @@ export function PointerLens() {
       pointerX = event.clientX;
       pointerY = event.clientY;
       isVisible = true;
-      updateHeaderState(pointerX, pointerY);
       setLensState();
       queueFrame();
     };
