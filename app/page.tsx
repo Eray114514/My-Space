@@ -5,6 +5,8 @@ import { ServerStorageService } from '../services/server-storage';
 import * as Icons from 'lucide-react';
 import { LiquidGlass } from '../components/LiquidGlass';
 import { PointerLens } from '../components/PointerLens';
+import { MobileHeroEffects } from '../components/MobileHeroEffects';
+import { TypewriterText } from '../components/TypewriterText';
 import { Project } from '../types';
 import { AnimatedSection, AnimatedItem } from '../components/AnimatedSection';
 
@@ -51,39 +53,44 @@ export default async function Home() {
   return (
     <div className="relative">
       <PointerLens />
+      <MobileHeroEffects />
 
-      <section className="blog-hero min-h-screen px-5 sm:px-8 pt-32 pb-16 flex items-center justify-center">
+      <section className="blog-hero min-h-screen px-5 sm:px-8 pt-28 sm:pt-32 pb-16 flex items-center justify-center">
         <div className="hero-copy hero-copy-base w-full max-w-6xl text-center">
-          <p className="mb-8 text-xs sm:text-sm font-extrabold tracking-[0.22em] text-[var(--blog-muted)]">
+          <p className="mb-6 sm:mb-8 text-[11px] sm:text-sm font-extrabold tracking-[0.22em] text-[var(--blog-muted)]">
             文章 · 想法 · 技术实践
           </p>
           <h1
-            className="hero-title mx-auto max-w-6xl text-[clamp(3.4rem,10.8vw,10rem)] font-black leading-[0.86] tracking-[-0.075em] text-[var(--blog-fg)]"
+            className="hero-title mx-auto max-w-6xl text-[clamp(2.6rem,12vw,10rem)] sm:text-[clamp(3.4rem,10.8vw,10rem)] font-black leading-[0.9] sm:leading-[0.86] tracking-[-0.075em] text-[var(--blog-fg)]"
             aria-label={`HELLO, THIS IS ${adminName.toUpperCase()}`}
           >
-            <span className="block">HELLO, THIS IS</span>
-            <span className="block">{adminName.toUpperCase()}</span>
+            <span className="block typewriter-line">
+              <TypewriterText text="HELLO, THIS IS" speed={55} delay={200} />
+            </span>
+            <span className="block typewriter-line">
+              <TypewriterText text={adminName.toUpperCase()} speed={70} delay={900} />
+            </span>
           </h1>
-          <p className="mx-auto mt-8 max-w-xl text-base sm:text-lg font-semibold leading-8 text-[var(--blog-muted)]">
+          <p className="mx-auto mt-6 sm:mt-8 max-w-xl text-sm sm:text-lg font-semibold leading-7 sm:leading-8 text-[var(--blog-muted)]">
             文章、想法与技术记录。保持简洁，留住锋利。
           </p>
-          <div className="mt-10 flex flex-wrap items-center justify-center gap-3">
+          <div className="mt-8 sm:mt-10 flex flex-col sm:flex-row flex-wrap items-center justify-center gap-3">
             <Link
               href="/blog"
-              className="inline-flex items-center gap-2 rounded-full bg-[var(--blog-fg)] px-6 py-3 text-sm font-extrabold text-[var(--blog-bg)] transition-transform hover:scale-[1.03] active:scale-[0.98]"
+              className="w-full sm:w-auto inline-flex items-center justify-center gap-2 rounded-full bg-[var(--blog-fg)] px-6 py-3.5 sm:py-3 text-sm font-extrabold text-[var(--blog-bg)] transition-transform hover:scale-[1.03] active:scale-[0.98]"
             >
               阅读文章
               <ArrowRight size={17} />
             </Link>
             <Link
               href="#latest"
-              className="inline-flex items-center gap-2 rounded-full border border-[var(--blog-line)] px-6 py-3 text-sm font-extrabold text-[var(--blog-fg)] transition-colors hover:bg-[var(--blog-fg-soft)]"
+              className="w-full sm:w-auto inline-flex items-center justify-center gap-2 rounded-full border border-[var(--blog-line)] px-6 py-3.5 sm:py-3 text-sm font-extrabold text-[var(--blog-fg)] transition-colors hover:bg-[var(--blog-fg-soft)]"
             >
               最近更新
             </Link>
           </div>
         </div>
-        <p className="absolute bottom-8 left-1/2 -translate-x-1/2 text-[11px] font-bold tracking-[0.18em] text-[var(--blog-muted)]">
+        <p className="absolute bottom-6 sm:bottom-8 left-1/2 -translate-x-1/2 text-[10px] sm:text-[11px] font-bold tracking-[0.18em] text-[var(--blog-muted)]">
           SCROLL FOR POSTS
         </p>
       </section>
@@ -104,26 +111,37 @@ export default async function Home() {
             </Link>
           </div>
 
-          <AnimatedSection className="space-y-3">
-            {recentArticles.map((article) => (
-              <AnimatedItem key={article.id} className="group">
+          <AnimatedSection className="space-y-3 relative">
+            {/* 移动端时间线 */}
+            <div className="mobile-timeline absolute left-[11px] top-4 bottom-4 w-px bg-[var(--blog-line)] sm:hidden" aria-hidden="true" />
+
+            {recentArticles.map((article, index) => (
+              <AnimatedItem key={article.id} className="group relative">
+                {/* 移动端时间线节点 */}
+                <div className="mobile-timeline-dot absolute left-[7px] top-6 w-[9px] h-[9px] rounded-full border-2 border-[var(--blog-line)] bg-[var(--blog-bg)] z-10 sm:hidden" aria-hidden="true" />
                 <Link href={`/blog/${article.id}`} className="block">
-                  <LiquidGlass variant="card" className="glass-card px-5 py-5 transition-transform duration-300 group-hover:-translate-y-1 sm:px-6">
-                    <article className="grid gap-4 sm:grid-cols-[120px_1fr_auto] sm:items-center">
-                      <div className="font-mono text-sm font-bold text-[var(--blog-muted)]">
-                        {new Date(article.createdAt).toLocaleDateString('en-US', { month: 'short', day: '2-digit' })}
+                  <LiquidGlass variant="card" className="glass-card px-5 py-5 transition-transform duration-300 group-hover:-translate-y-1 sm:px-6 ml-5 sm:ml-0">
+                    <article className="grid gap-3 sm:gap-4 sm:grid-cols-[120px_1fr_auto] sm:items-center">
+                      <div className="flex items-center gap-2 sm:block">
+                        <div className="font-mono text-xs sm:text-sm font-bold text-[var(--blog-muted)]">
+                          {new Date(article.createdAt).toLocaleDateString('en-US', { month: 'short', day: '2-digit' })}
+                        </div>
+                        <span className="sm:hidden text-[var(--blog-line)]">·</span>
+                        <span className="sm:hidden text-[10px] font-bold text-[var(--blog-muted)] tracking-wider">
+                          {new Date(article.createdAt).getFullYear()}
+                        </span>
                       </div>
                       <div className="min-w-0">
-                        <h3 className="text-xl sm:text-2xl font-black tracking-[-0.04em] text-[var(--blog-fg)]">
+                        <h3 className="text-lg sm:text-2xl font-black tracking-[-0.04em] text-[var(--blog-fg)] leading-snug sm:leading-normal">
                           {article.title}
                         </h3>
-                        <p className="mt-2 line-clamp-2 text-sm sm:text-base leading-7 text-[var(--blog-muted)]">
+                        <p className="mt-1.5 sm:mt-2 line-clamp-2 text-sm sm:text-base leading-6 sm:leading-7 text-[var(--blog-muted)]">
                           {article.summary}
                         </p>
                         {article.tags.length > 0 && (
-                          <div className="mt-3 flex flex-wrap gap-2">
+                          <div className="mt-2.5 sm:mt-3 flex gap-2 overflow-x-auto pb-1 scrollbar-hide sm:flex-wrap sm:overflow-visible">
                             {article.tags.slice(0, 3).map((tag) => (
-                              <span key={tag} className="blog-tag px-2.5 py-1">
+                              <span key={tag} className="blog-tag px-2.5 py-1 shrink-0">
                                 #{tag}
                               </span>
                             ))}
@@ -144,6 +162,14 @@ export default async function Home() {
               </LiquidGlass>
             )}
           </AnimatedSection>
+
+          {/* 移动端查看全部按钮 */}
+          <div className="mt-6 flex justify-center sm:hidden">
+            <Link href="/blog" className="inline-flex items-center gap-2 rounded-full px-5 py-2.5 text-sm font-extrabold text-[var(--blog-muted)] transition-colors hover:bg-[var(--blog-fg-soft)] hover:text-[var(--blog-fg)] border border-[var(--blog-line)]">
+              全部文章
+              <ArrowRight size={16} />
+            </Link>
+          </div>
         </div>
       </section>
 

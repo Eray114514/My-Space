@@ -5,14 +5,23 @@ import { useEffect } from "react";
 export function PointerLens() {
   useEffect(() => {
     const root = document.documentElement;
-    const finePointer = window.matchMedia("(any-pointer: fine)");
-    const hoverPointer = window.matchMedia("(hover: hover)");
     const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
 
-    if (reducedMotion.matches) {
-      root.classList.remove("pointer-lens-enabled", "pointer-lens-active");
+    // 彻底检测是否为纯触摸设备（手机/平板）
+    const isTouchOnly =
+      window.matchMedia("(hover: none)").matches ||
+      (window.matchMedia("(any-pointer: coarse)").matches &&
+        !window.matchMedia("(any-pointer: fine)").matches);
+
+    // 纯触摸设备或偏好减少动画：完全禁用 PointerLens
+    if (reducedMotion.matches || isTouchOnly) {
+      root.classList.remove("pointer-lens-enabled", "pointer-lens-active", "pointer-lens-header", "pointer-lens-native");
+      root.classList.add("pointer-lens-disabled");
       return;
     }
+
+    const finePointer = window.matchMedia("(any-pointer: fine)");
+    const hoverPointer = window.matchMedia("(hover: hover)");
 
     let hasMouseInput = finePointer.matches || hoverPointer.matches;
     let pointerX = window.innerWidth / 2;
@@ -144,7 +153,7 @@ export function PointerLens() {
 
     return () => {
       if (frame) window.cancelAnimationFrame(frame);
-      root.classList.remove("pointer-lens-enabled", "pointer-lens-active", "pointer-lens-header", "pointer-lens-native");
+      root.classList.remove("pointer-lens-enabled", "pointer-lens-active", "pointer-lens-header", "pointer-lens-native", "pointer-lens-disabled");
       root.style.removeProperty("--lens-opacity");
       root.style.removeProperty("--lens-scale");
       root.style.removeProperty("--lens-stretch-x");

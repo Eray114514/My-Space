@@ -319,6 +319,160 @@
   cursor: auto;
 }
 
+/* 纯触摸设备：彻底禁用 pointer-lens 并降级玻璃效果 */
+@media (hover: none) {
+  .pointer-lens,
+  .pointer-lens-disabled .pointer-lens {
+    display: none !important;
+  }
+
+  .pointer-lens-active:not(.pointer-lens-native) body:has(.blog-hero),
+  .pointer-lens-active:not(.pointer-lens-native) body:has(.blog-hero) a,
+  .pointer-lens-active:not(.pointer-lens-native) body:has(.blog-hero) button,
+  .pointer-lens-active:not(.pointer-lens-native) body:has(.blog-hero) #latest,
+  .pointer-lens-active:not(.pointer-lens-native) body:has(.blog-hero) #latest *,
+  .pointer-lens-active:not(.pointer-lens-native) body:has(.blog-hero) section:not(.blog-hero),
+  .pointer-lens-active:not(.pointer-lens-native) body:has(.blog-hero) section:not(.blog-hero) * {
+    cursor: auto !important;
+  }
+}
+
+/* 触摸设备液体玻璃降级：保留质感，移除 SVG 滤镜 */
+@media (hover: none) {
+  .liquid-glass-wrapper::after,
+  .glass-blog::after,
+  .glass-material-grid,
+  .glass-refract-grid {
+    display: none !important;
+  }
+
+  .liquid-glass-wrapper,
+  .glass-blog {
+    backdrop-filter: blur(16px) saturate(1.05) !important;
+    -webkit-backdrop-filter: blur(16px) saturate(1.05) !important;
+    background:
+      radial-gradient(circle at 30% 20%, color-mix(in srgb, var(--glass-shine) 12%, transparent), transparent 35%),
+      linear-gradient(145deg, color-mix(in srgb, var(--glass-shine) 6%, transparent), transparent 50%, color-mix(in srgb, var(--glass-chroma-b) 5%, transparent)),
+      color-mix(in srgb, var(--blog-bg) 78%, transparent) !important;
+    box-shadow:
+      inset 0 1px 0 color-mix(in srgb, var(--glass-shine) 40%, transparent),
+      inset 0 -1px 0 rgba(0, 0, 0, 0.08),
+      inset 0 0 0 0.75px var(--glass-edge),
+      0 8px 24px color-mix(in srgb, var(--glass-shadow) 12%, transparent) !important;
+  }
+
+  .dark .liquid-glass-wrapper,
+  .dark .glass-blog {
+    background:
+      radial-gradient(circle at 30% 20%, color-mix(in srgb, var(--glass-shine) 8%, transparent), transparent 35%),
+      linear-gradient(145deg, color-mix(in srgb, var(--glass-shine) 4%, transparent), transparent 50%, color-mix(in srgb, var(--glass-chroma-b) 4%, transparent)),
+      color-mix(in srgb, var(--blog-bg) 82%, transparent) !important;
+  }
+
+  .liquid-glass-wrapper::before,
+  .glass-blog::before {
+    background:
+      linear-gradient(145deg, color-mix(in srgb, var(--glass-shine) 12%, transparent), transparent 42%, transparent 78%, color-mix(in srgb, var(--glass-chroma-a) 5%, transparent)),
+      radial-gradient(110% 80% at 50% 0%, color-mix(in srgb, var(--glass-shine) 8%, transparent), transparent 62%),
+      color-mix(in srgb, var(--blog-bg) 84%, transparent) !important;
+    opacity: 0.95 !important;
+  }
+
+  .glass-cursor-bubble {
+    display: none !important;
+  }
+
+  /* 触摸设备导航栏玻璃更实一些，避免内容穿透干扰 */
+  [data-blog-header].glass-blog {
+    backdrop-filter: blur(20px) saturate(1.08) !important;
+    -webkit-backdrop-filter: blur(20px) saturate(1.08) !important;
+    background: color-mix(in srgb, var(--blog-bg) 85%, transparent) !important;
+  }
+
+  [data-blog-header][data-nav-context="content"].glass-blog {
+    backdrop-filter: blur(24px) saturate(1.1) !important;
+    -webkit-backdrop-filter: blur(24px) saturate(1.1) !important;
+    background: color-mix(in srgb, var(--blog-bg) 90%, transparent) !important;
+  }
+
+  /* 移动端文章列表时间线 */
+  .mobile-timeline {
+    opacity: 0.6;
+  }
+
+  .mobile-timeline-dot {
+    transition: border-color 0.3s ease, background-color 0.3s ease;
+  }
+
+  .group:hover .mobile-timeline-dot {
+    border-color: var(--blog-fg);
+    background: var(--blog-fg);
+  }
+
+  /* 移动端标签横向滚动隐藏滚动条 */
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+/* 触摸设备 Hero 样式调整 */
+@media (hover: none) {
+  .hero-copy {
+    transform: none !important;
+    transition: none !important;
+  }
+
+  .typewriter-text {
+    display: inline;
+  }
+
+  .typewriter-cursor {
+    display: inline-block;
+    width: 2px;
+    height: 1em;
+    background: currentColor;
+    margin-left: 2px;
+    vertical-align: text-bottom;
+    animation: typewriterBlink 0.9s step-end infinite;
+  }
+
+  @keyframes typewriterBlink {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0; }
+  }
+
+  /* 触摸涟漪 */
+  .touch-ripple {
+    position: fixed;
+    z-index: 9999;
+    pointer-events: none;
+    width: 20px;
+    height: 20px;
+    margin-left: -10px;
+    margin-top: -10px;
+    border-radius: 50%;
+    background: radial-gradient(circle, color-mix(in srgb, var(--glass-chroma-a) 30%, transparent) 0%, transparent 70%);
+    box-shadow: 0 0 20px color-mix(in srgb, var(--glass-chroma-a) 20%, transparent);
+    animation: touchRippleExpand 0.6s ease-out forwards;
+  }
+
+  @keyframes touchRippleExpand {
+    0% {
+      transform: scale(0.5);
+      opacity: 0.8;
+    }
+    100% {
+      transform: scale(4);
+      opacity: 0;
+    }
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .hero-copy {
     transform: none !important;

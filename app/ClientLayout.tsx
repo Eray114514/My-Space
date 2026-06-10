@@ -8,6 +8,16 @@ import { motion } from 'framer-motion';
 import { LiquidGlass } from '@/components/LiquidGlass';
 import { StorageService } from '@/services/storage';
 
+// 检测是否为触摸设备
+const isTouchDevice = () => {
+  if (typeof window === 'undefined') return false;
+  return (
+    window.matchMedia("(hover: none)").matches ||
+    (window.matchMedia("(any-pointer: coarse)").matches &&
+      !window.matchMedia("(any-pointer: fine)").matches)
+  );
+};
+
 const SearchInput = () => {
   const searchParams = useSearchParams();
   const router = useRouter();
@@ -50,6 +60,8 @@ export const ClientLayout = ({ children }: { children: React.ReactNode }) => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isNavVisible, setIsNavVisible] = useState(true);
   const [isNavOverContent, setIsNavOverContent] = useState(false);
+  const [scrollProgress, setScrollProgress] = useState(0);
+  const [isTouch, setIsTouch] = useState(false);
   const lastScrollY = useRef(0);
   
   const pathname = usePathname() || '/';
@@ -68,6 +80,7 @@ export const ClientLayout = ({ children }: { children: React.ReactNode }) => {
 
   useEffect(() => {
     setIsMounted(true);
+    setIsTouch(isTouchDevice());
     const dark = StorageService.getTheme() === 'dark';
     setIsDarkMode(dark);
 
@@ -94,6 +107,10 @@ export const ClientLayout = ({ children }: { children: React.ReactNode }) => {
   useEffect(() => {
     const handleScroll = () => {
       const currentScrollY = window.scrollY;
+      const docHeight = document.documentElement.scrollHeight - window.innerHeight;
+      const progress = docHeight > 0 ? (currentScrollY / docHeight) * 100 : 0;
+      setScrollProgress(Math.min(100, Math.max(0, progress)));
+
       const contentThreshold = isHomePage ? window.innerHeight * 0.68 : 80;
       setIsNavOverContent(currentScrollY > contentThreshold);
 
@@ -292,7 +309,7 @@ export const ClientLayout = ({ children }: { children: React.ReactNode }) => {
       )}
 
       {/* Main Content */}
-      <main className={`flex-1 w-full relative z-0 ${isChatPage ? 'h-dvh overflow-hidden' : (isArticleDetailPage ? 'min-h-screen' : (isHomePage ? 'pt-0 pb-12' : 'pt-28 pb-12 px-4 sm:px-6 max-w-5xl mx-auto'))}`}>
+      <main className={`flex-1 w-full relative z-0 ${isChatPage ? 'h-dvh overflow-hidden' : (isArticleDetailPage ? 'min-h-screen' : (isHomePage ? 'pt-0 pb-12' : 'pt-28 pb-12 px-4 sm:px-6 max-w-5xl mx-auto'))} ${isTouch && !isImmersive && !isSearchPage ? 'pb-24' : ''}`}>
         {children}
       </main>
 
@@ -300,6 +317,48 @@ export const ClientLayout = ({ children }: { children: React.ReactNode }) => {
         <footer className="py-8 text-center text-xs text-gray-400 dark:text-gray-600 font-medium">
           <p className="mix-blend-plus-darker dark:mix-blend-plus-lighter">&copy; {new Date().getFullYear()} {adminName}.</p>
         </footer>
+      )}
+
+      {/* 移动端底部 Dock 导航 */}
+      {isTouch && !isImmersive && !isSearchPage && (
+        <div className="fixed bottom-4 left-1/2 -translate-x-1/2 z-50 md:hidden">
+          <div className="glass-blog rounded-2xl px-2 py-2 flex items-center gap-1 shadow-2xl">
+            {navLinks.map((link) => {
+              const isActive = pathname === link.path;
+              return (
+                <Link
+                  key={link.path}
+                  href={link.path}
+                  className={`relative flex flex-col items-center justify-center gap-0.5 rounded-xl px-3 py-2 transition-all min-w-[56px] ${
+                    isActive
+                      ? 'text-[var(--blog-fg)]'
+                      : 'text-[var(--blog-muted)] hover:text-[var(--blog-fg)]'
+                  }`}
+                >
+                  {isActive && (
+                    <motion.div
+                      layoutId="mobile-dock-indicator"
+                      className="absolute inset-0 rounded-xl bg-[var(--blog-fg-soft)]"
+                      transition={{ type: 'spring', stiffness: 400, damping: 30 }}
+                    />
+                  )}
+                  <link.icon size={20} className="relative z-10" />
+                  <span className="relative z-10 text-[9px] font-extrabold tracking-wider">{link.name}</span>
+                </Link>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
+      {/* 滚动进度指示器（仅移动端首页） */}
+      {isTouch && isHomePage && (
+        <div className="fixed top-0 left-0 right-0 z-[60] h-[2px] bg-transparent md:hidden">
+          <div
+            className="h-full bg-[var(--blog-fg)] transition-all duration-150 ease-out"
+            style={{ width: `${scrollProgress}%`, opacity: scrollProgress > 0 ? 0.7 : 0 }}
+          />
+        </div>
       )}
     </div>
   );
