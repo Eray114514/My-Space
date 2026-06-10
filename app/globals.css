@@ -21,7 +21,7 @@
     --blog-line: rgba(7, 7, 7, 0.1);
     --blog-panel: rgba(255, 255, 255, 0.55);
     --blog-fg-soft: rgba(7, 7, 7, 0.055);
-    --blog-dot: rgba(7, 7, 7, 0.18);
+    --blog-dot: rgba(7, 7, 7, 0.24);
     --glass-edge: rgba(7, 7, 7, 0.13);
     --glass-shine: rgba(255, 255, 255, 0.78);
     --glass-shadow: rgba(7, 7, 7, 0.12);
@@ -33,6 +33,9 @@
     --lens-inner-x: -50vw;
     --lens-inner-y: -50vh;
     --lens-scale: 0.12;
+    --lens-stretch-x: 1;
+    --lens-stretch-y: 1;
+    --lens-header-scale: 0;
     --lens-opacity: 0;
     --hero-tilt-x: 0deg;
     --hero-tilt-y: 0deg;
@@ -53,7 +56,7 @@
     --blog-line: rgba(246, 244, 238, 0.13);
     --blog-panel: rgba(255, 255, 255, 0.045);
     --blog-fg-soft: rgba(246, 244, 238, 0.08);
-    --blog-dot: rgba(246, 244, 238, 0.2);
+    --blog-dot: rgba(246, 244, 238, 0.34);
     --glass-edge: rgba(246, 244, 238, 0.18);
     --glass-shine: rgba(255, 255, 255, 0.52);
     --glass-shadow: rgba(0, 0, 0, 0.48);
@@ -86,7 +89,7 @@
   body {
     background-color: var(--blog-bg);
     color: var(--blog-fg);
-    overscroll-behavior-y: none;
+    overscroll-behavior-y: auto;
     margin: 0;
     overflow-x: hidden;
     transition: background-color 500ms ease, color 500ms ease;
@@ -110,13 +113,13 @@
 .blog-background-grid {
   inset: -5vh -5vw;
   background-image:
-    radial-gradient(circle at center, color-mix(in srgb, var(--blog-dot) 72%, transparent) 0 0.85px, transparent 1.25px),
-    radial-gradient(circle at center, color-mix(in srgb, var(--blog-dot) 32%, transparent) 0 0.7px, transparent 1.15px);
+    radial-gradient(circle at center, color-mix(in srgb, var(--blog-dot) 90%, transparent) 0 1px, transparent 1.32px),
+    radial-gradient(circle at center, color-mix(in srgb, var(--blog-dot) 44%, transparent) 0 0.82px, transparent 1.2px);
   background-position:
     var(--blog-grid-x) var(--blog-grid-y),
-    calc(var(--blog-grid-x) * -0.42 + 18px) calc(var(--blog-grid-y) * -0.42 + 18px);
-  background-size: 38px 38px, 152px 152px;
-  opacity: 0.46;
+    calc(var(--blog-grid-x) * -0.48 + 17px) calc(var(--blog-grid-y) * -0.48 + 17px);
+  background-size: 34px 34px, 136px 136px;
+  opacity: 0.68;
   mask-image:
     linear-gradient(180deg, rgba(0, 0, 0, 0.2), #000 18%, #000 70%, transparent 100%),
     radial-gradient(circle at center, #000 0 22%, rgba(0, 0, 0, 0.7) 48%, transparent 86%);
@@ -215,7 +218,9 @@
   mix-blend-mode: difference;
   transform:
     translate3d(calc(var(--lens-x) - var(--lens-size) / 2), calc(var(--lens-y) - var(--lens-size) / 2), 0)
-    scale(var(--lens-scale));
+    scale(var(--lens-scale))
+    scaleX(var(--lens-stretch-x))
+    scaleY(var(--lens-stretch-y));
   box-shadow:
     inset 0 1px 1px rgba(255, 255, 255, 0.26),
     inset 0 -18px 34px rgba(0, 0, 0, 0.18),
@@ -267,22 +272,11 @@
   cursor: none;
 }
 
-.pointer-lens-active:not(.pointer-lens-native) body:has(.blog-hero) [data-blog-header],
-.pointer-lens-active:not(.pointer-lens-native) body:has(.blog-hero) [data-blog-header] *,
 .pointer-lens-active:not(.pointer-lens-native) body:has(.blog-hero) #latest,
 .pointer-lens-active:not(.pointer-lens-native) body:has(.blog-hero) #latest *,
 .pointer-lens-active:not(.pointer-lens-native) body:has(.blog-hero) section:not(.blog-hero),
 .pointer-lens-active:not(.pointer-lens-native) body:has(.blog-hero) section:not(.blog-hero) * {
   cursor: auto;
-}
-
-.pointer-lens-header [data-blog-header] {
-  --glass-edge: color-mix(in srgb, var(--blog-fg) 20%, transparent);
-  box-shadow:
-    inset 1px -1px 0.75px -1px rgba(255, 255, 255, 0.78),
-    inset -1px 1px 0.75px -1px rgba(255, 255, 255, 0.42),
-    0 22px 64px color-mix(in srgb, var(--glass-shadow) 34%, transparent),
-    0 0 38px color-mix(in srgb, var(--glass-chroma-a) 28%, transparent);
 }
 
 @media (prefers-reduced-motion: reduce) {

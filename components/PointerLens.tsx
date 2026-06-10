@@ -34,8 +34,11 @@ export function PointerLens() {
       root.classList.toggle("pointer-lens-active", shouldShow);
       root.classList.toggle("pointer-lens-header", shouldShow && isHeaderHover);
       root.classList.toggle("pointer-lens-native", isPastHero);
-      root.style.setProperty("--lens-opacity", shouldShow ? (isHeaderHover ? "0" : "1") : "0");
-      root.style.setProperty("--lens-scale", shouldShow ? (isHeaderHover ? "0.34" : "1") : "0.12");
+      root.style.setProperty("--lens-opacity", shouldShow ? (isHeaderHover ? "0.96" : "1") : "0");
+      root.style.setProperty("--lens-scale", shouldShow ? (isHeaderHover ? "0.98" : "1") : "0.12");
+      root.style.setProperty("--lens-stretch-x", shouldShow && isHeaderHover ? "1.08" : "1");
+      root.style.setProperty("--lens-stretch-y", shouldShow && isHeaderHover ? "0.9" : "1");
+      root.style.setProperty("--lens-header-scale", shouldShow && isHeaderHover ? "1" : "0");
     };
 
     const updateScrollState = () => {
@@ -129,6 +132,9 @@ export function PointerLens() {
       root.classList.remove("pointer-lens-enabled", "pointer-lens-active", "pointer-lens-header", "pointer-lens-native");
       root.style.removeProperty("--lens-opacity");
       root.style.removeProperty("--lens-scale");
+      root.style.removeProperty("--lens-stretch-x");
+      root.style.removeProperty("--lens-stretch-y");
+      root.style.removeProperty("--lens-header-scale");
       root.style.removeProperty("--lens-x");
       root.style.removeProperty("--lens-y");
       root.style.removeProperty("--lens-inner-x");

@@ -162,7 +162,7 @@ export const ClientLayout = ({ children }: { children: React.ReactNode }) => {
       {/* Floating Navigation */}
       {!isImmersive && (
         <motion.div 
-          className="fixed top-3 sm:top-5 left-0 right-0 z-50 flex justify-center px-4 sm:px-6"
+          className="fixed top-3 sm:top-5 left-0 right-0 z-50 flex justify-center px-4 sm:px-6 pointer-events-none"
           initial={false}
           animate={{ 
             y: isNavVisible ? 0 : -100,
@@ -172,11 +172,15 @@ export const ClientLayout = ({ children }: { children: React.ReactNode }) => {
         >
           <div
             data-blog-header
-            className={`glass-blog pointer-events-auto rounded-full w-full max-w-[980px] xl:max-w-[1040px] flex-shrink-0 isolate ${
-              isSearchPage ? '' : 'md:min-w-[620px]'
+            className={`glass-blog pointer-events-auto rounded-full flex-shrink-0 isolate ${
+              isSearchPage
+                ? 'w-full max-w-[720px]'
+                : `w-fit max-w-[calc(100vw-32px)] ${isAuthenticated ? 'md:min-w-[820px]' : 'md:min-w-[720px]'}`
             }`}
             style={{ overflow: 'hidden' }}
           >
+            <div className="glass-refract-grid" aria-hidden="true" />
+            <div className="glass-cursor-bubble" aria-hidden="true" />
             <div className="relative z-10 px-3 sm:px-4 md:px-5 py-1.5 md:py-2 flex items-center justify-between w-full h-full gap-2 md:gap-4">
                 <Link
                   href="/"
@@ -186,7 +190,7 @@ export const ClientLayout = ({ children }: { children: React.ReactNode }) => {
                   {adminName}
                 </Link>
 
-                <div className="flex-1 flex items-center justify-center min-w-0 relative min-h-8 overflow-visible">
+                <div className={`${isSearchPage ? 'flex-1' : 'shrink-0'} flex items-center justify-center min-w-0 relative min-h-8 overflow-visible`}>
                   {isSearchPage ? (
                     <div className="w-full flex items-center">
                       <React.Suspense fallback={<div className="h-8"></div>}>
