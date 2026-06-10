@@ -154,7 +154,7 @@ export const ClientLayout = ({ children }: { children: React.ReactNode }) => {
       {/* Floating Navigation */}
       {!isImmersive && (
         <motion.div 
-          className="fixed top-3 sm:top-5 left-0 right-0 z-50 flex justify-center px-3 sm:px-5"
+          className="fixed top-3 sm:top-5 left-0 right-0 z-50 flex justify-center px-4 sm:px-6"
           initial={false}
           animate={{ 
             y: isNavVisible ? 0 : -100,
@@ -164,21 +164,21 @@ export const ClientLayout = ({ children }: { children: React.ReactNode }) => {
         >
           <div
             data-blog-header
-            className={`glass-blog pointer-events-auto rounded-full w-full max-w-[1180px] flex-shrink-0 isolate ${
-              isSearchPage ? '' : 'md:min-w-[720px]'
+            className={`glass-blog pointer-events-auto rounded-full w-full max-w-[980px] xl:max-w-[1040px] flex-shrink-0 isolate ${
+              isSearchPage ? '' : 'md:min-w-[620px]'
             }`}
             style={{ overflow: 'hidden' }}
           >
-            <div className="relative z-10 px-3 sm:px-5 md:px-8 py-2.5 md:py-3 flex items-center justify-between w-full h-full gap-2 md:gap-6">
+            <div className="relative z-10 px-3 sm:px-4 md:px-5 py-1.5 md:py-2 flex items-center justify-between w-full h-full gap-2 md:gap-4">
                 <Link
                   href="/"
-                  className="group shrink-0 rounded-full px-2 py-1 text-[15px] sm:text-lg font-black tracking-[0.18em] text-[var(--blog-fg)] transition-transform hover:scale-[1.02]"
+                  className="group shrink-0 rounded-full px-2 py-1 text-sm sm:text-base font-black tracking-[0.16em] text-[var(--blog-fg)] transition-transform hover:scale-[1.02]"
                   aria-label="返回首页"
                 >
                   {adminName}
                 </Link>
 
-                <div className="flex-1 flex items-center justify-center min-w-0 relative min-h-9 overflow-visible">
+                <div className="flex-1 flex items-center justify-center min-w-0 relative min-h-8 overflow-visible">
                   {isSearchPage ? (
                     <div className="w-full flex items-center">
                       <React.Suspense fallback={<div className="h-8"></div>}>
@@ -186,14 +186,14 @@ export const ClientLayout = ({ children }: { children: React.ReactNode }) => {
                       </React.Suspense>
                     </div>
                   ) : (
-                    <nav className="hidden md:flex items-center justify-center gap-2 whitespace-nowrap rounded-full">
+                    <nav className="hidden md:flex items-center justify-center gap-1.5 whitespace-nowrap rounded-full">
                       {navLinks.map((link) => {
                         const isActive = pathname === link.path;
                         return (
                           <Link
                             key={link.path}
                             href={link.path}
-                            className={`blog-nav-pill px-4 py-2 rounded-full text-xs font-extrabold tracking-[0.12em] transition-all ${
+                            className={`blog-nav-pill px-3.5 py-1.5 rounded-full text-[11px] font-extrabold tracking-[0.1em] transition-all ${
                               isActive
                                 ? 'is-active text-[var(--blog-bg)] bg-[var(--blog-fg)]'
                                 : 'text-[var(--blog-muted)] hover:text-[var(--blog-fg)] hover:bg-[var(--blog-fg-soft)]'
@@ -208,10 +208,10 @@ export const ClientLayout = ({ children }: { children: React.ReactNode }) => {
                 </div>
 
                 {!isSearchPage && (
-                  <div className="h-5 bg-[var(--blog-line)] hidden md:block shrink-0 w-px" />
+                  <div className="h-4 bg-[var(--blog-line)] hidden md:block shrink-0 w-px" />
                 )}
 
-                <div className="flex items-center gap-1 md:gap-2 shrink-0 z-10">
+                <div className="flex items-center gap-1 shrink-0 z-10">
                     {!isSearchPage && (
                       <button
                         type="button"
@@ -238,7 +238,7 @@ export const ClientLayout = ({ children }: { children: React.ReactNode }) => {
                         )}
                       </>
                     )}
-                    <button type="button" className="blog-icon-button md:hidden" onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)} aria-label={isMobileMenuOpen ? '关闭菜单' : '打开菜单'}>
+                    <button type="button" className="blog-icon-button blog-mobile-menu-button" onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)} aria-label={isMobileMenuOpen ? '关闭菜单' : '打开菜单'}>
                       {isMobileMenuOpen ? <X size={18} /> : <Menu size={18} />}
                     </button>
                 </div>
