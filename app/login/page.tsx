@@ -44,7 +44,7 @@ export default function Login() {
 
   return (
     <div className="flex flex-col items-center justify-center py-20 animate-in fade-in zoom-in duration-500">
-      <LiquidGlass className="glass-panel w-full max-w-sm p-8">
+      <LiquidGlass variant="panel" className="glass-panel w-full max-w-sm p-8">
         <div className="flex justify-center mb-6">
           <div className="flex h-12 w-12 items-center justify-center rounded-full bg-[var(--blog-fg)] text-[var(--blog-bg)] shadow-sm">
             <Lock size={24} />

@@ -264,7 +264,7 @@ export const ClientLayout = ({ children }: { children: React.ReactNode }) => {
       {isMobileMenuOpen && !isImmersive && !isSearchPage && (
         <div className="fixed inset-0 z-40 pt-24 px-4 md:hidden animate-in fade-in slide-in-from-top-4 duration-200">
           <div className="absolute inset-0 bg-black/40 backdrop-blur-md" onClick={() => setIsMobileMenuOpen(false)}></div>
-          <LiquidGlass className="glass-blog rounded-2xl p-2 flex flex-col gap-1 shadow-2xl relative z-50">
+          <LiquidGlass variant="popover" className="glass-blog rounded-2xl p-2 flex flex-col gap-1 shadow-2xl relative z-50">
             {navLinks.map((link) => {
               const isActive = pathname === link.path;
               return (

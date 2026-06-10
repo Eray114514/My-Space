@@ -119,7 +119,7 @@ export const ProjectEditor: React.FC<{
 
   return createPortal(
     <div className="fixed inset-0 z-9999 bg-[#eef2f6]/60 dark:bg-[#050505]/60 backdrop-blur-xl flex items-center justify-center p-4 animate-in fade-in duration-300">
-      <LiquidGlass className="w-full max-w-xl rounded-4xl shadow-2xl max-h-[90vh] overflow-y-auto flex flex-col border border-white/40 dark:border-white/10">
+      <LiquidGlass variant="popover" className="w-full max-w-xl rounded-4xl shadow-2xl max-h-[90vh] overflow-y-auto flex flex-col border border-white/40 dark:border-white/10">
 
         {/* Header */}
         <div className="p-6 pb-4 border-b border-white/20 dark:border-white/5 flex justify-between items-center bg-white/40 dark:bg-white/5">

@@ -453,7 +453,7 @@ function ChatContent() {
                 {/* System Prompt Panel (Absolute Overlay) */}
                 {isSystemPromptOpen && (
                     <div className="fixed top-20 left-1/2 -translate-x-1/2 w-full max-w-2xl px-4 z-60 animate-in slide-in-from-top-2 fade-in">
-                        <LiquidGlass className="glass-popover p-4">
+                        <LiquidGlass variant="popover" className="glass-popover p-4">
                             <div className="flex justify-between items-center mb-2">
                                 <label className="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase">系统提示词 (System Prompt)</label>
                                 <button onClick={() => setIsSystemPromptOpen(false)} className="text-gray-400 hover:text-gray-600"><X size={14} /></button>
@@ -564,7 +564,7 @@ function ChatContent() {
                         {/* Article Picker Popover */}
                         {isArticlePickerOpen && (
                             <div className="absolute bottom-full left-0 mb-3 w-72 z-50">
-                                <LiquidGlass className="glass-popover overflow-hidden animate-in fade-in slide-in-from-bottom-2">
+                                <LiquidGlass variant="popover" className="glass-popover overflow-hidden animate-in fade-in slide-in-from-bottom-2">
                                     <div className="p-3 border-b border-[var(--blog-line)] text-xs font-bold text-[var(--blog-muted)] flex items-center gap-2"><Hash size={12} /> 引用文章上下文</div>
                                     <div className="max-h-56 overflow-y-auto custom-scrollbar p-1.5 space-y-1">
                                         {availableArticles.map(article => {
@@ -585,6 +585,7 @@ function ChatContent() {
 
                         {/* Input Capsule - High Quality Texture */}
                         <LiquidGlass
+                            variant="panel"
                             className="rounded-[2.5rem] transition-all duration-300 focus-within:scale-[1.01]"
                             innerClassName="flex items-end gap-2 p-2"
                         >

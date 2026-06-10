@@ -108,7 +108,7 @@ export default async function Home() {
             {recentArticles.map((article) => (
               <AnimatedItem key={article.id} className="group">
                 <Link href={`/blog/${article.id}`} className="block">
-                  <LiquidGlass className="glass-card px-5 py-5 transition-transform duration-300 group-hover:-translate-y-1 sm:px-6">
+                  <LiquidGlass variant="card" className="glass-card px-5 py-5 transition-transform duration-300 group-hover:-translate-y-1 sm:px-6">
                     <article className="grid gap-4 sm:grid-cols-[120px_1fr_auto] sm:items-center">
                       <div className="font-mono text-sm font-bold text-[var(--blog-muted)]">
                         {new Date(article.createdAt).toLocaleDateString('en-US', { month: 'short', day: '2-digit' })}
@@ -139,7 +139,7 @@ export default async function Home() {
               </AnimatedItem>
             ))}
             {recentArticles.length === 0 && (
-              <LiquidGlass className="glass-card py-16 text-center text-[var(--blog-muted)]">
+              <LiquidGlass variant="card" className="glass-card py-16 text-center text-[var(--blog-muted)]">
                 暂无文章
               </LiquidGlass>
             )}
@@ -160,7 +160,7 @@ export default async function Home() {
             {projects.map((project) => (
               <AnimatedItem key={project.id} className="group">
                 <Link href={project.url} target="_blank" className="block h-full">
-                  <LiquidGlass className="glass-card h-full p-5 transition-transform duration-300 group-hover:-translate-y-1">
+                  <LiquidGlass variant="card" className="glass-card h-full p-5 transition-transform duration-300 group-hover:-translate-y-1">
                     <div className="mb-7 flex items-start justify-between gap-4">
                       <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[var(--blog-fg-soft)]">
                         {renderIcon(project)}
@@ -176,7 +176,7 @@ export default async function Home() {
               </AnimatedItem>
             ))}
             {projects.length === 0 && (
-              <LiquidGlass className="glass-card col-span-full py-14 text-center text-[var(--blog-muted)]">
+              <LiquidGlass variant="card" className="glass-card col-span-full py-14 text-center text-[var(--blog-muted)]">
                 暂无链接
               </LiquidGlass>
             )}

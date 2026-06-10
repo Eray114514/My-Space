@@ -107,7 +107,7 @@ export default function AdminDashboard() {
 
       {/* Content Area */}
       {tab === 'articles' && (
-        <LiquidGlass className="glass-panel overflow-hidden animate-in slide-in-from-bottom-4 duration-500">
+        <LiquidGlass variant="panel" className="glass-panel overflow-hidden animate-in slide-in-from-bottom-4 duration-500">
           <div className="p-6 border-b border-[var(--blog-line)] flex justify-between items-center">
             <h3 className="font-black text-lg text-[var(--blog-fg)] flex items-center gap-2"><Layout size={20} /> 文章列表 <span className="blog-tag px-2 py-0.5">{articles.length}</span></h3>
             <button onClick={() => { setCurrentArticle(undefined); setIsEditingArticle(true); }} className="blog-button-primary px-5 py-2.5 text-sm"><Plus size={18} /> 写文章</button>
@@ -140,7 +140,7 @@ export default function AdminDashboard() {
       )}
 
       {tab === 'projects' && (
-        <LiquidGlass className="glass-panel overflow-hidden animate-in slide-in-from-bottom-4 duration-500">
+        <LiquidGlass variant="panel" className="glass-panel overflow-hidden animate-in slide-in-from-bottom-4 duration-500">
           <div className="p-6 border-b border-[var(--blog-line)] flex justify-between items-center">
             <h3 className="font-black text-lg text-[var(--blog-fg)] flex items-center gap-2"><Globe size={20} /> 导航链接 <span className="blog-tag px-2 py-0.5">{projects.length}</span></h3>
             <button onClick={() => { setCurrentProject(undefined); setIsEditingProject(true); }} className="blog-button-primary px-5 py-2.5 text-sm"><Plus size={18} /> 添加链接</button>
@@ -177,7 +177,7 @@ export default function AdminDashboard() {
       )}
 
       {tab === 'settings' && (
-        <LiquidGlass className="glass-panel overflow-hidden animate-in slide-in-from-bottom-4 duration-500">
+        <LiquidGlass variant="panel" className="glass-panel overflow-hidden animate-in slide-in-from-bottom-4 duration-500">
           <div className="p-6 border-b border-[var(--blog-line)]"><h3 className="font-black text-lg text-[var(--blog-fg)] flex items-center gap-2"><Settings size={20} /> 系统设置</h3></div>
           <div className="p-8 max-w-3xl space-y-10">
             <ModelSelector

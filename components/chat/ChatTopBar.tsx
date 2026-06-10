@@ -1,6 +1,7 @@
 "use client";
 
-import React from 'react';
+import React, { useEffect, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { ArrowLeft, History, Sparkles, ChevronDown, Check, Settings, Plus } from 'lucide-react';
 import { AIModelKey, AI_MODELS } from '../../services/ai';
 import { LiquidGlass } from '../LiquidGlass';
@@ -34,9 +35,34 @@ export const ChatTopBar: React.FC<ChatTopBarProps> = ({
     onNewChat,
     onNavigateHome
 }) => {
+    const modelButtonRef = useRef<HTMLButtonElement | null>(null);
+    const [menuPosition, setMenuPosition] = useState({ top: 72, left: 0 });
+
+    useEffect(() => {
+        if (!isModelMenuOpen) return;
+
+        const updatePosition = () => {
+            const rect = modelButtonRef.current?.getBoundingClientRect();
+            if (!rect) return;
+            setMenuPosition({
+                top: rect.bottom + 12,
+                left: rect.left + rect.width / 2,
+            });
+        };
+
+        updatePosition();
+        window.addEventListener('resize', updatePosition);
+        window.addEventListener('scroll', updatePosition, true);
+        return () => {
+            window.removeEventListener('resize', updatePosition);
+            window.removeEventListener('scroll', updatePosition, true);
+        };
+    }, [isModelMenuOpen]);
+
     return (
         <div className="fixed top-4 left-0 right-0 flex justify-center z-50 pointer-events-none px-4">
             <LiquidGlass
+                variant="nav"
                 className="pointer-events-auto rounded-full transition-all sm:min-w-[300px]"
                 innerClassName="flex items-center gap-1 sm:gap-2 px-1.5 py-1.5"
             >
@@ -65,6 +91,7 @@ export const ChatTopBar: React.FC<ChatTopBarProps> = ({
                 {/* 3. Model Selector */}
                 <div className="relative">
                     <button
+                        ref={modelButtonRef}
                         onClick={() => setIsModelMenuOpen(!isModelMenuOpen)}
                         className="flex items-center gap-2 px-3 py-2 rounded-full text-xs font-bold text-[var(--blog-fg)] hover:bg-[var(--blog-fg-soft)] transition-all border border-transparent hover:border-[var(--blog-line)]"
                     >
@@ -74,24 +101,6 @@ export const ChatTopBar: React.FC<ChatTopBarProps> = ({
                         <ChevronDown size={14} className="opacity-50" />
                     </button>
 
-                    {/* Model Dropdown */}
-                    {isModelMenuOpen && (
-                        <div className="absolute top-full left-1/2 -translate-x-1/2 mt-3 w-64 z-60">
-                            <LiquidGlass className="glass-popover p-1.5 flex flex-col gap-0.5 animate-in fade-in slide-in-from-top-2">
-                                {availableModels.map(([key, m]) => (
-                                    <button
-                                        key={key}
-                                        onClick={() => { setSelectedModel(key as AIModelKey); setIsModelMenuOpen(false); }}
-                                        className={`w-full text-left px-3 py-2.5 text-xs font-medium rounded-xl flex justify-between items-center transition-colors ${selectedModel === key ? 'bg-[var(--blog-fg)] text-[var(--blog-bg)] border border-[var(--blog-fg)]' : 'hover:bg-[var(--blog-fg-soft)] text-[var(--blog-muted)] border border-transparent'}`}
-                                    >
-                                        {/* @ts-ignore */}
-                                        {m.name}
-                                        {selectedModel === key && <Check size={14} />}
-                                    </button>
-                                ))}
-                            </LiquidGlass>
-                        </div>
-                    )}
                 </div>
 
                 <div className="flex-1"></div>
@@ -109,6 +118,27 @@ export const ChatTopBar: React.FC<ChatTopBarProps> = ({
                     <Plus size={18} />
                 </button>
             </LiquidGlass>
+            {isModelMenuOpen && typeof document !== 'undefined' && createPortal(
+                <div
+                    className="fixed z-[80] w-64 -translate-x-1/2 pointer-events-auto"
+                    style={{ top: menuPosition.top, left: menuPosition.left }}
+                >
+                    <LiquidGlass variant="popover" className="glass-popover p-1.5 flex flex-col gap-0.5 animate-in fade-in slide-in-from-top-2">
+                        {availableModels.map(([key, m]) => (
+                            <button
+                                key={key}
+                                onClick={() => { setSelectedModel(key as AIModelKey); setIsModelMenuOpen(false); }}
+                                className={`w-full text-left px-3 py-2.5 text-xs font-medium rounded-xl flex justify-between items-center transition-colors ${selectedModel === key ? 'bg-[var(--blog-fg)] text-[var(--blog-bg)] border border-[var(--blog-fg)]' : 'hover:bg-[var(--blog-fg-soft)] text-[var(--blog-muted)] border border-transparent'}`}
+                            >
+                                {/* @ts-ignore */}
+                                {m.name}
+                                {selectedModel === key && <Check size={14} />}
+                            </button>
+                        ))}
+                    </LiquidGlass>
+                </div>,
+                document.body
+            )}
         </div>
     );
 };

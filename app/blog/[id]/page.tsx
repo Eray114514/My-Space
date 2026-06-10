@@ -57,7 +57,7 @@ export default async function ArticleDetail({ params }: { params: Promise<{ id: 
       
       {/* Content Container (Center Aligned) */}
       <div className="max-w-4xl mx-auto pt-24 px-4 sm:px-6">
-        <LiquidGlass className="glass-panel p-6 sm:p-10 lg:p-12 relative">
+        <LiquidGlass variant="panel" className="glass-panel p-6 sm:p-10 lg:p-12 relative">
             <header className="mb-10 pb-8 border-b border-[var(--blog-line)]">
                 <div className="flex flex-wrap gap-2 mb-6">
                     {article.tags.map(tag => (

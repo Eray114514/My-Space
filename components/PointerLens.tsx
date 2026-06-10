@@ -23,6 +23,7 @@ export function PointerLens() {
     let isVisible = false;
     let isHeaderHover = false;
     let isPastHero = false;
+    let headerOverlap = 0;
 
     const enableLens = () => {
       if (!hasMouseInput) hasMouseInput = true;
@@ -34,11 +35,22 @@ export function PointerLens() {
       root.classList.toggle("pointer-lens-active", shouldShow);
       root.classList.toggle("pointer-lens-header", shouldShow && isHeaderHover);
       root.classList.toggle("pointer-lens-native", isPastHero);
-      root.style.setProperty("--lens-opacity", shouldShow ? (isHeaderHover ? "0.96" : "1") : "0");
-      root.style.setProperty("--lens-scale", shouldShow ? (isHeaderHover ? "0.98" : "1") : "0.12");
-      root.style.setProperty("--lens-stretch-x", shouldShow && isHeaderHover ? "1.08" : "1");
-      root.style.setProperty("--lens-stretch-y", shouldShow && isHeaderHover ? "0.9" : "1");
+      root.style.setProperty("--lens-opacity", shouldShow ? "1" : "0");
+      root.style.setProperty("--lens-scale", shouldShow ? "1" : "0.12");
+      root.style.setProperty("--lens-stretch-x", "1");
+      root.style.setProperty("--lens-stretch-y", "1");
       root.style.setProperty("--lens-header-scale", shouldShow && isHeaderHover ? "1" : "0");
+      root.style.setProperty("--lens-over-header", (shouldShow ? headerOverlap : 0).toFixed(3));
+      root.style.setProperty("--glass-overlap", (shouldShow ? headerOverlap : 0).toFixed(3));
+      root.style.setProperty("--glass-bubble-opacity", (shouldShow ? headerOverlap * 0.9 : 0).toFixed(3));
+      root.style.setProperty("--glass-bubble-scale", (0.92 + headerOverlap * 0.08).toFixed(3));
+      root.style.setProperty("--glass-bubble-scale-x", (1 + headerOverlap * 0.18).toFixed(3));
+      root.style.setProperty("--glass-bubble-scale-y", (1 - headerOverlap * 0.18).toFixed(3));
+      root.style.setProperty("--glass-grid-opacity", (0.34 + headerOverlap * 0.28).toFixed(3));
+      root.style.setProperty("--glass-grid-scale", (1.018 + headerOverlap * 0.025).toFixed(3));
+      root.style.setProperty("--glass-grid-shift-x", `${(headerOverlap * 6).toFixed(2)}px`);
+      root.style.setProperty("--glass-grid-shift-y", `${(headerOverlap * -2).toFixed(2)}px`);
+      root.style.setProperty("--glass-chroma-opacity", (0.14 + headerOverlap * 0.42).toFixed(3));
     };
 
     const updateScrollState = () => {
@@ -50,16 +62,17 @@ export function PointerLens() {
       const header = document.querySelector("[data-blog-header]");
       if (!header) {
         isHeaderHover = false;
+        headerOverlap = 0;
         return;
       }
 
       const rect = header.getBoundingClientRect();
-      const padding = 16;
-      isHeaderHover =
-        x >= rect.left - padding &&
-        x <= rect.right + padding &&
-        y >= rect.top - padding &&
-        y <= rect.bottom + padding;
+      const lensRadius = 66;
+      const closestX = Math.max(rect.left, Math.min(x, rect.right));
+      const closestY = Math.max(rect.top, Math.min(y, rect.bottom));
+      const distance = Math.hypot(x - closestX, y - closestY);
+      headerOverlap = Math.max(0, Math.min(1, 1 - distance / lensRadius));
+      isHeaderHover = headerOverlap > 0.02;
 
       root.style.setProperty("--glass-pointer-x", `${Math.max(0, Math.min(100, ((x - rect.left) / rect.width) * 100)).toFixed(2)}%`);
       root.style.setProperty("--glass-pointer-y", `${Math.max(0, Math.min(100, ((y - rect.top) / rect.height) * 100)).toFixed(2)}%`);
@@ -67,8 +80,8 @@ export function PointerLens() {
 
     const writePointerVars = () => {
       frame = 0;
-      visualX += (pointerX - visualX) * 0.24;
-      visualY += (pointerY - visualY) * 0.24;
+      visualX += (pointerX - visualX) * 0.65;
+      visualY += (pointerY - visualY) * 0.65;
 
       const dx = (visualX / window.innerWidth - 0.5) * 2;
       const dy = (visualY / window.innerHeight - 0.5) * 2;
@@ -112,6 +125,7 @@ export function PointerLens() {
     const handlePointerLeave = () => {
       isVisible = false;
       isHeaderHover = false;
+      headerOverlap = 0;
       setLensState();
     };
 
@@ -135,6 +149,17 @@ export function PointerLens() {
       root.style.removeProperty("--lens-stretch-x");
       root.style.removeProperty("--lens-stretch-y");
       root.style.removeProperty("--lens-header-scale");
+      root.style.removeProperty("--lens-over-header");
+      root.style.removeProperty("--glass-overlap");
+      root.style.removeProperty("--glass-bubble-opacity");
+      root.style.removeProperty("--glass-bubble-scale");
+      root.style.removeProperty("--glass-bubble-scale-x");
+      root.style.removeProperty("--glass-bubble-scale-y");
+      root.style.removeProperty("--glass-grid-opacity");
+      root.style.removeProperty("--glass-grid-scale");
+      root.style.removeProperty("--glass-grid-shift-x");
+      root.style.removeProperty("--glass-grid-shift-y");
+      root.style.removeProperty("--glass-chroma-opacity");
       root.style.removeProperty("--lens-x");
       root.style.removeProperty("--lens-y");
       root.style.removeProperty("--lens-inner-x");

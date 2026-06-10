@@ -31,7 +31,7 @@ export const ChatSidebar: React.FC<ChatSidebarProps> = ({
             ref={historyRef}
             className={`fixed top-20 left-4 bottom-24 w-72 z-40 transition-all duration-500 ease-[cubic-bezier(0.32,0.72,0,1)] ${isHistoryOpen ? 'translate-x-0 opacity-100' : '-translate-x-[120%] opacity-0 pointer-events-none'}`}
         >
-            <LiquidGlass className="glass-panel h-full flex flex-col overflow-hidden">
+            <LiquidGlass variant="panel" className="glass-panel h-full flex flex-col overflow-hidden">
                 <div className="p-4 border-b border-[var(--blog-line)] flex justify-between items-center">
                     <h3 className="font-black text-[var(--blog-fg)] flex items-center gap-2 text-sm"><Clock size={16} /> 历史记录</h3>
                     <button onClick={onClose} className="blog-control h-7 w-7 p-0"><X size={16} /></button>

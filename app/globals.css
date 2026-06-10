@@ -36,6 +36,7 @@
     --lens-stretch-x: 1;
     --lens-stretch-y: 1;
     --lens-header-scale: 0;
+    --lens-over-header: 0;
     --lens-opacity: 0;
     --hero-tilt-x: 0deg;
     --hero-tilt-y: 0deg;
@@ -47,16 +48,26 @@
     --blog-grid-tilt-y: 0deg;
     --glass-pointer-x: 50%;
     --glass-pointer-y: 50%;
+    --glass-overlap: 0;
+    --glass-bubble-opacity: 0;
+    --glass-bubble-scale: 0.92;
+    --glass-bubble-scale-x: 1;
+    --glass-bubble-scale-y: 1;
+    --glass-grid-opacity: 0.34;
+    --glass-grid-scale: 1.018;
+    --glass-grid-shift-x: 0px;
+    --glass-grid-shift-y: 0px;
+    --glass-chroma-opacity: 0.14;
   }
 
   .dark {
-    --blog-bg: #050505;
+    --blog-bg: #070807;
     --blog-fg: #f6f4ee;
     --blog-muted: rgba(246, 244, 238, 0.62);
     --blog-line: rgba(246, 244, 238, 0.13);
     --blog-panel: rgba(255, 255, 255, 0.045);
     --blog-fg-soft: rgba(246, 244, 238, 0.08);
-    --blog-dot: rgba(246, 244, 238, 0.34);
+    --blog-dot: rgba(246, 244, 238, 0.42);
     --glass-edge: rgba(246, 244, 238, 0.18);
     --glass-shine: rgba(255, 255, 255, 0.52);
     --glass-shadow: rgba(0, 0, 0, 0.48);
@@ -106,20 +117,23 @@
 
 .blog-background {
   background:
-    linear-gradient(180deg, color-mix(in srgb, var(--blog-bg) 94%, transparent), var(--blog-bg)),
+    radial-gradient(circle at 32% 38%, rgba(33, 72, 66, 0.18), transparent 34%),
+    radial-gradient(circle at 72% 40%, rgba(60, 44, 70, 0.16), transparent 36%),
+    radial-gradient(circle at 50% 120%, rgba(34, 42, 38, 0.22), transparent 42%),
+    linear-gradient(180deg, color-mix(in srgb, var(--blog-bg) 88%, transparent), var(--blog-bg)),
     var(--blog-bg);
 }
 
 .blog-background-grid {
   inset: -5vh -5vw;
   background-image:
-    radial-gradient(circle at center, color-mix(in srgb, var(--blog-dot) 90%, transparent) 0 1px, transparent 1.32px),
-    radial-gradient(circle at center, color-mix(in srgb, var(--blog-dot) 44%, transparent) 0 0.82px, transparent 1.2px);
+    radial-gradient(circle at center, color-mix(in srgb, var(--blog-dot) 96%, transparent) 0 1.08px, transparent 1.42px),
+    radial-gradient(circle at center, color-mix(in srgb, var(--blog-dot) 46%, transparent) 0 0.82px, transparent 1.2px);
   background-position:
     var(--blog-grid-x) var(--blog-grid-y),
     calc(var(--blog-grid-x) * -0.48 + 17px) calc(var(--blog-grid-y) * -0.48 + 17px);
   background-size: 34px 34px, 136px 136px;
-  opacity: 0.68;
+  opacity: 0.78;
   mask-image:
     linear-gradient(180deg, rgba(0, 0, 0, 0.2), #000 18%, #000 70%, transparent 100%),
     radial-gradient(circle at center, #000 0 22%, rgba(0, 0, 0, 0.7) 48%, transparent 86%);
@@ -133,18 +147,18 @@
 }
 
 .blog-background-refraction {
-  opacity: 0.54;
+  opacity: 0.48;
   background:
-    radial-gradient(circle at 18% 18%, var(--glass-chroma-a), transparent 34%),
-    radial-gradient(circle at 78% 12%, var(--glass-chroma-b), transparent 30%),
-    radial-gradient(circle at 66% 76%, rgba(103, 232, 249, 0.08), transparent 36%);
-  filter: blur(74px) saturate(112%);
+    radial-gradient(circle at 24% 36%, rgba(80, 172, 156, 0.12), transparent 35%),
+    radial-gradient(circle at 78% 34%, rgba(168, 105, 186, 0.11), transparent 32%),
+    radial-gradient(circle at 62% 76%, rgba(112, 152, 181, 0.07), transparent 38%);
+  filter: blur(82px) saturate(112%);
 }
 
 .dark .blog-background-refraction {
-  opacity: 0.44;
+  opacity: 0.62;
   mix-blend-mode: screen;
-  filter: blur(82px) saturate(126%);
+  filter: blur(92px) saturate(118%);
 }
 
 .blog-icon-button {
@@ -249,31 +263,29 @@
   border-radius: 999px;
   pointer-events: none;
   opacity: var(--lens-opacity);
-  background: var(--blog-fg);
-  mix-blend-mode: difference;
+  background: #060606;
   transform:
     translate3d(calc(var(--lens-x) - var(--lens-size) / 2), calc(var(--lens-y) - var(--lens-size) / 2), 0)
     scale(var(--lens-scale))
     scaleX(var(--lens-stretch-x))
     scaleY(var(--lens-stretch-y));
   box-shadow:
-    inset 0 1px 1px rgba(255, 255, 255, 0.26),
-    inset 0 -18px 34px rgba(0, 0, 0, 0.18),
-    0 18px 48px color-mix(in srgb, var(--blog-fg) 14%, transparent);
+    inset 0 1px 0 rgba(255, 255, 255, 0.14),
+    inset 0 -18px 30px rgba(255, 255, 255, 0.04),
+    0 18px 48px rgba(0, 0, 0, 0.18);
   transition:
     opacity 180ms ease,
-    transform 180ms cubic-bezier(0.16, 1, 0.3, 1),
     background-color 400ms ease;
   will-change: transform, opacity;
   contain: layout paint style;
 }
 
 .dark .pointer-lens {
-  background: var(--blog-fg);
+  background: #f3f0e7;
   box-shadow:
-    inset 0 1px 1px rgba(255, 255, 255, 0.24),
-    inset 0 -18px 34px rgba(0, 0, 0, 0.22),
-    0 20px 56px rgba(255, 255, 255, 0.08);
+    inset 0 1px 0 rgba(255, 255, 255, 0.36),
+    inset 0 -20px 34px rgba(0, 0, 0, 0.08),
+    0 20px 56px rgba(255, 255, 255, 0.07);
 }
 
 .pointer-lens::before {
@@ -282,9 +294,9 @@
   inset: 1px;
   border-radius: inherit;
   background:
-    radial-gradient(circle at 30% 22%, rgba(255, 255, 255, 0.28), transparent 20%),
-    radial-gradient(circle at 72% 76%, rgba(0, 0, 0, 0.2), transparent 34%);
-  opacity: 0.64;
+    radial-gradient(circle at 30% 22%, rgba(255, 255, 255, 0.12), transparent 19%),
+    radial-gradient(circle at 72% 76%, rgba(0, 0, 0, 0.1), transparent 34%);
+  opacity: 0.46;
   pointer-events: none;
 }
 
@@ -294,17 +306,20 @@
   inset: 0;
   border-radius: inherit;
   background:
-    radial-gradient(circle at 18% 18%, rgba(88, 166, 255, 0.24), transparent 28%),
-    radial-gradient(circle at 84% 72%, rgba(216, 133, 255, 0.16), transparent 32%);
+    radial-gradient(circle at 16% 22%, rgba(88, 166, 255, 0.14), transparent 28%),
+    radial-gradient(circle at 84% 72%, rgba(216, 133, 255, 0.1), transparent 32%);
   mix-blend-mode: screen;
   opacity: 0.58;
   pointer-events: none;
 }
 
-.pointer-lens-active:not(.pointer-lens-native) body:has(.blog-hero),
+.pointer-lens-active:not(.pointer-lens-native) body:has(.blog-hero) {
+  cursor: none;
+}
+
 .pointer-lens-active:not(.pointer-lens-native) body:has(.blog-hero) a,
 .pointer-lens-active:not(.pointer-lens-native) body:has(.blog-hero) button {
-  cursor: none;
+  cursor: pointer;
 }
 
 .pointer-lens-active:not(.pointer-lens-native) body:has(.blog-hero) #latest,
@@ -320,6 +335,12 @@
     transition: none !important;
   }
 
+  .pointer-lens {
+    display: none;
+  }
+}
+
+@media (any-pointer: coarse), (hover: none) {
   .pointer-lens {
     display: none;
   }

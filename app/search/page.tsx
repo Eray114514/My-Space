@@ -83,7 +83,7 @@ function SearchContent() {
       
       {!query && (
         <div className="text-center text-[var(--blog-muted)] mt-20 flex flex-col items-center gap-4">
-            <LiquidGlass className="h-24 w-24 rounded-full" innerClassName="flex items-center justify-center">
+            <LiquidGlass variant="card" className="h-24 w-24 rounded-full" innerClassName="flex items-center justify-center">
                  <SearchIcon size={48} className="opacity-30" />
             </LiquidGlass>
             <p className="font-semibold tracking-wide">请在顶部搜索框输入关键词</p>
@@ -105,7 +105,8 @@ function SearchContent() {
             <motion.div variants={containerVariants} initial="hidden" animate="show" className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               {results.projects.map(project => (
                 <motion.div key={project.id} variants={itemVariants} whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
-                  <LiquidGlass 
+                  <LiquidGlass
+                      variant="card"
                       className="glass-card flex items-center gap-4 p-4 transition-transform hover:-translate-y-1 cursor-pointer group"
                       onClick={() => window.open(project.url, '_blank')}
                   >
@@ -133,7 +134,7 @@ function SearchContent() {
                 {results.articles.map(article => (
                     <motion.div key={article.id} variants={itemVariants} whileHover={{ scale: 1.01 }} whileTap={{ scale: 0.99 }} className="block group">
                         <Link href={`/blog/${article.id}`} className="block h-full">
-                            <LiquidGlass className="glass-card p-6 transition-transform hover:-translate-y-1 cursor-pointer">
+                            <LiquidGlass variant="card" className="glass-card p-6 transition-transform hover:-translate-y-1 cursor-pointer">
                                  <div className="flex justify-between items-start mb-2">
                                      <h3 className="text-lg font-black text-[var(--blog-fg)]">{article.title}</h3>
                                      <span className="text-xs text-[var(--blog-muted)] font-mono py-1 px-2 rounded-full bg-[var(--blog-fg-soft)]">{new Date(article.createdAt).toLocaleDateString()}</span>

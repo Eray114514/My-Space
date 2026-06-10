@@ -74,7 +74,7 @@ export default async function Blog({
         {filteredArticles.map((article) => (
           <AnimatedItem key={article.id} className="group">
             <Link href={`/blog/${article.id}`} className="block">
-              <LiquidGlass className="glass-card px-5 py-5 transition-transform duration-300 group-hover:-translate-y-1 sm:px-6">
+              <LiquidGlass variant="card" className="glass-card px-5 py-5 transition-transform duration-300 group-hover:-translate-y-1 sm:px-6">
                 <article className="grid gap-4 sm:grid-cols-[126px_1fr_auto] sm:items-center">
                   <time className="font-mono text-sm font-bold text-[var(--blog-muted)]">
                     {new Date(article.createdAt).toLocaleDateString('zh-CN')}
@@ -99,7 +99,7 @@ export default async function Blog({
           </AnimatedItem>
         ))}
         {filteredArticles.length === 0 && (
-             <LiquidGlass className="glass-card text-center py-14 text-[var(--blog-muted)]">
+             <LiquidGlass variant="card" className="glass-card text-center py-14 text-[var(--blog-muted)]">
                  {selectedTag ? `标签 "${selectedTag}" 下暂无文章` : '暂无公开文章'}
              </LiquidGlass>
         )}
