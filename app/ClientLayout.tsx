@@ -49,6 +49,7 @@ export const ClientLayout = ({ children }: { children: React.ReactNode }) => {
 
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isNavVisible, setIsNavVisible] = useState(true);
+  const [isNavOverContent, setIsNavOverContent] = useState(false);
   const lastScrollY = useRef(0);
   
   const pathname = usePathname() || '/';
@@ -91,10 +92,13 @@ export const ClientLayout = ({ children }: { children: React.ReactNode }) => {
   }, [pathname]);
 
   useEffect(() => {
-    if (isImmersive) return;
-
     const handleScroll = () => {
       const currentScrollY = window.scrollY;
+      const contentThreshold = isHomePage ? window.innerHeight * 0.68 : 80;
+      setIsNavOverContent(currentScrollY > contentThreshold);
+
+      if (isImmersive) return;
+
       if (currentScrollY < 20) {
         setIsNavVisible(true);
       } else {
@@ -107,9 +111,10 @@ export const ClientLayout = ({ children }: { children: React.ReactNode }) => {
       lastScrollY.current = currentScrollY;
     };
 
+    handleScroll();
     window.addEventListener('scroll', handleScroll, { passive: true });
     return () => window.removeEventListener('scroll', handleScroll);
-  }, [isImmersive]);
+  }, [isHomePage, isImmersive]);
 
   const handleLogout = async () => {
     try {
@@ -172,6 +177,7 @@ export const ClientLayout = ({ children }: { children: React.ReactNode }) => {
         >
           <div
             data-blog-header
+            data-nav-context={isNavOverContent ? 'content' : 'hero'}
             className={`glass-blog pointer-events-auto rounded-full flex-shrink-0 isolate ${
               isSearchPage
                 ? 'w-full max-w-[720px]'
