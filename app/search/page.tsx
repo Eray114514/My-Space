@@ -79,7 +79,7 @@ function SearchContent() {
   };
 
   return (
-    <div className="max-w-4xl mx-auto py-4 min-h-[60vh]">
+    <div className="search-page max-w-4xl mx-auto py-4 min-h-[60vh]">
       
       {!query && (
         <div className="text-center text-[var(--blog-muted)] mt-20 flex flex-col items-center gap-4">
@@ -105,9 +105,9 @@ function SearchContent() {
             <motion.div variants={containerVariants} initial="hidden" animate="show" className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               {results.projects.map(project => (
                 <motion.div key={project.id} variants={itemVariants} whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
-                  <LiquidGlass
-                      variant="card"
-                      className="glass-card flex items-center gap-4 p-4 transition-transform hover:-translate-y-1 cursor-pointer group"
+                  <button
+                      type="button"
+                      className="search-result-card content-surface flex w-full items-center gap-4 p-4 text-left transition-transform hover:-translate-y-1 cursor-pointer group"
                       onClick={() => window.open(project.url, '_blank')}
                   >
                       <div className="p-2.5 rounded-xl bg-[var(--blog-fg-soft)] border border-[var(--blog-line)]">
@@ -118,7 +118,7 @@ function SearchContent() {
                           <p className="text-xs text-[var(--blog-muted)] truncate">{project.description}</p>
                       </div>
                       <ExternalLink size={14} className="text-[var(--blog-muted)] group-hover:text-[var(--blog-fg)] transition-colors" />
-                 </LiquidGlass>
+                 </button>
                 </motion.div>
               ))}
             </motion.div>
@@ -134,7 +134,7 @@ function SearchContent() {
                 {results.articles.map(article => (
                     <motion.div key={article.id} variants={itemVariants} whileHover={{ scale: 1.01 }} whileTap={{ scale: 0.99 }} className="block group">
                         <Link href={`/blog/${article.id}`} className="block h-full">
-                            <LiquidGlass variant="card" className="glass-card p-6 transition-transform hover:-translate-y-1 cursor-pointer">
+                            <div className="search-result-card content-surface p-6 transition-transform hover:-translate-y-1 cursor-pointer">
                                  <div className="flex justify-between items-start mb-2">
                                      <h3 className="text-lg font-black text-[var(--blog-fg)]">{article.title}</h3>
                                      <span className="text-xs text-[var(--blog-muted)] font-mono py-1 px-2 rounded-full bg-[var(--blog-fg-soft)]">{new Date(article.createdAt).toLocaleDateString()}</span>
@@ -145,7 +145,7 @@ function SearchContent() {
                                          <span key={t} className="blog-tag px-2.5 py-1">#{t}</span>
                                      ))}
                                  </div>
-                            </LiquidGlass>
+                            </div>
                         </Link>
                     </motion.div>
                 ))}

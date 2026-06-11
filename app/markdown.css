@@ -176,3 +176,56 @@ details[open] summary {
 .dark details[open] summary {
   border-bottom-color: rgba(255, 255, 255, 0.05);
 }
+
+/* --- Article reading surface --- */
+.article-paper .prose {
+  font-size: 1.03rem;
+}
+
+.article-paper .prose :where(h1, h2, h3, h4) {
+  color: var(--blog-fg);
+  letter-spacing: 0;
+}
+
+.article-paper .prose h2 {
+  margin-top: 3rem;
+  padding-top: 1.15rem;
+  border-top: 1px solid var(--blog-line);
+}
+
+.article-paper .prose p,
+.article-paper .prose li {
+  color: color-mix(in srgb, var(--blog-fg) 78%, var(--blog-muted));
+}
+
+.article-paper .prose blockquote {
+  border-left: 0;
+  border-radius: 18px;
+  background:
+    linear-gradient(135deg, color-mix(in srgb, var(--blog-fg) 7%, transparent), transparent 62%),
+    var(--blog-fg-soft);
+  box-shadow: inset 3px 0 0 var(--blog-fg);
+}
+
+.article-paper .prose table {
+  overflow: hidden;
+  border: 1px solid var(--blog-line);
+  border-radius: 16px;
+}
+
+.article-paper .prose pre,
+.article-paper .prose .not-prose {
+  border-radius: 18px;
+}
+
+.article-paper .markdown-alert {
+  border-left-width: 0;
+  border-radius: 18px;
+  box-shadow: inset 3px 0 0 currentColor;
+}
+
+.article-paper details {
+  border-color: var(--blog-line);
+  border-radius: 18px;
+  background: var(--blog-fg-soft);
+}

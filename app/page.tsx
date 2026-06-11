@@ -1,12 +1,11 @@
 import React from 'react';
 import Link from 'next/link';
-import { ArrowRight, ExternalLink, Globe, BookOpen, Link2 } from 'lucide-react';
+import { ArrowRight, ExternalLink, Globe, BookOpen, Link2, Sparkles } from 'lucide-react';
 import { ServerStorageService } from '../services/server-storage';
 import * as Icons from 'lucide-react';
-import { LiquidGlass } from '../components/LiquidGlass';
 import { PointerLens } from '../components/PointerLens';
 import { Project } from '../types';
-import { AnimatedSection, AnimatedItem } from '../components/AnimatedSection';
+import { ScrollStage, StageReveal } from '../components/ScrollExperience';
 
 export default async function Home() {
   const projects = await ServerStorageService.getProjects().catch(() => []);
@@ -49,79 +48,86 @@ export default async function Home() {
   };
 
   return (
-    <div className="relative">
+    <div className="home-canvas relative">
       <PointerLens />
 
-      <section className="blog-hero min-h-screen px-5 sm:px-8 pt-32 pb-16 flex items-center justify-center">
+      <section className="blog-hero home-hero min-h-screen px-5 sm:px-8 pt-32 pb-16 flex items-center justify-center">
+        <div className="home-hero-axis" aria-hidden="true" />
         <div className="hero-copy hero-copy-base w-full max-w-6xl text-center">
           <p className="mb-8 text-xs sm:text-sm font-extrabold tracking-[0.22em] text-[var(--blog-muted)]">
             文章 · 想法 · 技术实践
           </p>
           <h1
-            className="hero-title mx-auto max-w-6xl text-[clamp(3.4rem,10.8vw,10rem)] font-black leading-[0.86] tracking-[-0.075em] text-[var(--blog-fg)]"
+            className="hero-title mx-auto max-w-6xl text-[clamp(3.25rem,10.8vw,10rem)] font-black leading-[0.86] tracking-[-0.075em] text-[var(--blog-fg)]"
             aria-label={`HELLO, THIS IS ${adminName.toUpperCase()}`}
           >
-            <span className="block">HELLO, THIS IS</span>
+            <span className="hidden sm:block">HELLO, THIS IS</span>
+            <span className="block sm:hidden">HELLO,</span>
+            <span className="block sm:hidden">THIS IS</span>
             <span className="block">{adminName.toUpperCase()}</span>
           </h1>
           <p className="mx-auto mt-8 max-w-xl text-base sm:text-lg font-semibold leading-8 text-[var(--blog-muted)]">
-            文章、想法与技术记录。保持简洁，留住锋利。
+            一个给文章、想法、项目和 AI 留出的冷静空间。
           </p>
           <div className="mt-10 flex flex-wrap items-center justify-center gap-3">
-            <Link
-              href="/blog"
-              className="inline-flex items-center gap-2 rounded-full bg-[var(--blog-fg)] px-6 py-3 text-sm font-extrabold text-[var(--blog-bg)] transition-transform hover:scale-[1.03] active:scale-[0.98]"
-            >
+            <Link href="/blog" className="blog-button-primary px-6 py-3 text-sm">
               阅读文章
               <ArrowRight size={17} />
             </Link>
-            <Link
-              href="#latest"
-              className="inline-flex items-center gap-2 rounded-full border border-[var(--blog-line)] px-6 py-3 text-sm font-extrabold text-[var(--blog-fg)] transition-colors hover:bg-[var(--blog-fg-soft)]"
-            >
+            <Link href="#latest" className="blog-button-secondary px-6 py-3 text-sm">
               最近更新
             </Link>
           </div>
         </div>
-        <p className="absolute bottom-8 left-1/2 -translate-x-1/2 text-[11px] font-bold tracking-[0.18em] text-[var(--blog-muted)]">
+        <p className="home-scroll-cue absolute bottom-8 left-1/2 -translate-x-1/2 text-[11px] font-bold tracking-[0.18em] text-[var(--blog-muted)]">
           SCROLL FOR POSTS
         </p>
       </section>
 
-      <section id="latest" className="px-5 sm:px-8 py-20 sm:py-28">
-        <div className="mx-auto max-w-5xl">
-          <div className="mb-10 flex items-end justify-between gap-6 border-b border-[var(--blog-line)] pb-6">
+      <ScrollStage id="latest" className="home-stage px-5 sm:px-8 py-20 sm:py-28">
+        <div className="mx-auto max-w-6xl">
+          <div className="stage-heading mb-12 grid gap-6 border-b border-[var(--blog-line)] pb-7 md:grid-cols-[1fr_auto] md:items-end">
             <div>
               <div className="mb-3 inline-flex items-center gap-2 text-xs font-extrabold tracking-[0.2em] text-[var(--blog-muted)]">
                 <BookOpen size={15} />
-                LATEST
+                LATEST FIELD
               </div>
-              <h2 className="text-3xl sm:text-5xl font-black tracking-[-0.055em] text-[var(--blog-fg)]">最新文章</h2>
+              <h2 className="text-3xl sm:text-5xl font-black text-[var(--blog-fg)]">最新文章焦点流</h2>
+              <p className="mt-4 max-w-2xl text-sm sm:text-base leading-7 text-[var(--blog-muted)]">
+                内容不再只是往下排，而是在滚动里逐步靠近你。
+              </p>
             </div>
-            <Link href="/blog" className="hidden sm:inline-flex items-center gap-2 rounded-full px-4 py-2 text-sm font-extrabold text-[var(--blog-muted)] transition-colors hover:bg-[var(--blog-fg-soft)] hover:text-[var(--blog-fg)]">
+            <Link href="/blog" className="blog-button-secondary hidden px-4 py-2 text-sm md:inline-flex">
               全部文章
               <ArrowRight size={16} />
             </Link>
           </div>
 
-          <AnimatedSection className="space-y-3">
-            {recentArticles.map((article) => (
-              <AnimatedItem key={article.id} className="group">
-                <Link href={`/blog/${article.id}`} className="block">
-                  <LiquidGlass variant="card" className="glass-card px-5 py-5 transition-transform duration-300 group-hover:-translate-y-1 sm:px-6">
-                    <article className="grid gap-4 sm:grid-cols-[120px_1fr_auto] sm:items-center">
-                      <div className="font-mono text-sm font-bold text-[var(--blog-muted)]">
-                        {new Date(article.createdAt).toLocaleDateString('en-US', { month: 'short', day: '2-digit' })}
+          <div className="home-stream">
+            <aside className="home-stream-rail" aria-hidden="true">
+              <span>FOCUS</span>
+              <strong>{String(recentArticles.length).padStart(2, '0')}</strong>
+            </aside>
+            <div className="home-article-stack">
+              {recentArticles.map((article, index) => (
+                <StageReveal key={article.id} delay={index * 0.04} className="group">
+                  <Link href={`/blog/${article.id}`} className={`article-focus-card content-surface ${index === 0 ? 'is-primary' : ''}`}>
+                    <article className="grid gap-5 md:grid-cols-[92px_1fr_auto] md:items-center">
+                      <div className="article-index">
+                        <span>{String(index + 1).padStart(2, '0')}</span>
+                        <time>
+                          {new Date(article.createdAt).toLocaleDateString('en-US', { month: 'short', day: '2-digit' })}
+                        </time>
                       </div>
                       <div className="min-w-0">
-                        <h3 className="text-xl sm:text-2xl font-black tracking-[-0.04em] text-[var(--blog-fg)]">
+                        <h3 className="text-2xl sm:text-3xl font-black text-[var(--blog-fg)]">
                           {article.title}
                         </h3>
-                        <p className="mt-2 line-clamp-2 text-sm sm:text-base leading-7 text-[var(--blog-muted)]">
+                        <p className="mt-3 line-clamp-2 text-sm sm:text-base leading-7 text-[var(--blog-muted)]">
                           {article.summary}
                         </p>
                         {article.tags.length > 0 && (
-                          <div className="mt-3 flex flex-wrap gap-2">
+                          <div className="mt-4 flex flex-wrap gap-2">
                             {article.tags.slice(0, 3).map((tag) => (
                               <span key={tag} className="blog-tag px-2.5 py-1">
                                 #{tag}
@@ -130,60 +136,66 @@ export default async function Home() {
                           </div>
                         )}
                       </div>
-                      <div className="hidden h-10 w-10 items-center justify-center rounded-full border border-[var(--blog-line)] text-[var(--blog-muted)] transition-all group-hover:border-[var(--blog-fg)] group-hover:text-[var(--blog-fg)] sm:flex">
-                        <ArrowRight size={17} />
+                      <div className="article-card-action">
+                        <ArrowRight size={18} />
                       </div>
                     </article>
-                  </LiquidGlass>
-                </Link>
-              </AnimatedItem>
-            ))}
-            {recentArticles.length === 0 && (
-              <LiquidGlass variant="card" className="glass-card py-16 text-center text-[var(--blog-muted)]">
-                暂无文章
-              </LiquidGlass>
-            )}
-          </AnimatedSection>
-        </div>
-      </section>
-
-      <section className="px-5 sm:px-8 pb-24 sm:pb-32">
-        <div className="mx-auto max-w-5xl">
-          <div className="mb-8 flex items-center gap-3 text-[var(--blog-fg)]">
-            <div className="flex h-9 w-9 items-center justify-center rounded-full bg-[var(--blog-fg-soft)]">
-              <Link2 size={18} />
+                  </Link>
+                </StageReveal>
+              ))}
+              {recentArticles.length === 0 && (
+                <div className="content-surface content-empty py-16 text-center text-[var(--blog-muted)]">
+                  暂无文章
+                </div>
+              )}
             </div>
-            <h2 className="text-2xl sm:text-3xl font-black tracking-[-0.045em]">精选链接</h2>
+          </div>
+        </div>
+      </ScrollStage>
+
+      <ScrollStage className="home-stage px-5 sm:px-8 pb-24 sm:pb-32">
+        <div className="mx-auto max-w-6xl">
+          <div className="mb-10 flex flex-col gap-4 text-[var(--blog-fg)] sm:flex-row sm:items-end sm:justify-between">
+            <div>
+              <div className="mb-3 inline-flex items-center gap-2 text-xs font-extrabold tracking-[0.2em] text-[var(--blog-muted)]">
+                <Link2 size={15} />
+                LINK CONSTELLATION
+              </div>
+              <h2 className="text-3xl sm:text-5xl font-black">精选链接星图</h2>
+            </div>
+            <p className="max-w-md text-sm leading-7 text-[var(--blog-muted)]">
+              项目入口像节点一样漂浮，但内容本身保持清晰、结实、可点。
+            </p>
           </div>
 
-          <AnimatedSection className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {projects.map((project) => (
-              <AnimatedItem key={project.id} className="group">
-                <Link href={project.url} target="_blank" className="block h-full">
-                  <LiquidGlass variant="card" className="glass-card h-full p-5 transition-transform duration-300 group-hover:-translate-y-1">
-                    <div className="mb-7 flex items-start justify-between gap-4">
-                      <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[var(--blog-fg-soft)]">
-                        {renderIcon(project)}
-                      </div>
-                      <ExternalLink size={18} className="text-[var(--blog-muted)] transition-colors group-hover:text-[var(--blog-fg)]" />
+          <div className="project-constellation">
+            <div className="project-constellation-grid" aria-hidden="true" />
+            {projects.map((project, index) => (
+              <StageReveal key={project.id} delay={index * 0.035} className="group">
+                <Link href={project.url} target="_blank" className="project-node content-surface">
+                  <span className="project-node-pulse" aria-hidden="true" />
+                  <div className="mb-7 flex items-start justify-between gap-4">
+                    <div className="project-node-icon">
+                      {renderIcon(project)}
                     </div>
-                    <h3 className="text-lg font-black tracking-[-0.035em] text-[var(--blog-fg)]">{project.title}</h3>
-                    <p className="mt-2 line-clamp-2 text-sm leading-6 text-[var(--blog-muted)]">
-                      {project.description}
-                    </p>
-                  </LiquidGlass>
+                    <ExternalLink size={18} className="text-[var(--blog-muted)] transition-colors group-hover:text-[var(--blog-fg)]" />
+                  </div>
+                  <h3 className="text-lg font-black text-[var(--blog-fg)]">{project.title}</h3>
+                  <p className="mt-2 line-clamp-2 text-sm leading-6 text-[var(--blog-muted)]">
+                    {project.description}
+                  </p>
                 </Link>
-              </AnimatedItem>
+              </StageReveal>
             ))}
             {projects.length === 0 && (
-              <LiquidGlass variant="card" className="glass-card col-span-full py-14 text-center text-[var(--blog-muted)]">
+              <div className="content-surface content-empty col-span-full py-14 text-center text-[var(--blog-muted)]">
+                <Sparkles className="mx-auto mb-3 opacity-40" size={28} />
                 暂无链接
-              </LiquidGlass>
+              </div>
             )}
-          </AnimatedSection>
+          </div>
         </div>
-      </section>
+      </ScrollStage>
     </div>
   );
 }
-// force redeploy Thu Jun 11 05:21:38 UTC 2026

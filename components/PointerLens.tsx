@@ -22,7 +22,6 @@ export function PointerLens() {
     let frame = 0;
     let isVisible = false;
     let isHeaderHover = false;
-    let isPastHero = false;
     let headerOverlap = 0;
 
     const enableLens = () => {
@@ -31,10 +30,10 @@ export function PointerLens() {
     };
 
     const setLensState = () => {
-      const shouldShow = hasMouseInput && isVisible && !isPastHero;
+      const shouldShow = hasMouseInput && isVisible;
       root.classList.toggle("pointer-lens-active", shouldShow);
       root.classList.toggle("pointer-lens-header", shouldShow && isHeaderHover);
-      root.classList.toggle("pointer-lens-native", isPastHero);
+      root.classList.remove("pointer-lens-native");
       root.style.setProperty("--lens-opacity", shouldShow ? "1" : "0");
       root.style.setProperty("--lens-scale", shouldShow ? "1" : "0.12");
       root.style.setProperty("--lens-stretch-x", "1");
@@ -54,7 +53,6 @@ export function PointerLens() {
     };
 
     const updateScrollState = () => {
-      isPastHero = window.scrollY > window.innerHeight * 0.65;
       setLensState();
     };
 
@@ -101,7 +99,7 @@ export function PointerLens() {
       updateHeaderState(visualX, visualY);
       setLensState();
 
-      if (isVisible && !isPastHero) {
+      if (isVisible) {
         frame = window.requestAnimationFrame(writePointerVars);
       }
     };
