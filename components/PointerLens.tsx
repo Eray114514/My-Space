@@ -47,8 +47,8 @@ export function PointerLens() {
       root.style.setProperty("--glass-bubble-scale", (1 + headerOverlap * 0.004).toFixed(3));
       root.style.setProperty("--glass-bubble-scale-x", (1 + headerOverlap * 0.012).toFixed(3));
       root.style.setProperty("--glass-bubble-scale-y", (1 - headerOverlap * 0.018).toFixed(3));
-      root.style.setProperty("--glass-grid-opacity", (0.32 + headerOverlap * 0.12).toFixed(3));
-      root.style.setProperty("--glass-grid-scale", (1.012 + headerOverlap * 0.012).toFixed(3));
+      root.style.setProperty("--glass-grid-opacity", (0.24 + headerOverlap * 0.09).toFixed(3));
+      root.style.setProperty("--glass-grid-scale", (1.01 + headerOverlap * 0.01).toFixed(3));
       root.style.setProperty("--glass-grid-shift-x", `${(headerOverlap * 7).toFixed(2)}px`);
       root.style.setProperty("--glass-grid-shift-y", `${(headerOverlap * -2.4).toFixed(2)}px`);
       root.style.setProperty("--glass-chroma-opacity", (headerOverlap * 0.08).toFixed(3));

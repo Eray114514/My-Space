@@ -9,9 +9,9 @@
   background:
     radial-gradient(circle at var(--glass-pointer-x) var(--glass-pointer-y), color-mix(in srgb, var(--glass-shine) 10%, transparent), transparent 30%),
     linear-gradient(135deg, color-mix(in srgb, var(--glass-shine) 8%, transparent), transparent 44%, color-mix(in srgb, var(--glass-chroma-b) 4%, transparent)),
-    color-mix(in srgb, var(--blog-bg) 64%, transparent);
-  -webkit-backdrop-filter: blur(3.5px) saturate(1.08) contrast(1.04);
-  backdrop-filter: blur(3.5px) saturate(1.08) contrast(1.04);
+    color-mix(in srgb, var(--blog-panel) 42%, transparent);
+  -webkit-backdrop-filter: blur(5px) saturate(1.1) contrast(1.04);
+  backdrop-filter: blur(5px) saturate(1.1) contrast(1.04);
   box-shadow:
     inset 0 1px 0 color-mix(in srgb, var(--glass-shine) 34%, transparent),
     inset 0 -1px 0 rgba(0, 0, 0, 0.11),
@@ -32,7 +32,7 @@
   background:
     radial-gradient(circle at var(--glass-pointer-x) var(--glass-pointer-y), color-mix(in srgb, var(--glass-shine) 8%, transparent), transparent 30%),
     linear-gradient(135deg, color-mix(in srgb, var(--glass-shine) 6%, transparent), transparent 44%, color-mix(in srgb, var(--glass-chroma-b) 4%, transparent)),
-    color-mix(in srgb, var(--blog-bg) 70%, transparent);
+    color-mix(in srgb, var(--blog-panel) 50%, transparent);
 }
 
 .liquid-glass-overflow,
@@ -51,8 +51,8 @@
   background:
     linear-gradient(145deg, color-mix(in srgb, var(--glass-shine) 10%, transparent), transparent 42%, transparent 78%, color-mix(in srgb, var(--glass-chroma-a) 4%, transparent)),
     radial-gradient(110% 80% at 50% 0%, color-mix(in srgb, var(--glass-shine) 6%, transparent), transparent 62%),
-    color-mix(in srgb, var(--blog-bg) 76%, transparent);
-  opacity: 0.92;
+    color-mix(in srgb, var(--blog-bg) 24%, transparent);
+  opacity: 0.58;
 }
 
 .liquid-glass-wrapper::after,
@@ -93,7 +93,7 @@
     calc(var(--blog-grid-x) * 0.22 + 38px) calc(var(--blog-grid-y) * 0.2 + 26px);
   filter: url("#liquid-glass-refraction") contrast(1.08) brightness(1.08);
   transform: scale(1.024);
-  opacity: 0.34;
+  opacity: 0.28;
 }
 
 .glass-material-grid {
@@ -203,9 +203,9 @@
 [data-blog-header].glass-blog {
   background:
     linear-gradient(180deg, color-mix(in srgb, var(--glass-shine) 8%, transparent), transparent 46%),
-    color-mix(in srgb, var(--blog-bg) 52%, transparent);
-  -webkit-backdrop-filter: blur(0.8px) saturate(1.03) contrast(1.02);
-  backdrop-filter: blur(0.8px) saturate(1.03) contrast(1.02);
+    color-mix(in srgb, var(--blog-bg) 20%, transparent);
+  -webkit-backdrop-filter: blur(3.4px) saturate(1.08) contrast(1.03);
+  backdrop-filter: blur(3.4px) saturate(1.08) contrast(1.03);
   box-shadow:
     inset 0 1px 0 color-mix(in srgb, var(--glass-shine) 34%, transparent),
     inset 0 -1px 0 rgba(0, 0, 0, 0.14),
@@ -218,7 +218,7 @@
 [data-blog-header][data-nav-context="content"].glass-blog {
   background:
     linear-gradient(180deg, color-mix(in srgb, var(--glass-shine) 12%, transparent), transparent 48%),
-    color-mix(in srgb, var(--blog-bg) 68%, transparent);
+    color-mix(in srgb, var(--blog-bg) 46%, transparent);
   -webkit-backdrop-filter: blur(9px) saturate(1.12) contrast(1.04);
   backdrop-filter: blur(9px) saturate(1.12) contrast(1.04);
   box-shadow:
@@ -231,15 +231,15 @@
 [data-blog-header].glass-blog::before {
   background:
     linear-gradient(45deg, color-mix(in srgb, var(--glass-shine) 10%, transparent), transparent 18%, transparent 84%, color-mix(in srgb, var(--glass-shine) 9%, transparent)),
-    color-mix(in srgb, var(--blog-bg) 78%, transparent);
-  opacity: 0.9;
+    color-mix(in srgb, var(--blog-bg) 26%, transparent);
+  opacity: 0.54;
 }
 
 [data-blog-header][data-nav-context="content"].glass-blog::before {
   background:
     linear-gradient(45deg, color-mix(in srgb, var(--glass-shine) 12%, transparent), transparent 18%, transparent 84%, color-mix(in srgb, var(--glass-shine) 10%, transparent)),
-    color-mix(in srgb, var(--blog-bg) 86%, transparent);
-  opacity: 0.96;
+    color-mix(in srgb, var(--blog-bg) 40%, transparent);
+  opacity: 0.72;
 }
 
 [data-blog-header].glass-blog::after {
@@ -263,7 +263,7 @@
 
 [data-blog-header] .glass-refract-grid {
   filter: none;
-  opacity: max(var(--glass-grid-opacity), 0.36);
+  opacity: max(var(--glass-grid-opacity), 0.3);
   mix-blend-mode: normal;
   background-position:
     calc(var(--blog-grid-x) * -0.62 + 24px + var(--glass-grid-shift-x)) calc(var(--blog-grid-y) * -0.5 + 14px + var(--glass-grid-shift-y)),
@@ -271,7 +271,7 @@
 }
 
 [data-blog-header][data-nav-context="content"] .glass-refract-grid {
-  opacity: max(var(--glass-grid-opacity), 0.28);
+  opacity: max(var(--glass-grid-opacity), 0.24);
 }
 
 .glass-cursor-bubble {
