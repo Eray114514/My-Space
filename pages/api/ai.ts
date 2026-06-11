@@ -1,4 +1,3 @@
-import { GoogleGenAI } from "@google/genai";
 import OpenAI from "openai";
 import { OpenRouter } from "@openrouter/sdk";
 
@@ -6,28 +5,18 @@ const isKeyValid = (key: string | undefined): boolean => {
     return !!key && key.trim() !== '' && key.trim().toLowerCase() !== 'none';
 };
 
-const ALL_POTENTIAL_MODELS = {
-  'deepseek-chat': { provider: 'deepseek', modelId: 'deepseek-chat' },
-  'deepseek-reasoner': { provider: 'deepseek', modelId: 'deepseek-reasoner' },
-  'gemini-flash': { provider: 'gemini', modelId: 'gemini-3-flash-preview' },
-  'openrouter-minimax': { provider: 'openrouter', modelId: 'minimax/minimax-m2.5:free' }
-} as const;
-
-const executeAIRequest = async (modelKey: string, systemPrompt: string, userPrompt: string, temperature: number = 0.7): Promise<string> => {
-    const config = (ALL_POTENTIAL_MODELS as Record<string, any>)[modelKey];
-    if (!config) throw new Error(`Model ${modelKey} is not supported.`);
-
-    if (config.provider === 'gemini') {
-        const key = process.env.GEMINI_API_KEY;
-        if (!isKeyValid(key)) throw new Error("Gemini API Key not configured");
-        const geminiClient = new GoogleGenAI({ apiKey: key });
-        const response = await geminiClient.models.generateContent({
-            model: config.modelId,
-            contents: userPrompt,
-            config: { systemInstruction: systemPrompt, temperature }
-        });
-        return response.text || '';
+function parseModelKey(modelKey: string): { provider: string; modelId: string } | null {
+    if (modelKey.includes(':')) {
+        const parts = modelKey.split(':');
+        return { provider: parts[0], modelId: parts.slice(1).join(':') };
     }
+    return null;
+}
+
+// Non-streaming AI request - NO thinking enabled (for simple tasks like tags, icons, SVG)
+const executeAIRequest = async (modelKey: string, systemPrompt: string, userPrompt: string, temperature: number = 0.7): Promise<string> => {
+    const config = parseModelKey(modelKey);
+    if (!config) throw new Error(`Model ${modelKey} is not supported. Format: "provider:modelId"`);
 
     if (config.provider === 'openrouter') {
         const key = process.env.OPENROUTER_API_KEY;
@@ -39,14 +28,11 @@ const executeAIRequest = async (modelKey: string, systemPrompt: string, userProm
             messages: [
                 { role: "system", content: systemPrompt },
                 { role: "user", content: userPrompt }
-            ]
+            ],
+            temperature
         };
 
-        const isReasoningModel = config.modelId.includes('reasoner') || config.modelId.includes('r1');
-        if (!isReasoningModel) {
-            options.temperature = temperature;
-        }
-
+        // No thinking/reasoning for simple tasks
         const response = await openrouter.chat.send({ chatRequest: options });
         return response.choices?.[0]?.message?.content || '';
     }
@@ -58,20 +44,20 @@ const executeAIRequest = async (modelKey: string, systemPrompt: string, userProm
         client = new OpenAI({ baseURL: 'https://api.deepseek.com', apiKey: key });
     }
 
+    if (!client) throw new Error(`Unknown provider: ${config.provider}`);
+
     const options: any = {
         messages: [
             { role: "system", content: systemPrompt },
             { role: "user", content: userPrompt }
         ],
         model: config.modelId,
+        temperature
     };
 
-    const isReasoningModel = config.modelId.includes('reasoner') || config.modelId.includes('r1');
-    if (!isReasoningModel) {
-        options.temperature = temperature;
-    }
+    // No thinking for simple tasks - just use the model directly
 
-    const response = await client!.chat.completions.create(options);
+    const response = await client.chat.completions.create(options);
     return response.choices[0]?.message?.content || '';
 };
 
