@@ -495,7 +495,7 @@ function ChatContent() {
                                     return (
                                         <div key={msg.id} className={`group flex gap-4 ${isUser ? 'flex-row-reverse' : ''} ${isEditing ? 'relative z-50' : 'relative'}`}>
                                             {/* Avatar */}
-                                            <div className={`w-10 h-10 rounded-2xl flex items-center justify-center shrink-0 border border-[var(--blog-line)] shadow-lg backdrop-blur-md transition-transform hover:scale-105 ${isUser ? 'bg-[var(--blog-fg)] text-[var(--blog-bg)]' : 'bg-[var(--blog-fg-soft)] text-[var(--blog-fg)]'}`}>
+                                            <div className={`glass-card w-10 h-10 rounded-2xl flex items-center justify-center shrink-0 border border-[var(--blog-line)] shadow-lg transition-transform hover:scale-105 ${isUser ? 'bg-[var(--blog-fg)] text-[var(--blog-bg)]' : 'bg-[var(--blog-fg-soft)] text-[var(--blog-fg)]'}`}>
                                                 {isUser ? <User size={20} /> : <Bot size={22} />}
                                             </div>
 

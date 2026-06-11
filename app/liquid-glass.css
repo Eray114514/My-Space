@@ -1,7 +1,10 @@
 /* --- Unified Liquid Glass System --- */
 
 .liquid-glass-wrapper,
-.glass-blog {
+.glass-blog,
+.glass-card:not(.liquid-glass-wrapper),
+.glass-panel:not(.liquid-glass-wrapper),
+.glass-popover:not(.liquid-glass-wrapper) {
   position: relative;
   isolation: isolate;
   overflow: hidden;
@@ -28,7 +31,10 @@
 }
 
 .dark .liquid-glass-wrapper,
-.dark .glass-blog {
+.dark .glass-blog,
+.dark .glass-card:not(.liquid-glass-wrapper),
+.dark .glass-panel:not(.liquid-glass-wrapper),
+.dark .glass-popover:not(.liquid-glass-wrapper) {
   background:
     radial-gradient(circle at var(--glass-pointer-x) var(--glass-pointer-y), color-mix(in srgb, var(--glass-shine) 8%, transparent), transparent 30%),
     linear-gradient(135deg, color-mix(in srgb, var(--glass-shine) 6%, transparent), transparent 44%, color-mix(in srgb, var(--glass-chroma-b) 4%, transparent)),
@@ -41,7 +47,10 @@
 }
 
 .liquid-glass-wrapper::before,
-.glass-blog::before {
+.glass-blog::before,
+.glass-card:not(.liquid-glass-wrapper)::before,
+.glass-panel:not(.liquid-glass-wrapper)::before,
+.glass-popover:not(.liquid-glass-wrapper)::before {
   content: "";
   position: absolute;
   inset: 1px;
@@ -56,7 +65,10 @@
 }
 
 .liquid-glass-wrapper::after,
-.glass-blog::after {
+.glass-blog::after,
+.glass-card:not(.liquid-glass-wrapper)::after,
+.glass-panel:not(.liquid-glass-wrapper)::after,
+.glass-popover:not(.liquid-glass-wrapper)::after {
   content: "";
   position: absolute;
   inset: 0;
@@ -98,6 +110,25 @@
 
 .glass-material-grid {
   inset: -28%;
+}
+
+.glass-card:not(.liquid-glass-wrapper)::before,
+.glass-panel:not(.liquid-glass-wrapper)::before,
+.glass-popover:not(.liquid-glass-wrapper)::before {
+  background:
+    linear-gradient(145deg, color-mix(in srgb, var(--glass-shine) 10%, transparent), transparent 42%, transparent 78%, color-mix(in srgb, var(--glass-chroma-a) 4%, transparent)),
+    radial-gradient(110% 80% at 50% 0%, color-mix(in srgb, var(--glass-shine) 6%, transparent), transparent 62%),
+    radial-gradient(circle at center, color-mix(in srgb, var(--blog-dot) 58%, transparent) 0 0.86px, transparent 1.28px),
+    radial-gradient(circle at center, color-mix(in srgb, var(--blog-dot) 22%, transparent) 0 0.68px, transparent 1.08px),
+    color-mix(in srgb, var(--blog-bg) 24%, transparent);
+  background-size: auto, auto, 34px 34px, 136px 136px, auto;
+  background-position:
+    0 0,
+    0 0,
+    calc(var(--blog-grid-x) * -0.62 + 18px) calc(var(--blog-grid-y) * -0.5 + 10px),
+    calc(var(--blog-grid-x) * 0.22 + 38px) calc(var(--blog-grid-y) * 0.2 + 26px),
+    0 0;
+  opacity: 0.58;
 }
 
 .liquid-glass-overflow .glass-material-grid,
@@ -311,7 +342,10 @@
 }
 
 .glass-blog > :not(.liquid-glass-content, .glass-material-grid),
-.glass-blog .liquid-glass-content {
+.glass-blog .liquid-glass-content,
+.glass-card:not(.liquid-glass-wrapper) > *,
+.glass-panel:not(.liquid-glass-wrapper) > *,
+.glass-popover:not(.liquid-glass-wrapper) > * {
   position: relative;
   z-index: 2;
 }
