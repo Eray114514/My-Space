@@ -18,8 +18,8 @@ export default function AdminDashboard() {
   const [projects, setProjects] = useState<Project[]>([]);
   const [loading, setLoading] = useState(true);
 
-  const [generalAiProvider, setGeneralAiProvider] = useState<AIModelKey>('deepseek-chat');
-  const [svgAiProvider, setSvgAiProvider] = useState<AIModelKey>('deepseek-reasoner');
+  const [generalAiProvider, setGeneralAiProvider] = useState<AIModelKey>('');
+  const [svgAiProvider, setSvgAiProvider] = useState<AIModelKey>('');
 
   const [isEditingProject, setIsEditingProject] = useState(false);
   const [currentProject, setCurrentProject] = useState<Project | undefined>(undefined);
@@ -177,12 +177,14 @@ export default function AdminDashboard() {
       )}
 
       {tab === 'settings' && (
-        <div className="space-y-8 animate-in slide-in-from-bottom-4 duration-500">
+        <div className="space-y-6 animate-in slide-in-from-bottom-4 duration-500">
           <ProviderManager />
           <SvgModelSelector />
-          <LiquidGlass variant="panel" className="glass-panel overflow-hidden">
-            <div className="p-6 border-b border-[var(--blog-line)]"><h3 className="font-black text-lg text-[var(--blog-fg)] flex items-center gap-2"><Settings size={20} /> 系统设置</h3></div>
-            <div className="p-8 max-w-3xl space-y-10">
+          <div className="rounded-xl bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 overflow-hidden">
+            <div className="px-5 py-4 border-b border-gray-200 dark:border-gray-800">
+              <h3 className="text-base font-bold text-gray-900 dark:text-white flex items-center gap-2"><Settings size={16} /> 系统设置</h3>
+            </div>
+            <div className="p-6 max-w-3xl">
               <ModelSelector
                 label="全局 AI 写作模型"
                 description="用于文章摘要生成、自动打标签等文本处理任务。建议选择速度较快的模型。"
@@ -190,7 +192,7 @@ export default function AdminDashboard() {
                 onChange={handleGeneralProviderChange}
               />
             </div>
-          </LiquidGlass>
+          </div>
         </div>
       )}
       {isEditingProject && <ProjectEditor project={currentProject} onSave={handleSaveProject} onCancel={() => setIsEditingProject(false)} defaultAiProvider={generalAiProvider} defaultSvgProvider={svgAiProvider} />}
