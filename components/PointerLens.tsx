@@ -9,8 +9,7 @@ export function PointerLens() {
     const hoverPointer = window.matchMedia("(hover: hover)");
     const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
 
-    // 纯触摸设备（由 ClientLayout 设置的 is-touch class 判断）：彻底跳过
-    if (reducedMotion.matches || root.classList.contains("is-touch")) {
+    if (reducedMotion.matches) {
       root.classList.remove("pointer-lens-enabled", "pointer-lens-active");
       return;
     }

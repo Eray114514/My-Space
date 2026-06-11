@@ -330,53 +330,6 @@
   }
 }
 
-/* ============================================
-   移动端样式（由 ClientLayout 设置 .is-touch class）
-   PC 端 0 风险 — 不会因为媒体查询误判而破坏桌面体验
-   不降级玻璃效果 — 保留所有 backdrop-filter、点阵、色彩偏移
-   ============================================ */
-html.is-touch .pointer-lens {
-  display: none !important;
-}
-
-/* Hero 标题手机端字号（不降级，只是改尺寸） */
-html.is-touch .hero-title {
-  font-size: clamp(2.6rem, 12vw, 5rem) !important;
-  line-height: 0.9 !important;
-}
-
-/* Hero 按钮全宽（仅布局调整） */
-html.is-touch .blog-hero .hero-copy > .flex.flex-wrap {
-  flex-direction: column;
-}
-
-html.is-touch .blog-hero .hero-copy > .flex.flex-wrap > a {
-  width: 100%;
-  justify-content: center;
-  padding-top: 0.875rem;
-  padding-bottom: 0.875rem;
-}
-
-/* 触摸涟漪 */
-.touch-ripple {
-  position: fixed;
-  z-index: 9999;
-  pointer-events: none;
-  width: 20px;
-  height: 20px;
-  margin-left: -10px;
-  margin-top: -10px;
-  border-radius: 50%;
-  background: radial-gradient(circle, color-mix(in srgb, var(--glass-chroma-a) 30%, transparent) 0%, transparent 70%);
-  box-shadow: 0 0 20px color-mix(in srgb, var(--glass-chroma-a) 20%, transparent);
-  animation: touchRippleExpand 0.6s ease-out forwards;
-}
-
-@keyframes touchRippleExpand {
-  0% { transform: scale(0.5); opacity: 0.8; }
-  100% { transform: scale(4); opacity: 0; }
-}
-
 /* 移动端文章列表时间线 */
 .mobile-timeline {
   opacity: 0.6;
