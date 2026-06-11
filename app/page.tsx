@@ -5,6 +5,7 @@ import { ServerStorageService } from '../services/server-storage';
 import * as Icons from 'lucide-react';
 import { LiquidGlass } from '../components/LiquidGlass';
 import { PointerLens } from '../components/PointerLens';
+import { MobileHeroEffects } from '../components/MobileHeroEffects';
 import { Project } from '../types';
 import { AnimatedSection, AnimatedItem } from '../components/AnimatedSection';
 
@@ -51,6 +52,7 @@ export default async function Home() {
   return (
     <div className="relative">
       <PointerLens />
+      <MobileHeroEffects />
 
       <section className="blog-hero min-h-screen px-5 sm:px-8 pt-32 pb-16 flex items-center justify-center">
         <div className="hero-copy hero-copy-base w-full max-w-6xl text-center">
