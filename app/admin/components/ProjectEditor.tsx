@@ -5,7 +5,6 @@ import { Project } from '../../../types';
 import { AIModelKey, AIService } from '../../../services/ai';
 import { Type, Link as LinkIcon, AlignLeft, Sparkles, Globe, Loader2, DownloadCloud, Wand2, X, Save } from 'lucide-react';
 import * as Icons from 'lucide-react';
-import { LiquidGlass } from '../../../components/LiquidGlass';
 import { IconPicker } from './IconPicker';
 import { CURATED_ICONS } from '../constants';
 import toast from 'react-hot-toast';
@@ -48,13 +47,9 @@ export const ProjectEditor: React.FC<{
     : Icons.Globe;
 
   const handleFetchFavicon = async () => {
-    if (!formData.url) {
-      toast.error("请先填写 URL");
-      return;
-    }
+    if (!formData.url) { toast.error("请先填写 URL"); return; }
     setFetchingFavicon(true);
     setFormData(prev => ({ ...prev, iconType: 'auto' }));
-
     try {
       try { new URL(formData.url); } catch { toast.error("URL 格式无效"); setFetchingFavicon(false); return; }
       const iconUrl = `https://t1.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=${encodeURIComponent(formData.url)}&size=128`;
@@ -64,12 +59,10 @@ export const ProjectEditor: React.FC<{
       const blob = await response.blob();
       const reader = new FileReader();
       reader.onloadend = () => {
-        const base64data = reader.result as string;
-        setFormData(prev => ({ ...prev, imageBase64: base64data }));
+        setFormData(prev => ({ ...prev, imageBase64: reader.result as string }));
       };
       reader.readAsDataURL(blob);
     } catch (e) {
-      console.error("Favicon fetch error", e);
       toast.error("获取图标失败，该网站可能没有公开的高清图标。");
     } finally {
       setFetchingFavicon(false);
@@ -86,7 +79,7 @@ export const ProjectEditor: React.FC<{
         setFormData(prev => ({ ...prev, presetIcon: recommended }));
       } else {
         setFormData(prev => ({ ...prev, presetIcon: 'Globe' }));
-        toast.error(`AI 推荐结果不明确，已为您选择通用图标。`);
+        toast.error("AI 推荐结果不明确，已为您选择通用图标。");
       }
     } catch (e) {
       toast.error("AI 服务暂时不可用。");
@@ -112,135 +105,120 @@ export const ProjectEditor: React.FC<{
     }
   };
 
-  // Helper styles
-  const inputGroupClass = "space-y-1.5";
-  const labelClass = "block text-[10px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider pl-1";
-  const inputClass = "blog-input w-full px-4 py-3 rounded-xl placeholder:text-gray-400/60 text-sm font-medium";
+  const inputClass = "w-full px-4 py-3 rounded-xl bg-white dark:bg-[#1a1a1a] border border-gray-200 dark:border-white/10 text-sm outline-none focus:ring-2 focus:ring-[var(--blog-fg)]/20 placeholder:text-gray-400/60 transition-all";
+  const labelClass = "block text-[11px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1.5";
 
   return createPortal(
-    <div className="fixed inset-0 z-9999 bg-[#eef2f6]/60 dark:bg-[#050505]/60 backdrop-blur-xl flex items-center justify-center p-4 animate-in fade-in duration-300">
-      <LiquidGlass variant="popover" className="w-full max-w-xl rounded-4xl shadow-2xl max-h-[90vh] overflow-y-auto flex flex-col border border-white/40 dark:border-white/10">
+    <div className="fixed inset-0 z-[9999] bg-black/40 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-200">
+      <div className="w-full max-w-lg bg-white dark:bg-[#111] rounded-2xl shadow-2xl max-h-[85vh] overflow-hidden flex flex-col border border-gray-200 dark:border-white/10">
 
         {/* Header */}
-        <div className="p-6 pb-4 border-b border-white/20 dark:border-white/5 flex justify-between items-center bg-white/40 dark:bg-white/5">
+        <div className="px-6 py-4 border-b border-gray-100 dark:border-white/5 flex justify-between items-center shrink-0">
           <div>
-            <h3 className="text-xl font-bold text-gray-900 dark:text-white">{project ? '编辑导航' : '新增导航'}</h3>
-            <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">完善链接信息与视觉呈现</p>
+            <h3 className="text-lg font-bold text-gray-900 dark:text-white">{project ? '编辑导航' : '新增导航'}</h3>
+            <p className="text-xs text-gray-400 mt-0.5">完善链接信息与图标</p>
           </div>
-          <button onClick={onCancel} className="p-2 rounded-full hover:bg-black/5 dark:hover:bg-white/10 transition-colors text-gray-500 dark:text-gray-400">
-            <X size={20} />
+          <button onClick={onCancel} className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-white/10 transition-colors text-gray-400">
+            <X size={18} />
           </button>
         </div>
 
-        <div className="p-6 md:p-8 space-y-6">
-          <form onSubmit={handleSubmit} className="space-y-5">
+        {/* Scrollable Body */}
+        <div className="flex-1 overflow-y-auto p-6 space-y-5 custom-scrollbar">
+          <form id="project-form" onSubmit={handleSubmit} className="space-y-5">
 
-            {/* Top Inputs */}
-            <div className={inputGroupClass}>
-              <label className={labelClass}><Type size={10} className="inline mr-1" /> 标题</label>
+            <div>
+              <label className={labelClass}>标题</label>
               <input required placeholder="例如：GitHub" className={inputClass} value={formData.title} onChange={e => setFormData({ ...formData, title: e.target.value })} />
             </div>
 
-            <div className={inputGroupClass}>
-              <label className={labelClass}><LinkIcon size={10} className="inline mr-1" /> URL 链接</label>
+            <div>
+              <label className={labelClass}>URL 链接</label>
               <input required type="url" placeholder="https://..." className={inputClass} value={formData.url} onChange={e => setFormData({ ...formData, url: e.target.value })} />
             </div>
 
-            <div className={inputGroupClass}>
-              <label className={labelClass}><AlignLeft size={10} className="inline mr-1" /> 描述</label>
+            <div>
+              <label className={labelClass}>描述</label>
               <textarea placeholder="简短的介绍..." className={`${inputClass} min-h-[80px] resize-none`} value={formData.description} onChange={e => setFormData({ ...formData, description: e.target.value })} />
             </div>
 
-            {/* Icon Section - Reimagined */}
-            <div className="pt-2">
-              <label className={`${labelClass} mb-3 flex items-center gap-2`}>
-                <Sparkles size={10} /> 图标设置
-              </label>
+            {/* Icon Section */}
+            <div>
+              <label className={labelClass}>图标设置</label>
 
-              <div className="bg-white/30 dark:bg-white/5 rounded-2xl p-1.5 border border-white/20 dark:border-white/5 backdrop-blur-md">
-                <div className="grid grid-cols-3 gap-1 mb-4 bg-gray-100/50 dark:bg-black/20 p-1 rounded-xl">
-                  {['auto', 'preset', 'generated'].map(type => (
-                    <button
-                      key={type}
-                      type="button"
-                      onClick={() => setFormData({ ...formData, iconType: type as any })}
-                      className={`flex items-center justify-center gap-2 py-2 text-xs font-bold rounded-lg transition-all duration-300 ${formData.iconType === type
-                          ? 'bg-[var(--blog-fg)] text-[var(--blog-bg)] shadow-sm scale-[1.02]'
-                          : 'text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200'
-                        }`}
-                    >
-                      {type === 'auto' ? '自动抓取' : type === 'preset' ? '预设图标' : 'AI 设计'}
-                    </button>
-                  ))}
-                </div>
-
-                {/* Preview Stage */}
-                <div className="flex flex-col items-center justify-center p-6 relative">
-                  {/* Spotlight Effect */}
-                  <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-32 h-32 bg-[var(--blog-fg-soft)] blur-[42px] rounded-full pointer-events-none"></div>
-
-                  <div className="relative w-20 h-20 bg-white dark:bg-[#1a1a1a] rounded-2xl shadow-xl flex items-center justify-center border border-white/60 dark:border-white/5 mb-4 group overflow-hidden">
-                    {/* Icon Render */}
-                    <div className="relative z-10 transition-transform duration-500 group-hover:scale-110">
-                      {formData.iconType === 'auto' && (
-                        formData.imageBase64
-                          ? <img src={formData.imageBase64} className="w-10 h-10 object-cover rounded-md shadow-sm" alt="Favicon" />
-                          : <Globe className="text-gray-300 dark:text-neutral-600" size={40} />
-                      )}
-                      {formData.iconType === 'preset' && (
-                        <SelectedIconComp className="text-[var(--blog-fg)] drop-shadow-md" size={40} />
-                      )}
-                      {formData.iconType === 'generated' && (
-                        formData.customSvg
-                          ? <div className="w-10 h-10 text-[var(--blog-fg)] [&>svg]:w-full [&>svg]:h-full drop-shadow-md" dangerouslySetInnerHTML={{ __html: formData.customSvg }} />
-                          : <Wand2 className="text-gray-300 dark:text-neutral-600" size={40} />
-                      )}
-                    </div>
-                  </div>
-
-                  {/* Action Buttons based on type */}
-                  <div className="w-full relative z-10">
-                    {formData.iconType === 'auto' && (
-                      <button type="button" onClick={handleFetchFavicon} disabled={fetchingFavicon} className="blog-button-secondary w-full px-4 py-2.5 text-xs rounded-xl">
-                        {fetchingFavicon ? <Loader2 size={14} className="animate-spin" /> : <DownloadCloud size={14} />} {fetchingFavicon ? '抓取中...' : '抓取网站图标'}
-                      </button>
-                    )}
-
-                    {formData.iconType === 'preset' && (
-                      <div className="w-full">
-                        <button type="button" onClick={handleRecommendIcon} disabled={recommendingIcon} className="blog-button-secondary w-full px-4 py-2.5 text-xs rounded-xl mb-2">
-                          {recommendingIcon ? <Loader2 size={14} className="animate-spin" /> : <Sparkles size={14} />} 智能推荐
-                        </button>
-                        <IconPicker selectedIcon={formData.presetIcon || 'Globe'} onSelect={(icon) => setFormData({ ...formData, presetIcon: icon })} />
-                      </div>
-                    )}
-
-                    {formData.iconType === 'generated' && (
-                      <div className="w-full">
-                        <button type="button" onClick={handleGenerateSvg} disabled={generatingSvg} className="blog-button-primary w-full px-4 py-2.5 text-xs rounded-xl">
-                          {generatingSvg ? <Loader2 size={14} className="animate-spin" /> : <Wand2 size={14} />} {generatingSvg ? 'AI 正在绘制...' : 'AI 设计新图标'}
-                        </button>
-                        {/* Note: The shortName feature needs to be safely passed down if used. Here we keep it generic */}
-                        <p className="text-[10px] text-center mt-2 text-gray-400">Powered by AI</p>
-                      </div>
-                    )}
-                  </div>
-                </div>
+              {/* Type Tabs */}
+              <div className="grid grid-cols-3 gap-1 p-1 bg-gray-100 dark:bg-white/5 rounded-xl mb-4">
+                {['auto', 'preset', 'generated'].map(type => (
+                  <button key={type} type="button"
+                    onClick={() => setFormData({ ...formData, iconType: type as any })}
+                    className={`py-2 text-xs font-bold rounded-lg transition-all ${formData.iconType === type
+                        ? 'bg-[var(--blog-fg)] text-[var(--blog-bg)] shadow-sm'
+                        : 'text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200'
+                      }`}>
+                    {type === 'auto' ? '自动抓取' : type === 'preset' ? '预设图标' : 'AI 设计'}
+                  </button>
+                ))}
               </div>
-            </div>
 
-            {/* Footer Actions */}
-            <div className="flex gap-3 pt-4 mt-2">
-              <button type="button" onClick={onCancel} className="flex-1 px-5 py-3 text-gray-600 dark:text-gray-300 bg-gray-100 dark:bg-white/5 hover:bg-gray-200 dark:hover:bg-white/10 rounded-xl transition-colors font-bold text-sm">
-                取消
-              </button>
-              <button type="submit" disabled={saving} className="blog-button-primary flex-2 px-5 py-3 rounded-xl disabled:opacity-50 disabled:scale-100 text-sm">
-                {saving ? <Loader2 size={18} className="animate-spin" /> : <Save size={18} />} {saving ? '保存中...' : '保存'}
-              </button>
+              {/* Preview + Actions */}
+              <div className="flex flex-col items-center p-5 rounded-xl bg-gray-50 dark:bg-white/[0.03] border border-gray-100 dark:border-white/5">
+                <div className="w-16 h-16 rounded-xl bg-white dark:bg-[#1a1a1a] shadow-md flex items-center justify-center border border-gray-100 dark:border-white/5 mb-4">
+                  {formData.iconType === 'auto' && (
+                    formData.imageBase64
+                      ? <img src={formData.imageBase64} className="w-8 h-8 object-cover rounded" alt="Favicon" />
+                      : <Globe className="text-gray-300 dark:text-neutral-600" size={32} />
+                  )}
+                  {formData.iconType === 'preset' && (
+                    <SelectedIconComp className="text-[var(--blog-fg)]" size={32} />
+                  )}
+                  {formData.iconType === 'generated' && (
+                    formData.customSvg
+                      ? <div className="w-8 h-8 text-[var(--blog-fg)]" dangerouslySetInnerHTML={{ __html: formData.customSvg }} />
+                      : <Wand2 className="text-gray-300 dark:text-neutral-600" size={32} />
+                  )}
+                </div>
+
+                {formData.iconType === 'auto' && (
+                  <button type="button" onClick={handleFetchFavicon} disabled={fetchingFavicon}
+                    className="w-full px-4 py-2.5 text-xs font-medium rounded-lg bg-gray-100 dark:bg-white/5 hover:bg-gray-200 dark:hover:bg-white/10 transition-colors text-gray-700 dark:text-gray-300 flex items-center justify-center gap-2">
+                    {fetchingFavicon ? <Loader2 size={14} className="animate-spin" /> : <DownloadCloud size={14} />} {fetchingFavicon ? '抓取中...' : '抓取网站图标'}
+                  </button>
+                )}
+
+                {formData.iconType === 'preset' && (
+                  <div className="w-full space-y-3">
+                    <button type="button" onClick={handleRecommendIcon} disabled={recommendingIcon}
+                      className="w-full px-4 py-2.5 text-xs font-medium rounded-lg bg-gray-100 dark:bg-white/5 hover:bg-gray-200 dark:hover:bg-white/10 transition-colors text-gray-700 dark:text-gray-300 flex items-center justify-center gap-2">
+                      {recommendingIcon ? <Loader2 size={14} className="animate-spin" /> : <Sparkles size={14} />} 智能推荐
+                    </button>
+                    <IconPicker selectedIcon={formData.presetIcon || 'Globe'} onSelect={(icon) => setFormData({ ...formData, presetIcon: icon })} />
+                  </div>
+                )}
+
+                {formData.iconType === 'generated' && (
+                  <div className="w-full">
+                    <button type="button" onClick={handleGenerateSvg} disabled={generatingSvg}
+                      className="w-full px-4 py-2.5 text-xs font-bold rounded-lg bg-[var(--blog-fg)] text-[var(--blog-bg)] hover:opacity-90 transition-opacity flex items-center justify-center gap-2">
+                      {generatingSvg ? <Loader2 size={14} className="animate-spin" /> : <Wand2 size={14} />} {generatingSvg ? 'AI 正在绘制...' : 'AI 设计新图标'}
+                    </button>
+                  </div>
+                )}
+              </div>
             </div>
           </form>
         </div>
-      </LiquidGlass>
+
+        {/* Footer */}
+        <div className="px-6 py-4 border-t border-gray-100 dark:border-white/5 flex gap-3 shrink-0 bg-white dark:bg-[#111]">
+          <button type="button" onClick={onCancel} className="flex-1 px-5 py-2.5 text-sm font-medium text-gray-600 dark:text-gray-300 bg-gray-100 dark:bg-white/5 hover:bg-gray-200 dark:hover:bg-white/10 rounded-xl transition-colors">
+            取消
+          </button>
+          <button type="submit" form="project-form" disabled={saving}
+            className="flex-[2] px-5 py-2.5 text-sm font-bold rounded-xl bg-[var(--blog-fg)] text-[var(--blog-bg)] hover:opacity-90 transition-opacity disabled:opacity-50 flex items-center justify-center gap-2">
+            {saving ? <Loader2 size={16} className="animate-spin" /> : <Save size={16} />} {saving ? '保存中...' : '保存'}
+          </button>
+        </div>
+      </div>
     </div>,
     document.body
   );
