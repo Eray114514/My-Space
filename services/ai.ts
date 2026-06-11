@@ -1,11 +1,30 @@
-export const AI_MODELS = {
-  'deepseek-chat': { provider: 'deepseek', modelId: 'deepseek-chat', name: 'DeepSeek 默认', shortName: '默认', description: 'V3 模型，速度快，性价比高。', isFree: false },
-  'deepseek-reasoner': { provider: 'deepseek', modelId: 'deepseek-reasoner', name: 'DeepSeek 思考', shortName: '思考', description: 'R1 推理模型，擅长复杂逻辑和代码。', isFree: false },
-  'gemini-flash': { provider: 'gemini', modelId: 'gemini-3-flash-preview', name: 'Gemini Flash', shortName: 'Flash', description: 'Google 最新模型，响应极快。', isFree: true },
-  'openrouter-minimax': { provider: 'openrouter', modelId: 'minimax/minimax-m2.5:free', name: 'MiniMax (Free)', shortName: 'MiniMax', description: 'OpenRouter 免费版 MiniMax。', isFree: true }
-} as const;
+export interface AIModelConfig {
+  provider: string;
+  modelId: string;
+  name: string;
+  shortName: string;
+  description: string;
+  isFree: boolean;
+  supportsThinking?: boolean;
+}
 
-export type AIModelKey = keyof typeof AI_MODELS;
+export interface AIProviderConfig {
+  id: string;
+  name: string;
+  baseUrl?: string;
+  apiKeyEnv: string;
+  enabled: boolean;
+}
+
+export const AI_PROVIDERS: AIProviderConfig[] = [
+  { id: 'deepseek', name: 'DeepSeek', baseUrl: 'https://api.deepseek.com', apiKeyEnv: 'DEEPSEEK_API_KEY', enabled: true },
+  { id: 'openrouter', name: 'OpenRouter', apiKeyEnv: 'OPENROUTER_API_KEY', enabled: true }
+];
+
+// No hardcoded models - all models come from user's stored models in localStorage
+export const AI_MODELS: Record<string, AIModelConfig> = {};
+
+export type AIModelKey = string;
 
 export const AIService = {
   generateSummaryStream: async (content: string, modelKey: AIModelKey, onChunk: (text: string) => void) => {
@@ -53,7 +72,7 @@ export const AIService = {
     if (error) throw new Error(error);
     return data;
   },
-  chatStream: async (messages: { role: string; content: string }[], modelKey: AIModelKey, onChunk: (text: string) => void) => {
+  chatStream: async (messages: { role: string; content: string }[], modelKey: AIModelKey, onChunk: (text: string, reasoning?: string) => void) => {
     const res = await fetch('/api/ai-stream', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -65,7 +84,18 @@ export const AIService = {
     while (true) {
       const { done, value } = await reader.read();
       if (done) break;
-      onChunk(decoder.decode(value));
+      const chunk = decoder.decode(value);
+      const lines = chunk.split('\n');
+      for (const line of lines) {
+        if (line.startsWith('data: ')) {
+          try {
+            const parsed = JSON.parse(line.slice(6));
+            onChunk(parsed.content || '', parsed.reasoning || '');
+          } catch {
+            onChunk(line.slice(6));
+          }
+        }
+      }
     }
   }
 };

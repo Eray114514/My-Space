@@ -8,7 +8,7 @@ import { Plus, Trash2, Edit2, Globe, Settings, Layout } from 'lucide-react';
 import { Article, Project } from '../../types';
 import * as Icons from 'lucide-react';
 import { LiquidGlass } from '../../components/LiquidGlass';
-import { ModelSelector } from './components/ModelSelector';
+import { ModelSelector, ProviderManager, SvgModelSelector } from './components/ModelSelector';
 import { ProjectEditor } from './components/ProjectEditor';
 import { ArticleEditor } from './components/ArticleEditor';
 
@@ -177,23 +177,21 @@ export default function AdminDashboard() {
       )}
 
       {tab === 'settings' && (
-        <LiquidGlass variant="panel" className="glass-panel overflow-hidden animate-in slide-in-from-bottom-4 duration-500">
-          <div className="p-6 border-b border-[var(--blog-line)]"><h3 className="font-black text-lg text-[var(--blog-fg)] flex items-center gap-2"><Settings size={20} /> 系统设置</h3></div>
-          <div className="p-8 max-w-3xl space-y-10">
-            <ModelSelector
-              label="全局 AI 写作模型"
-              description="用于文章摘要生成、自动打标签等文本处理任务。建议选择速度较快的模型。"
-              value={generalAiProvider}
-              onChange={handleGeneralProviderChange}
-            />
-            <ModelSelector
-              label="图标绘制 AI 模型"
-              description="专用于生成 SVG 图标代码。建议选择 DeepSeek Reasoner (R1) 或逻辑能力较强的模型以获得最佳绘图效果。"
-              value={svgAiProvider}
-              onChange={handleSvgProviderChange}
-            />
-          </div>
-        </LiquidGlass>
+        <div className="space-y-8 animate-in slide-in-from-bottom-4 duration-500">
+          <ProviderManager />
+          <SvgModelSelector />
+          <LiquidGlass variant="panel" className="glass-panel overflow-hidden">
+            <div className="p-6 border-b border-[var(--blog-line)]"><h3 className="font-black text-lg text-[var(--blog-fg)] flex items-center gap-2"><Settings size={20} /> 系统设置</h3></div>
+            <div className="p-8 max-w-3xl space-y-10">
+              <ModelSelector
+                label="全局 AI 写作模型"
+                description="用于文章摘要生成、自动打标签等文本处理任务。建议选择速度较快的模型。"
+                value={generalAiProvider}
+                onChange={handleGeneralProviderChange}
+              />
+            </div>
+          </LiquidGlass>
+        </div>
       )}
       {isEditingProject && <ProjectEditor project={currentProject} onSave={handleSaveProject} onCancel={() => setIsEditingProject(false)} defaultAiProvider={generalAiProvider} defaultSvgProvider={svgAiProvider} />}
       {isEditingArticle && <ArticleEditor article={currentArticle} onSave={handleSaveArticle} onCancel={() => setIsEditingArticle(false)} defaultAIProvider={generalAiProvider} />}

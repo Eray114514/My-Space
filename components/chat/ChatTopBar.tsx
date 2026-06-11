@@ -3,7 +3,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { ArrowLeft, History, Sparkles, ChevronDown, Check, Settings, Plus } from 'lucide-react';
-import { AIModelKey, AI_MODELS } from '../../services/ai';
+import { AIModelKey } from '../../services/ai';
 import { LiquidGlass } from '../LiquidGlass';
 
 interface ChatTopBarProps {
@@ -19,6 +19,17 @@ interface ChatTopBarProps {
     setIsSystemPromptOpen: (open: boolean) => void;
     onNewChat: () => void;
     onNavigateHome: () => void;
+}
+
+function getModelShortName(key: string): string {
+    try {
+        const raw = localStorage.getItem('admin_custom_models');
+        const custom: { key: string; shortName: string }[] = raw ? JSON.parse(raw) : [];
+        const found = custom.find(m => m.key === key);
+        return found?.shortName || key.split(':').pop() || key;
+    } catch {
+        return key.split(':').pop() || key;
+    }
 }
 
 export const ChatTopBar: React.FC<ChatTopBarProps> = ({
