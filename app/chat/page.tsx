@@ -60,6 +60,10 @@ function ChatContent() {
     const [selectedModel, setSelectedModel] = useState<AIModelKey | null>(null);
     const [isModelMenuOpen, setIsModelMenuOpen] = useState(false);
 
+    // Reasoning display state
+    const [reasoningMap, setReasoningMap] = useState<Record<string, string>>({});
+    const [showReasoningMap, setShowReasoningMap] = useState<Record<string, boolean>>({});
+
     // Edit Mode State
     const [editingMessageId, setEditingMessageId] = useState<string | null>(null);
     const [editContent, setEditContent] = useState('');
@@ -80,37 +84,48 @@ function ChatContent() {
 
     // --- 1. Initialization & Data Loading ---
 
+    const allModels = useMemo(() => {
+        try {
+            const raw = localStorage.getItem('admin_custom_models');
+            const custom: { key: string; provider: string; modelId: string; name: string; shortName: string; description: string; isFree: boolean }[] = raw ? JSON.parse(raw) : [];
+            const merged: Record<string, AIModelConfig> = {};
+            for (const m of custom) {
+                merged[m.key] = { provider: m.provider, modelId: m.modelId, name: m.name, shortName: m.shortName, description: m.description, isFree: m.isFree };
+            }
+            return merged;
+        } catch {
+            return {} as Record<string, AIModelConfig>;
+        }
+    }, []);
+
     const availableModels = useMemo(() => {
-        if (Object.keys(AI_MODELS).length === 0) return [];
-        return Object.entries(AI_MODELS).filter(([_, model]) => {
-            // @ts-ignore
+        if (Object.keys(allModels).length === 0) return [];
+        return Object.entries(allModels).filter(([_, model]) => {
             if (isAdmin) return true;
-            // @ts-ignore
             return model.isFree;
         });
-    }, [isAdmin]);
+    }, [isAdmin, allModels]);
 
-    // Model Initialization Logic (Updated for Admin Default)
+    // Model Initialization Logic
     useEffect(() => {
         const initModel = async () => {
             if (!selectedModel && availableModels.length > 0) {
                 let targetModel: AIModelKey | null = null;
                 if (isAdmin) {
                     const settingModel = await StorageService.getGeneralAIModel();
-                    // @ts-ignore
-                    if (settingModel && AI_MODELS[settingModel]) {
+                    if (settingModel && allModels[settingModel]) {
                         targetModel = settingModel;
                     }
                 }
                 if (!targetModel) {
-                    const defaultFree = availableModels.find(([k]) => k.includes('openrouter-v3'))?.[0];
+                    const defaultFree = availableModels.find(([k, m]) => m.isFree)?.[0];
                     targetModel = (defaultFree || availableModels[0][0]) as AIModelKey;
                 }
                 setSelectedModel(targetModel);
             }
         };
         initModel();
-    }, [availableModels, selectedModel, isAdmin]);
+    }, [availableModels, selectedModel, isAdmin, allModels]);
 
     // Close History when clicking outside
     useEffect(() => {
@@ -237,14 +252,23 @@ function ChatContent() {
         apiMessages.unshift({ role: 'system', content: systemPrompt });
 
         let fullResponse = '';
+        let fullReasoning = '';
         try {
-            await AIService.chatStream(apiMessages, selectedModel, (chunk) => {
-                fullResponse += chunk;
+            await AIService.chatStream(apiMessages, selectedModel, (chunk, reasoning) => {
+                if (reasoning) fullReasoning = reasoning;
+                fullResponse = chunk || fullResponse;
                 setMessages(prev => prev.map(m => m.id === aiId ? { ...m, content: fullResponse } : m));
+                if (fullReasoning) {
+                    setReasoningMap(prev => ({ ...prev, [aiId]: fullReasoning }));
+                }
             });
 
             const finalMsgs = [...history, { ...aiPlaceholder, content: fullResponse }];
             setMessages(finalMsgs);
+            if (fullReasoning) {
+                setReasoningMap(prev => ({ ...prev, [aiId]: fullReasoning }));
+                setShowReasoningMap(prev => ({ ...prev, [aiId]: true }));
+            }
 
             const updatedSession = sessions.find(s => s.id === sessionId);
             if (updatedSession) {
@@ -482,7 +506,7 @@ function ChatContent() {
                                         </LiquidGlass>
                                         <div className="text-center space-y-2">
                                             <p className="font-semibold tracking-wide text-lg text-[var(--blog-fg)]">How can I help you today?</p>
-                                            <p className="text-xs text-[var(--blog-muted)] font-mono">Powered by {selectedModel ? (AI_MODELS[selectedModel] as any)?.shortName : 'AI'}</p>
+                                            <p className="text-xs text-[var(--blog-muted)] font-mono">Powered by {selectedModel ? (allModels[selectedModel] as any)?.shortName : 'AI'}</p>
                                         </div>
                                     </div>
                                 )}
@@ -491,6 +515,8 @@ function ChatContent() {
                                     const isLast = index === messages.length - 1;
                                     const isUser = msg.role === 'user';
                                     const isEditing = editingMessageId === msg.id;
+                                    const reasoning = reasoningMap[msg.id];
+                                    const showReasoning = showReasoningMap[msg.id];
 
                                     return (
                                         <div key={msg.id} className={`group flex gap-4 ${isUser ? 'flex-row-reverse' : ''} ${isEditing ? 'relative z-50' : 'relative'}`}>
@@ -519,6 +545,22 @@ function ChatContent() {
                                                     </LiquidGlass>
                                                 ) : (
                                                     <>
+                                                        {reasoning && (
+                                                            <div className="w-full mb-2">
+                                                                <button
+                                                                    onClick={() => setShowReasoningMap(prev => ({ ...prev, [msg.id]: !prev[msg.id] }))}
+                                                                    className="flex items-center gap-1.5 text-xs font-bold text-amber-600 dark:text-amber-400 hover:text-amber-700 dark:hover:text-amber-300 transition-colors mb-1"
+                                                                >
+                                                                    <Sparkles size={12} />
+                                                                    {showReasoning ? '隐藏思考过程' : '查看思考过程'}
+                                                                </button>
+                                                                {showReasoning && (
+                                                                    <LiquidGlass className="glass-card p-3 text-[13px] leading-6 text-amber-800 dark:text-amber-200 bg-amber-50/30 dark:bg-amber-900/10 border-amber-200/50 dark:border-amber-800/30">
+                                                                        <p className="whitespace-pre-wrap font-mono opacity-90">{reasoning}</p>
+                                                                    </LiquidGlass>
+                                                                )}
+                                                            </div>
+                                                        )}
                                                         <LiquidGlass className={`px-5 py-4 text-[15px] leading-7 relative overflow-x-auto ${isUser
                                                                 ? 'bg-[var(--blog-fg)] text-[var(--blog-bg)] rounded-2xl rounded-tr-sm'
                                                                 : 'glass-card text-[var(--blog-fg)] rounded-2xl rounded-tl-sm'

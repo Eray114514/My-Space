@@ -43,9 +43,9 @@ export const StorageService = {
     if (!settingsCache) settingsCache = {};
     settingsCache[key] = value;
   },
-  getGeneralAIModel: async (): Promise<AIModelKey> => await StorageService.getSystemSetting('general_ai_model', 'deepseek-chat') as AIModelKey,
+  getGeneralAIModel: async (): Promise<AIModelKey> => await StorageService.getSystemSetting('general_ai_model', '') as AIModelKey,
   saveGeneralAIModel: (model: AIModelKey) => StorageService.saveSystemSetting('general_ai_model', model),
-  getSvgAIModel: async (): Promise<AIModelKey> => await StorageService.getSystemSetting('svg_ai_model', 'deepseek-reasoner') as AIModelKey,
+  getSvgAIModel: async (): Promise<AIModelKey> => await StorageService.getSystemSetting('svg_ai_model', '') as AIModelKey,
   saveSvgAIModel: (model: AIModelKey) => StorageService.saveSystemSetting('svg_ai_model', model),
   getArticles: async (forceRefresh = false): Promise<Article[]> => {
     if (articlesCache && !forceRefresh) return articlesCache;
