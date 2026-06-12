@@ -107,8 +107,7 @@ export const ChatTopBar: React.FC<ChatTopBarProps> = ({
                         className="flex items-center gap-2 px-3 py-2 rounded-full text-xs font-bold text-[var(--blog-fg)] hover:bg-[var(--blog-fg-soft)] transition-all border border-transparent hover:border-[var(--blog-line)]"
                     >
                         <Sparkles size={16} className="text-[var(--blog-fg)]" />
-                        {/* @ts-ignore */}
-                        <span className="max-w-[80px] sm:max-w-xs truncate">{selectedModel ? AI_MODELS[selectedModel]?.shortName : 'Loading'}</span>
+                        <span className="max-w-[80px] sm:max-w-xs truncate">{selectedModel ? getModelShortName(selectedModel) : 'Loading'}</span>
                         <ChevronDown size={14} className="opacity-50" />
                     </button>
 
