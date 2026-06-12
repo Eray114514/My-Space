@@ -23,6 +23,7 @@ export function PointerLens() {
     let isVisible = false;
     let isHeaderHover = false;
     let headerOverlap = 0;
+    let headerRect = { left: 0, right: 0, top: 0, bottom: 0, width: 0, height: 0 };
 
     const enableLens = () => {
       if (!hasMouseInput) hasMouseInput = true;
@@ -53,27 +54,34 @@ export function PointerLens() {
     };
 
     const updateScrollState = () => {
+      updateHeaderRect();
       setLensState();
     };
 
-    const updateHeaderState = (x: number, y: number) => {
+    const updateHeaderRect = () => {
       const header = document.querySelector("[data-blog-header]");
-      if (!header) {
+      if (header) {
+        const rect = header.getBoundingClientRect();
+        headerRect = { left: rect.left, right: rect.right, top: rect.top, bottom: rect.bottom, width: rect.width, height: rect.height };
+      }
+    };
+
+    const updateHeaderState = (x: number, y: number) => {
+      if (!headerRect.width) {
         isHeaderHover = false;
         headerOverlap = 0;
         return;
       }
 
-      const rect = header.getBoundingClientRect();
       const lensRadius = 66;
-      const closestX = Math.max(rect.left, Math.min(x, rect.right));
-      const closestY = Math.max(rect.top, Math.min(y, rect.bottom));
+      const closestX = Math.max(headerRect.left, Math.min(x, headerRect.right));
+      const closestY = Math.max(headerRect.top, Math.min(y, headerRect.bottom));
       const distance = Math.hypot(x - closestX, y - closestY);
       headerOverlap = Math.max(0, Math.min(1, 1 - distance / lensRadius));
       isHeaderHover = headerOverlap > 0.02;
 
-      root.style.setProperty("--glass-pointer-x", `${Math.max(0, Math.min(100, ((x - rect.left) / rect.width) * 100)).toFixed(2)}%`);
-      root.style.setProperty("--glass-pointer-y", `${Math.max(0, Math.min(100, ((y - rect.top) / rect.height) * 100)).toFixed(2)}%`);
+      root.style.setProperty("--glass-pointer-x", `${Math.max(0, Math.min(100, ((x - headerRect.left) / headerRect.width) * 100)).toFixed(2)}%`);
+      root.style.setProperty("--glass-pointer-y", `${Math.max(0, Math.min(100, ((y - headerRect.top) / headerRect.height) * 100)).toFixed(2)}%`);
     };
 
     const writePointerVars = () => {
@@ -99,8 +107,14 @@ export function PointerLens() {
       updateHeaderState(visualX, visualY);
       setLensState();
 
-      if (isVisible) {
+      if (isVisible && (Math.abs(pointerX - visualX) > 0.5 || Math.abs(pointerY - visualY) > 0.5)) {
         frame = window.requestAnimationFrame(writePointerVars);
+      } else {
+        frame = 0;
+        if (isVisible) {
+          visualX = pointerX;
+          visualY = pointerY;
+        }
       }
     };
 
@@ -108,16 +122,13 @@ export function PointerLens() {
       if (!frame) frame = window.requestAnimationFrame(writePointerVars);
     };
 
-    const handleMove = (event: PointerEvent | MouseEvent) => {
-      const isPointerEvent = "pointerType" in event;
-      const isMouseLike = !isPointerEvent || event.pointerType !== "touch";
-      if (!isMouseLike) return;
+    const handleMove = (event: PointerEvent) => {
+      if (event.pointerType === "touch") return;
 
       enableLens();
       pointerX = event.clientX;
       pointerY = event.clientY;
       isVisible = true;
-      setLensState();
       queueFrame();
     };
 
@@ -130,11 +141,9 @@ export function PointerLens() {
 
     if (hasMouseInput) root.classList.add("pointer-lens-enabled");
     updateScrollState();
-    setLensState();
     if (hasMouseInput) queueFrame();
 
     window.addEventListener("pointermove", handleMove, { passive: true });
-    window.addEventListener("mousemove", handleMove, { passive: true });
     root.addEventListener("pointerleave", handlePointerLeave);
     root.addEventListener("mouseleave", handlePointerLeave);
     window.addEventListener("scroll", updateScrollState, { passive: true });
@@ -174,7 +183,6 @@ export function PointerLens() {
       root.style.removeProperty("--glass-pointer-x");
       root.style.removeProperty("--glass-pointer-y");
       window.removeEventListener("pointermove", handleMove);
-      window.removeEventListener("mousemove", handleMove);
       root.removeEventListener("pointerleave", handlePointerLeave);
       root.removeEventListener("mouseleave", handlePointerLeave);
       window.removeEventListener("scroll", updateScrollState);

@@ -148,8 +148,8 @@
     radial-gradient(circle at center, #000 0 22%, rgba(0, 0, 0, 0.7) 48%, transparent 86%);
   transform: perspective(900px) rotateX(var(--blog-grid-tilt-x)) rotateY(var(--blog-grid-tilt-y)) scale(1.04);
   transform-origin: center;
-  transition: opacity 400ms ease, background-position 120ms linear, transform 120ms ease-out;
-  will-change: transform, background-position;
+  transition: opacity 400ms ease;
+  will-change: transform;
 }
 
 .blog-background-refraction {
@@ -248,7 +248,6 @@
     rotateX(var(--hero-tilt-x))
     rotateY(var(--hero-tilt-y));
   transform-style: preserve-3d;
-  transition: transform 120ms ease-out;
   will-change: transform;
 }
 
