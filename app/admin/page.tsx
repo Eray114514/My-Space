@@ -8,6 +8,7 @@ import { Plus, Trash2, Edit2, Globe, Settings, Layout } from 'lucide-react';
 import { Article, Project } from '../../types';
 import * as Icons from 'lucide-react';
 import { ModelSelector, ProviderManager, SvgModelSelector } from './components/ModelSelector';
+import { LiquidGlass } from '../../components/LiquidGlass';
 import { ProjectEditor } from './components/ProjectEditor';
 import { ArticleEditor } from './components/ArticleEditor';
 
