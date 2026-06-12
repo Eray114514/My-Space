@@ -5,7 +5,7 @@ import {
     Send, Bot, User, Trash2, StopCircle, Sparkles, ChevronDown, Plus,
     Settings, FileText, Hash, X, ArrowLeft, Copy, RefreshCw, Edit2, Check, Save, History, Clock
 } from 'lucide-react';
-import { AIService, AI_MODELS, AIModelKey, AIModelConfig } from '../../services/ai';
+import { AIService, AIModelKey } from '../../services/ai';
 import { StorageService, ChatSession, ChatMessage } from '../../services/storage';
 import { MarkdownRenderer } from '../../components/MarkdownRenderer';
 import { confirmToast } from '../../utils/toast';
@@ -88,13 +88,13 @@ function ChatContent() {
         try {
             const raw = localStorage.getItem('admin_custom_models');
             const custom: { key: string; provider: string; modelId: string; name: string; shortName: string; description: string; isFree: boolean }[] = raw ? JSON.parse(raw) : [];
-            const merged: Record<string, AIModelConfig> = {};
+            const merged: Record<string, { provider: string; modelId: string; name: string; shortName: string; description: string; isFree: boolean }> = {};
             for (const m of custom) {
                 merged[m.key] = { provider: m.provider, modelId: m.modelId, name: m.name, shortName: m.shortName, description: m.description, isFree: m.isFree };
             }
             return merged;
         } catch {
-            return {} as Record<string, AIModelConfig>;
+            return {} as Record<string, { provider: string; modelId: string; name: string; shortName: string; description: string; isFree: boolean }>;
         }
     }, []);
 

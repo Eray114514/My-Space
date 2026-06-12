@@ -7,8 +7,8 @@ import toast from 'react-hot-toast';
 import { Plus, Trash2, Edit2, Globe, Settings, Layout } from 'lucide-react';
 import { Article, Project } from '../../types';
 import * as Icons from 'lucide-react';
-import { LiquidGlass } from '../../components/LiquidGlass';
 import { ModelSelector, ProviderManager, SvgModelSelector } from './components/ModelSelector';
+import { LiquidGlass } from '../../components/LiquidGlass';
 import { ProjectEditor } from './components/ProjectEditor';
 import { ArticleEditor } from './components/ArticleEditor';
 
@@ -18,8 +18,8 @@ export default function AdminDashboard() {
   const [projects, setProjects] = useState<Project[]>([]);
   const [loading, setLoading] = useState(true);
 
-  const [generalAiProvider, setGeneralAiProvider] = useState<AIModelKey>('deepseek-chat');
-  const [svgAiProvider, setSvgAiProvider] = useState<AIModelKey>('deepseek-reasoner');
+  const [generalAiProvider, setGeneralAiProvider] = useState<AIModelKey>('');
+  const [svgAiProvider, setSvgAiProvider] = useState<AIModelKey>('');
 
   const [isEditingProject, setIsEditingProject] = useState(false);
   const [currentProject, setCurrentProject] = useState<Project | undefined>(undefined);
@@ -30,10 +30,16 @@ export default function AdminDashboard() {
     setLoading(true);
     try {
       await StorageService.initDB();
-      setArticles(await StorageService.getArticles());
-      setProjects(await StorageService.getProjects());
-      setGeneralAiProvider(await StorageService.getGeneralAIModel());
-      setSvgAiProvider(await StorageService.getSvgAIModel());
+      const [articlesData, projectsData, generalModel, svgModel] = await Promise.all([
+        StorageService.getArticles(),
+        StorageService.getProjects(),
+        StorageService.getGeneralAIModel(),
+        StorageService.getSvgAIModel()
+      ]);
+      setArticles(articlesData);
+      setProjects(projectsData);
+      setGeneralAiProvider(generalModel);
+      setSvgAiProvider(svgModel);
     } catch (e) {
       console.warn("Admin data unavailable", e);
     } finally {
@@ -67,6 +73,14 @@ export default function AdminDashboard() {
     if (await confirmToast('确定要删除这篇文章吗？')) {
       try { await StorageService.deleteArticle(id); await loadData(); toast.success('文章已删除'); } catch (e) { toast.error('删除失败'); }
     }
+  };
+
+  const handleTogglePublish = async (article: Article) => {
+    try {
+      await StorageService.saveArticle({ ...article, isPublished: !article.isPublished });
+      await loadData();
+      toast.success(article.isPublished ? '已转为草稿' : '已发布');
+    } catch (e) { toast.error('操作失败'); }
   };
 
   const handleSaveProject = async (project: Project) => {
@@ -114,12 +128,16 @@ export default function AdminDashboard() {
           </div>
           <div className="divide-y divide-[var(--blog-line)]">
             {articles.map(article => (
-              <div key={article.id} className="p-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4 hover:bg-[var(--blog-fg-soft)] transition-colors group">
+              <div key={article.id} className="p-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4 hover:bg-[var(--blog-fg-soft)] transition-colors">
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-3 mb-2">
                     <span className={`w-2.5 h-2.5 rounded-full shrink-0 shadow-sm ${article.isPublished ? 'bg-green-500 shadow-green-500/50' : 'bg-yellow-500 shadow-yellow-500/50'}`}></span>
                     <h4 className="font-black text-[var(--blog-fg)] truncate text-lg">{article.title}</h4>
-                    <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider ${article.isPublished ? 'bg-green-100/50 text-green-700 dark:bg-green-900/30 dark:text-green-400' : 'bg-yellow-100/50 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400'}`}>{article.isPublished ? 'Published' : 'Draft'}</span>
+                    <button onClick={() => handleTogglePublish(article)}
+                      className={`text-[10px] font-bold px-2 py-0.5 rounded-full tracking-wider cursor-pointer transition-colors ${article.isPublished ? 'bg-green-100/50 text-green-700 dark:bg-green-900/30 dark:text-green-400 hover:bg-green-200/50' : 'bg-yellow-100/50 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400 hover:bg-yellow-200/50'}`}
+                      title={article.isPublished ? '点击转为草稿' : '点击发布'}>
+                      {article.isPublished ? '已发布' : '草稿'}
+                    </button>
                   </div>
                   <div className="flex items-center gap-3 text-xs text-gray-500 dark:text-gray-400">
                     <span className="font-mono">{new Date(article.updatedAt).toLocaleDateString()}</span>
@@ -129,9 +147,9 @@ export default function AdminDashboard() {
                     </div>
                   </div>
                 </div>
-                <div className="flex items-center gap-3 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-all transform sm:translate-x-4 sm:group-hover:translate-x-0">
-                  <button onClick={() => { setCurrentArticle(article); setIsEditingArticle(true); }} className="blog-control h-10 w-10 p-0"><Edit2 size={18} /></button>
-                  <button onClick={() => handleDeleteArticle(article.id)} className="blog-control h-10 w-10 p-0 hover:text-red-600"><Trash2 size={18} /></button>
+                <div className="flex items-center gap-2">
+                  <button onClick={() => { setCurrentArticle(article); setIsEditingArticle(true); }} className="p-2 rounded-lg hover:bg-[var(--blog-line)] text-[var(--blog-muted)] hover:text-[var(--blog-fg)] transition-colors"><Edit2 size={16} /></button>
+                  <button onClick={() => handleDeleteArticle(article.id)} className="p-2 rounded-lg hover:bg-red-50 dark:hover:bg-red-900/20 text-[var(--blog-muted)] hover:text-red-500 transition-colors"><Trash2 size={16} /></button>
                 </div>
               </div>
             ))}
@@ -157,7 +175,7 @@ export default function AdminDashboard() {
                 IconDisplay = <IconComp size={24} />;
               }
               return (
-                <div key={project.id} className="glass-card flex items-center justify-between p-4 border border-[var(--blog-line)] hover:bg-[var(--blog-fg-soft)] transition-all group">
+                <div key={project.id} className="glass-card flex items-center justify-between p-4 border border-[var(--blog-line)] hover:bg-[var(--blog-fg-soft)] transition-all">
                   <div className="flex items-center gap-4 overflow-hidden">
                     <div className="w-14 h-14 rounded-xl bg-[var(--blog-fg-soft)] flex items-center justify-center text-[var(--blog-fg)] shadow-sm shrink-0 border border-[var(--blog-line)] p-2">{IconDisplay}</div>
                     <div className="truncate flex-1">
@@ -165,9 +183,9 @@ export default function AdminDashboard() {
                       <p className="text-xs text-[var(--blog-muted)] truncate mt-1 opacity-80">{project.url}</p>
                     </div>
                   </div>
-                  <div className="flex shrink-0 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-all transform sm:translate-x-2 sm:group-hover:translate-x-0 gap-2">
-                    <button onClick={() => { setCurrentProject(project); setIsEditingProject(true); }} className="blog-control h-9 w-9 p-0"><Edit2 size={16} /></button>
-                    <button onClick={() => handleDeleteProject(project.id)} className="blog-control h-9 w-9 p-0 hover:text-red-600"><Trash2 size={16} /></button>
+                  <div className="flex shrink-0 gap-2">
+                    <button onClick={() => { setCurrentProject(project); setIsEditingProject(true); }} className="p-2 rounded-lg hover:bg-[var(--blog-line)] text-[var(--blog-muted)] hover:text-[var(--blog-fg)] transition-colors"><Edit2 size={16} /></button>
+                    <button onClick={() => handleDeleteProject(project.id)} className="p-2 rounded-lg hover:bg-red-50 dark:hover:bg-red-900/20 text-[var(--blog-muted)] hover:text-red-500 transition-colors"><Trash2 size={16} /></button>
                   </div>
                 </div>
               )
@@ -181,7 +199,9 @@ export default function AdminDashboard() {
           <ProviderManager />
           <SvgModelSelector />
           <LiquidGlass variant="panel" className="glass-panel overflow-hidden">
-            <div className="p-6 border-b border-[var(--blog-line)]"><h3 className="font-black text-lg text-[var(--blog-fg)] flex items-center gap-2"><Settings size={20} /> 系统设置</h3></div>
+            <div className="p-6 border-b border-[var(--blog-line)]">
+              <h3 className="font-black text-lg text-[var(--blog-fg)] flex items-center gap-2"><Settings size={20} /> 系统设置</h3>
+            </div>
             <div className="p-8 max-w-3xl space-y-10">
               <ModelSelector
                 label="全局 AI 写作模型"
