@@ -183,7 +183,7 @@ export const MarkdownRenderer: React.FC<Props> = ({ content }) => {
   }, [content]);
 
   return (
-    <div className="
+    <div data-article-content className="
 prose prose-zinc dark:prose-invert max-w-none break-words w-full overflow-x-auto
       prose-headings:font-bold prose-headings:tracking-tight prose-headings:scroll-mt-24
       prose-p:leading-relaxed

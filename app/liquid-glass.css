@@ -373,3 +373,21 @@
     animation: none !important;
   }
 }
+
+.article-toc-panel.glass-popover,
+.article-mobile-toc-button.glass-popover,
+.article-progress-button.glass-popover {
+  position: fixed;
+}
+
+.article-mobile-toc-sheet.glass-popover {
+  position: absolute;
+}
+
+.article-progress-button.glass-popover > .article-progress-ring {
+  position: absolute;
+}
+
+.article-progress-button.glass-popover > .article-progress-button-icon {
+  position: relative;
+}

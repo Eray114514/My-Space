@@ -1,12 +1,11 @@
 import React from 'react';
-import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { ServerStorageService } from '../../../services/server-storage';
 import { MarkdownRenderer } from '../../../components/MarkdownRenderer';
-import { Calendar, MessageSquare, Sparkles } from 'lucide-react';
+import { Calendar, Sparkles } from 'lucide-react';
 import { Metadata } from 'next';
 import { BackButton } from './BackButton';
-import { ReadingProgress } from '../../../components/ReadingProgress';
+import { ArticleReadingChrome } from '../../../components/ArticleReadingChrome';
 
 export async function generateMetadata({ params }: { params: Promise<{ id: string }> }): Promise<Metadata> {
   const resolvedParams = await params;
@@ -44,14 +43,14 @@ export default async function ArticleDetail({ params }: { params: Promise<{ id: 
 
   return (
     <article className="article-page min-h-screen relative pb-24 overflow-x-hidden w-full max-w-full">
-      <ReadingProgress />
+      <ArticleReadingChrome chatHref={`/chat?articleId=${article.id}`} />
 
       <div className="fixed top-0 left-0 w-full p-4 sm:p-6 z-50 pointer-events-none">
         <BackButton />
       </div>
 
       <header className="article-cover px-4 sm:px-6 pt-28 sm:pt-32 pb-10">
-        <div className="mx-auto max-w-5xl">
+        <div className="article-main-column mx-auto">
           <div className="article-cover-grid">
             <div>
               <div className="mb-5 flex flex-wrap gap-2">
@@ -83,19 +82,11 @@ export default async function ArticleDetail({ params }: { params: Promise<{ id: 
         </div>
       </header>
 
-      <div className="article-body-wrap mx-auto max-w-5xl px-4 sm:px-6">
+      <div className="article-body-wrap article-main-column mx-auto px-4 sm:px-6">
         <div className="article-paper content-surface">
           <MarkdownRenderer content={article.content} />
         </div>
       </div>
-
-      <Link
-        href={`/chat?articleId=${article.id}`}
-        className="article-assistant-button blog-button-primary fixed bottom-6 right-4 sm:bottom-8 sm:right-8 z-50 px-4 sm:px-5 py-3 text-sm"
-      >
-        <MessageSquare size={20} />
-        <span className="hidden sm:inline">对此文章提问</span>
-      </Link>
     </article>
   );
 }
