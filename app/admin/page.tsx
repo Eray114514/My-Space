@@ -69,6 +69,14 @@ export default function AdminDashboard() {
     }
   };
 
+  const handleTogglePublish = async (article: Article) => {
+    try {
+      await StorageService.saveArticle({ ...article, isPublished: !article.isPublished });
+      await loadData();
+      toast.success(article.isPublished ? '已转为草稿' : '已发布');
+    } catch (e) { toast.error('操作失败'); }
+  };
+
   const handleSaveProject = async (project: Project) => {
     try {
       await StorageService.saveProject(project);
@@ -119,7 +127,11 @@ export default function AdminDashboard() {
                   <div className="flex items-center gap-3 mb-2">
                     <span className={`w-2.5 h-2.5 rounded-full shrink-0 shadow-sm ${article.isPublished ? 'bg-green-500 shadow-green-500/50' : 'bg-yellow-500 shadow-yellow-500/50'}`}></span>
                     <h4 className="font-black text-[var(--blog-fg)] truncate text-lg">{article.title}</h4>
-                    <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider ${article.isPublished ? 'bg-green-100/50 text-green-700 dark:bg-green-900/30 dark:text-green-400' : 'bg-yellow-100/50 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400'}`}>{article.isPublished ? 'Published' : 'Draft'}</span>
+                    <button onClick={() => handleTogglePublish(article)}
+                      className={`text-[10px] font-bold px-2 py-0.5 rounded-full tracking-wider cursor-pointer transition-colors ${article.isPublished ? 'bg-green-100/50 text-green-700 dark:bg-green-900/30 dark:text-green-400 hover:bg-green-200/50' : 'bg-yellow-100/50 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400 hover:bg-yellow-200/50'}`}
+                      title={article.isPublished ? '点击转为草稿' : '点击发布'}>
+                      {article.isPublished ? '已发布' : '草稿'}
+                    </button>
                   </div>
                   <div className="flex items-center gap-3 text-xs text-gray-500 dark:text-gray-400">
                     <span className="font-mono">{new Date(article.updatedAt).toLocaleDateString()}</span>
@@ -129,9 +141,9 @@ export default function AdminDashboard() {
                     </div>
                   </div>
                 </div>
-                <div className="flex items-center gap-3">
-                  <button onClick={() => { setCurrentArticle(article); setIsEditingArticle(true); }} className="blog-control h-10 w-10 p-0"><Edit2 size={18} /></button>
-                  <button onClick={() => handleDeleteArticle(article.id)} className="blog-control h-10 w-10 p-0 hover:text-red-600"><Trash2 size={18} /></button>
+                <div className="flex items-center gap-2">
+                  <button onClick={() => { setCurrentArticle(article); setIsEditingArticle(true); }} className="p-2 rounded-lg hover:bg-[var(--blog-line)] text-[var(--blog-muted)] hover:text-[var(--blog-fg)] transition-colors"><Edit2 size={16} /></button>
+                  <button onClick={() => handleDeleteArticle(article.id)} className="p-2 rounded-lg hover:bg-red-50 dark:hover:bg-red-900/20 text-[var(--blog-muted)] hover:text-red-500 transition-colors"><Trash2 size={16} /></button>
                 </div>
               </div>
             ))}
@@ -166,8 +178,8 @@ export default function AdminDashboard() {
                     </div>
                   </div>
                   <div className="flex shrink-0 gap-2">
-                    <button onClick={() => { setCurrentProject(project); setIsEditingProject(true); }} className="blog-control h-9 w-9 p-0"><Edit2 size={16} /></button>
-                    <button onClick={() => handleDeleteProject(project.id)} className="blog-control h-9 w-9 p-0 hover:text-red-600"><Trash2 size={16} /></button>
+                    <button onClick={() => { setCurrentProject(project); setIsEditingProject(true); }} className="p-2 rounded-lg hover:bg-[var(--blog-line)] text-[var(--blog-muted)] hover:text-[var(--blog-fg)] transition-colors"><Edit2 size={16} /></button>
+                    <button onClick={() => handleDeleteProject(project.id)} className="p-2 rounded-lg hover:bg-red-50 dark:hover:bg-red-900/20 text-[var(--blog-muted)] hover:text-red-500 transition-colors"><Trash2 size={16} /></button>
                   </div>
                 </div>
               )
