@@ -30,10 +30,16 @@ export default function AdminDashboard() {
     setLoading(true);
     try {
       await StorageService.initDB();
-      setArticles(await StorageService.getArticles());
-      setProjects(await StorageService.getProjects());
-      setGeneralAiProvider(await StorageService.getGeneralAIModel());
-      setSvgAiProvider(await StorageService.getSvgAIModel());
+      const [articlesData, projectsData, generalModel, svgModel] = await Promise.all([
+        StorageService.getArticles(),
+        StorageService.getProjects(),
+        StorageService.getGeneralAIModel(),
+        StorageService.getSvgAIModel()
+      ]);
+      setArticles(articlesData);
+      setProjects(projectsData);
+      setGeneralAiProvider(generalModel);
+      setSvgAiProvider(svgModel);
     } catch (e) {
       console.warn("Admin data unavailable", e);
     } finally {
