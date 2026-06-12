@@ -49,7 +49,7 @@ export default async function Blog({
           <div>
             <h1 className="text-4xl sm:text-6xl font-black text-[var(--blog-fg)]">文章归档</h1>
             <p className="mt-4 max-w-2xl text-base sm:text-lg leading-8 text-[var(--blog-muted)]">
-              这里是知识档案库：按时间收束，也按标签快速定位。
+              文章、想法与技术实践。按时间沉淀，方便回看。
             </p>
           </div>
           <div className="archive-count">

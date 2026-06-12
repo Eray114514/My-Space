@@ -584,17 +584,6 @@
   text-decoration: none;
 }
 
-.project-node-pulse {
-  position: absolute;
-  top: 1rem;
-  right: 1rem;
-  width: 7px;
-  height: 7px;
-  border-radius: 999px;
-  background: var(--blog-fg);
-  box-shadow: 0 0 0 7px color-mix(in srgb, var(--blog-fg) 9%, transparent);
-}
-
 .project-node-icon {
   display: flex;
   width: 3rem;

@@ -131,9 +131,9 @@ const FetchModelsModal: React.FC<{
 
   return (
     <div className="fixed inset-0 z-[100] flex items-center justify-center p-4" onClick={onClose}>
-      <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" />
+      <div className="absolute inset-0 bg-black/40" />
       <div
-        className="relative w-full max-w-2xl max-h-[80vh] bg-white/90 dark:bg-gray-900/90 backdrop-blur-xl rounded-3xl border border-[var(--blog-line)] shadow-2xl flex flex-col animate-in fade-in zoom-in-95 duration-200"
+        className="glass-popover relative w-full max-w-2xl max-h-[80vh] rounded-3xl border border-[var(--blog-line)] shadow-2xl flex flex-col animate-in fade-in zoom-in-95 duration-200"
         onClick={e => e.stopPropagation()}
       >
         <div className="flex items-center justify-between p-5 border-b border-[var(--blog-line)]">

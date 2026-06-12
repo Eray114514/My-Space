@@ -5,7 +5,7 @@ import {
     Send, Bot, User, Trash2, StopCircle, Sparkles, ChevronDown, Plus,
     Settings, FileText, Hash, X, ArrowLeft, Copy, RefreshCw, Edit2, Check, Save, History, Clock
 } from 'lucide-react';
-import { AIService, AI_MODELS, AIModelKey } from '../../services/ai';
+import { AIService, AI_MODELS, AIModelKey, AIModelConfig } from '../../services/ai';
 import { StorageService, ChatSession, ChatMessage } from '../../services/storage';
 import { MarkdownRenderer } from '../../components/MarkdownRenderer';
 import { confirmToast } from '../../utils/toast';

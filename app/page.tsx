@@ -67,7 +67,7 @@ export default async function Home() {
             <span className="block">{adminName.toUpperCase()}</span>
           </h1>
           <p className="mx-auto mt-8 max-w-xl text-base sm:text-lg font-semibold leading-8 text-[var(--blog-muted)]">
-            一个给文章、想法、项目和 AI 留出的冷静空间。
+            文章、想法与技术记录。保持简洁，留住锋利。
           </p>
           <div className="mt-10 flex flex-wrap items-center justify-center gap-3">
             <Link href="/blog" className="blog-button-primary px-6 py-3 text-sm">
@@ -90,12 +90,9 @@ export default async function Home() {
             <div>
               <div className="mb-3 inline-flex items-center gap-2 text-xs font-extrabold tracking-[0.2em] text-[var(--blog-muted)]">
                 <BookOpen size={15} />
-                LATEST FIELD
+                LATEST
               </div>
-              <h2 className="text-3xl sm:text-5xl font-black text-[var(--blog-fg)]">最新文章焦点流</h2>
-              <p className="mt-4 max-w-2xl text-sm sm:text-base leading-7 text-[var(--blog-muted)]">
-                内容不再只是往下排，而是在滚动里逐步靠近你。
-              </p>
+              <h2 className="text-3xl sm:text-5xl font-black text-[var(--blog-fg)]">最新文章</h2>
             </div>
             <Link href="/blog" className="blog-button-secondary hidden px-4 py-2 text-sm md:inline-flex">
               全部文章
@@ -159,13 +156,10 @@ export default async function Home() {
             <div>
               <div className="mb-3 inline-flex items-center gap-2 text-xs font-extrabold tracking-[0.2em] text-[var(--blog-muted)]">
                 <Link2 size={15} />
-                LINK CONSTELLATION
+                LINKS
               </div>
-              <h2 className="text-3xl sm:text-5xl font-black">精选链接星图</h2>
+              <h2 className="text-3xl sm:text-5xl font-black">精选链接</h2>
             </div>
-            <p className="max-w-md text-sm leading-7 text-[var(--blog-muted)]">
-              项目入口像节点一样漂浮，但内容本身保持清晰、结实、可点。
-            </p>
           </div>
 
           <div className="project-constellation">
@@ -173,7 +167,6 @@ export default async function Home() {
             {projects.map((project, index) => (
               <StageReveal key={project.id} delay={index * 0.035} className="group">
                 <Link href={project.url} target="_blank" className="project-node content-surface">
-                  <span className="project-node-pulse" aria-hidden="true" />
                   <div className="mb-7 flex items-start justify-between gap-4">
                     <div className="project-node-icon">
                       {renderIcon(project)}

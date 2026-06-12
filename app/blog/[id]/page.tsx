@@ -72,16 +72,12 @@ export default async function ArticleDetail({ params }: { params: Promise<{ id: 
             <aside className="article-meta-panel content-surface">
               <div className="article-meta-kicker">
                 <Sparkles size={14} />
-                READING FILE
+                ARTICLE
               </div>
               <div className="mt-8 flex items-center gap-2 text-sm font-bold text-[var(--blog-muted)]">
                 <Calendar size={15} />
                 {new Date(article.createdAt).toLocaleDateString('zh-CN', { year: 'numeric', month: 'long', day: 'numeric' })}
               </div>
-              <div className="mt-7 h-px bg-[var(--blog-line)]" />
-              <p className="mt-6 text-sm leading-7 text-[var(--blog-muted)]">
-                正文使用实体阅读层，浮动控件才使用玻璃，保证长文阅读不被材质干扰。
-              </p>
             </aside>
           </div>
         </div>
@@ -98,7 +94,7 @@ export default async function ArticleDetail({ params }: { params: Promise<{ id: 
         className="article-assistant-button blog-button-primary fixed bottom-6 right-4 sm:bottom-8 sm:right-8 z-50 px-4 sm:px-5 py-3 text-sm"
       >
         <MessageSquare size={20} />
-        <span className="hidden sm:inline">接入 AI 阅读</span>
+        <span className="hidden sm:inline">对此文章提问</span>
       </Link>
     </article>
   );
