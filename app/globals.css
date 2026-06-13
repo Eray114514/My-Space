@@ -455,14 +455,7 @@
 
 
 
-.home-scroll-cue::before {
-  content: "";
-  display: block;
-  width: 1px;
-  height: 44px;
-  margin: 0 auto 12px;
-  background: linear-gradient(180deg, transparent, var(--blog-muted), transparent);
-}
+
 
 .home-stage {
   min-height: 72vh;
