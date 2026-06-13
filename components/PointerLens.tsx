@@ -86,8 +86,8 @@ export function PointerLens() {
 
     const writePointerVars = () => {
       frame = 0;
-      visualX += (pointerX - visualX) * 0.65;
-      visualY += (pointerY - visualY) * 0.65;
+      visualX += (pointerX - visualX) * 0.85;
+      visualY += (pointerY - visualY) * 0.85;
 
       const dx = (visualX / window.innerWidth - 0.5) * 2;
       const dy = (visualY / window.innerHeight - 0.5) * 2;

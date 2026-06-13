@@ -149,7 +149,7 @@
   transform: perspective(900px) rotateX(var(--blog-grid-tilt-x)) rotateY(var(--blog-grid-tilt-y)) scale(1.04);
   transform-origin: center;
   transition: opacity 400ms ease;
-  will-change: transform;
+  will-change: transform, background-position;
 }
 
 .blog-background-refraction {
