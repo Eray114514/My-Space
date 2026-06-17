@@ -3,7 +3,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { ArrowLeft, History, Sparkles, ChevronDown, Check, Settings, Plus } from 'lucide-react';
-import { AIModelKey } from '../../services/ai';
+import { AIModelKey, AIModelConfig } from '../../services/ai';
 import { LiquidGlass } from '../LiquidGlass';
 
 interface ChatTopBarProps {
@@ -15,21 +15,15 @@ interface ChatTopBarProps {
     selectedModel: AIModelKey | null;
     setSelectedModel: (model: AIModelKey) => void;
     availableModels: [string, any][];
+    allModels: Record<string, AIModelConfig>;
     isSystemPromptOpen: boolean;
     setIsSystemPromptOpen: (open: boolean) => void;
     onNewChat: () => void;
     onNavigateHome: () => void;
 }
 
-function getModelShortName(key: string): string {
-    try {
-        const raw = localStorage.getItem('admin_custom_models');
-        const custom: { key: string; shortName: string }[] = raw ? JSON.parse(raw) : [];
-        const found = custom.find(m => m.key === key);
-        return found?.shortName || key.split(':').pop() || key;
-    } catch {
-        return key.split(':').pop() || key;
-    }
+function getModelShortName(key: string, allModels: Record<string, AIModelConfig>): string {
+    return allModels[key]?.shortName || key.split(':').pop() || key;
 }
 
 export const ChatTopBar: React.FC<ChatTopBarProps> = ({
@@ -41,6 +35,7 @@ export const ChatTopBar: React.FC<ChatTopBarProps> = ({
     selectedModel,
     setSelectedModel,
     availableModels,
+    allModels,
     isSystemPromptOpen,
     setIsSystemPromptOpen,
     onNewChat,
@@ -107,7 +102,7 @@ export const ChatTopBar: React.FC<ChatTopBarProps> = ({
                         className="flex items-center gap-2 px-3 py-2 rounded-full text-xs font-bold text-[var(--blog-fg)] hover:bg-[var(--blog-fg-soft)] transition-all border border-transparent hover:border-[var(--blog-line)]"
                     >
                         <Sparkles size={16} className="text-[var(--blog-fg)]" />
-                        <span className="max-w-[80px] sm:max-w-xs truncate">{selectedModel ? getModelShortName(selectedModel) : 'Loading'}</span>
+                        <span className="max-w-[80px] sm:max-w-xs truncate">{selectedModel ? getModelShortName(selectedModel, allModels) : 'Loading'}</span>
                         <ChevronDown size={14} className="opacity-50" />
                     </button>
 

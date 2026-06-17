@@ -40,7 +40,7 @@ export default async function handler(req: ApiRequest, res: ApiResponse) {
         let data;
         
         // Protect admin actions
-        const adminActions = ['initDB', 'saveSystemSetting', 'saveArticle', 'deleteArticle', 'saveProject', 'deleteProject'];
+        const adminActions = ['initDB', 'saveSystemSetting', 'saveArticle', 'deleteArticle', 'saveProject', 'deleteProject', 'getAIModels', 'saveAIModels'];
         if (adminActions.includes(action) && !isUserAdmin) {
             return res.status(401).json({ error: 'Unauthorized: Admin access required.' });
         }
@@ -90,6 +90,20 @@ export default async function handler(req: ApiRequest, res: ApiResponse) {
                 `;
                 data = { success: true };
                 break;
+            case 'getAIModels': {
+                const rowsModels = await sql`SELECT value FROM settings WHERE key = 'ai_models'`;
+                data = rowsModels.length > 0 ? rowsModels[0].value : '[]';
+                break;
+            }
+            case 'saveAIModels': {
+                const [modelsJson] = args;
+                await sql`
+                    INSERT INTO settings (key, value) VALUES ('ai_models', ${modelsJson})
+                    ON CONFLICT (key) DO UPDATE SET value = EXCLUDED.value
+                `;
+                data = { success: true };
+                break;
+            }
             case 'getArticles':
                 const rowsArticles = await sql`SELECT * FROM articles ORDER BY created_at DESC`;
                 data = rowsArticles.map((row: Record<string, unknown>) => ({

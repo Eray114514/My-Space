@@ -1,5 +1,5 @@
 import { Article, Project } from '../types';
-import { AIModelKey } from './ai';
+import { AIModelKey, StoredModel } from './ai';
 
 const THEME_KEY = 'my_theme';
 
@@ -7,6 +7,7 @@ let articlesCache: Article[] | null = null;
 let publishedLightCache: Article[] | null = null;
 let projectsCache: Project[] | null = null;
 let settingsCache: Record<string, string> | null = null;
+let aiModelsCache: StoredModel[] | null = null;
 
 const rpc = async (action: string, args: any[] = []) => {
   const res = await fetch('/api/storage', {
@@ -42,6 +43,22 @@ export const StorageService = {
     await rpc('saveSystemSetting', [key, value]);
     if (!settingsCache) settingsCache = {};
     settingsCache[key] = value;
+  },
+  getAIModels: async (forceRefresh = false): Promise<StoredModel[]> => {
+    if (aiModelsCache && !forceRefresh) return aiModelsCache;
+    try {
+      const raw = await rpc('getAIModels');
+      const parsed = typeof raw === 'string' ? JSON.parse(raw) : raw;
+      const models = Array.isArray(parsed) ? parsed : [];
+      aiModelsCache = models;
+      return models;
+    } catch {
+      return [];
+    }
+  },
+  saveAIModels: async (models: StoredModel[]) => {
+    await rpc('saveAIModels', [JSON.stringify(models)]);
+    aiModelsCache = models;
   },
   getGeneralAIModel: async (): Promise<AIModelKey> => await StorageService.getSystemSetting('general_ai_model', '') as AIModelKey,
   saveGeneralAIModel: (model: AIModelKey) => StorageService.saveSystemSetting('general_ai_model', model),

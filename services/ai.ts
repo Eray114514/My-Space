@@ -8,6 +8,10 @@ export interface AIModelConfig {
   supportsThinking?: boolean;
 }
 
+export interface StoredModel extends AIModelConfig {
+  key: string;
+}
+
 export interface AIProviderConfig {
   id: string;
   name: string;

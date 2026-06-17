@@ -5,7 +5,7 @@ import {
     Send, Bot, User, Trash2, StopCircle, Sparkles, ChevronDown, Plus,
     Settings, FileText, Hash, X, ArrowLeft, Copy, RefreshCw, Edit2, Check, Save, History, Clock
 } from 'lucide-react';
-import { AIService, AIModelKey } from '../../services/ai';
+import { AIService, AIModelKey, AIModelConfig } from '../../services/ai';
 import { StorageService, ChatSession, ChatMessage } from '../../services/storage';
 import { MarkdownRenderer } from '../../components/MarkdownRenderer';
 import { confirmToast } from '../../utils/toast';
@@ -59,6 +59,8 @@ function ChatContent() {
     // Model
     const [selectedModel, setSelectedModel] = useState<AIModelKey | null>(null);
     const [isModelMenuOpen, setIsModelMenuOpen] = useState(false);
+    const [allModels, setAllModels] = useState<Record<string, AIModelConfig>>({});
+    const [isConfigLoading, setIsConfigLoading] = useState(true);
 
     // Reasoning display state
     const [reasoningMap, setReasoningMap] = useState<Record<string, string>>({});
@@ -83,20 +85,6 @@ function ChatContent() {
     }, []);
 
     // --- 1. Initialization & Data Loading ---
-
-    const allModels = useMemo(() => {
-        try {
-            const raw = localStorage.getItem('admin_custom_models');
-            const custom: { key: string; provider: string; modelId: string; name: string; shortName: string; description: string; isFree: boolean }[] = raw ? JSON.parse(raw) : [];
-            const merged: Record<string, { provider: string; modelId: string; name: string; shortName: string; description: string; isFree: boolean }> = {};
-            for (const m of custom) {
-                merged[m.key] = { provider: m.provider, modelId: m.modelId, name: m.name, shortName: m.shortName, description: m.description, isFree: m.isFree };
-            }
-            return merged;
-        } catch {
-            return {} as Record<string, { provider: string; modelId: string; name: string; shortName: string; description: string; isFree: boolean }>;
-        }
-    }, []);
 
     const availableModels = useMemo(() => {
         if (Object.keys(allModels).length === 0) return [];
@@ -149,10 +137,25 @@ function ChatContent() {
 
     useEffect(() => {
         const init = async () => {
-            const articles = await StorageService.getPublishedArticlesLight();
-            setAvailableArticles(articles);
-            const list = await StorageService.getChatSessions(isAdmin);
-            setSessions(list);
+            setIsConfigLoading(true);
+            try {
+                const [articles, list, models] = await Promise.all([
+                    StorageService.getPublishedArticlesLight(),
+                    StorageService.getChatSessions(isAdmin),
+                    StorageService.getAIModels()
+                ]);
+                setAvailableArticles(articles);
+                setSessions(list);
+                const map: Record<string, AIModelConfig> = {};
+                for (const m of models) {
+                    map[m.key] = { provider: m.provider, modelId: m.modelId, name: m.name, shortName: m.shortName, description: m.description, isFree: m.isFree, supportsThinking: m.supportsThinking };
+                }
+                setAllModels(map);
+            } catch (e) {
+                console.error("Failed to load chat config", e);
+            } finally {
+                setIsConfigLoading(false);
+            }
         };
         init();
     }, [isAdmin]);
@@ -435,13 +438,41 @@ function ChatContent() {
 
     // --- Render ---
 
-    if (availableModels.length === 0) return <div className="h-dvh flex items-center justify-center text-gray-400">Loading Configuration...</div>;
+    if (isConfigLoading) {
+        return (
+            <div className="h-dvh flex flex-col items-center justify-center text-[var(--blog-muted)] gap-3 animate-pulse">
+                <div className="w-10 h-10 border-2 border-[var(--blog-fg)] border-t-transparent rounded-full animate-spin" />
+                <span className="text-xs font-medium tracking-wide">正在加载模型配置…</span>
+            </div>
+        );
+    }
+
+    if (availableModels.length === 0) {
+        return (
+            <div className="h-dvh flex items-center justify-center px-4">
+                <div className="text-center space-y-4 max-w-sm">
+                    <div className="w-16 h-16 rounded-2xl glass-card flex items-center justify-center mx-auto text-[var(--blog-fg)]">
+                        <Bot size={32} />
+                    </div>
+                    <div>
+                        <h2 className="text-xl font-black text-[var(--blog-fg)] mb-1">尚未配置 AI 模型</h2>
+                        <p className="text-sm text-[var(--blog-muted)]">{isAdmin ? '请前往控制台添加至少一个可用模型。' : '管理员尚未配置可用模型，请稍后再试。'}</p>
+                    </div>
+                    {isAdmin && (
+                        <button onClick={() => router.push('/admin')} className="blog-button-primary px-6 py-2.5 text-sm">
+                            前往控制台
+                        </button>
+                    )}
+                </div>
+            </div>
+        );
+    }
 
     return (
         <div className="flex h-full w-full overflow-hidden bg-transparent relative">
 
             {/* --- Top Floating Glass Bar (Navigation & Controls) --- */}
-            <ChatTopBar 
+            <ChatTopBar
                 isHistoryOpen={isHistoryOpen}
                 setIsHistoryOpen={setIsHistoryOpen}
                 historyToggleRef={historyToggleRef}
@@ -450,6 +481,7 @@ function ChatContent() {
                 selectedModel={selectedModel}
                 setSelectedModel={setSelectedModel}
                 availableModels={availableModels}
+                allModels={allModels}
                 isSystemPromptOpen={isSystemPromptOpen}
                 setIsSystemPromptOpen={setIsSystemPromptOpen}
                 onNewChat={() => { setCurrentSessionId(null); setMessages([]); }}

@@ -1,7 +1,7 @@
 "use client";
 import React, { useState, useMemo, useCallback } from 'react';
-import { AIModelKey, AI_PROVIDERS, AIModelConfig } from '../../../services/ai';
-import { Bot, Box, BrainCircuit, Sparkles, CheckCircle, RefreshCw, Plus, Trash2, Zap, Crown, X, Search, ChevronDown } from 'lucide-react';
+import { AIModelKey, AI_PROVIDERS, AIModelConfig, StoredModel } from '../../../services/ai';
+import { Bot, Box, BrainCircuit, Sparkles, CheckCircle, RefreshCw, Plus, Trash2, Zap, Crown, X, Search } from 'lucide-react';
 import toast from 'react-hot-toast';
 
 const PROVIDER_NAMES: Record<string, string> = {
@@ -12,33 +12,6 @@ const PROVIDER_ICONS: Record<string, any> = {
   'deepseek': BrainCircuit,
   'openrouter': Box
 };
-
-interface StoredModel extends AIModelConfig {
-  key: string;
-}
-
-const STORAGE_KEY = 'admin_custom_models';
-const SVG_MODEL_KEY = 'admin_svg_model';
-
-export function loadStoredModels(): StoredModel[] {
-  try {
-    const raw = localStorage.getItem(STORAGE_KEY);
-    if (!raw) return [];
-    const parsed = JSON.parse(raw);
-    return Array.isArray(parsed) ? parsed : [];
-  } catch { return []; }
-}
-
-export function saveStoredModels(models: StoredModel[]) {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(models));
-}
-
-function getSvgModelKey(): string {
-  try { return localStorage.getItem(SVG_MODEL_KEY) || ''; } catch { return ''; }
-}
-function setSvgModelKey(key: string) {
-  localStorage.setItem(SVG_MODEL_KEY, key);
-}
 
 // --- Fetch Models Modal ---
 const FetchModelsModal: React.FC<{
@@ -154,21 +127,21 @@ const FetchModelsModal: React.FC<{
   );
 };
 
-// --- Unified Model Selector (used everywhere) ---
+// --- Unified Model Selector (selection only) ---
 export const ModelSelector: React.FC<{
   label: string;
   description: string;
   value: AIModelKey;
   onChange: (key: AIModelKey) => void;
-}> = ({ label, description, value, onChange }) => {
-  const [customModels, setCustomModels] = useState<StoredModel[]>(loadStoredModels);
+  models: StoredModel[];
+}> = ({ label, description, value, onChange, models }) => {
   const allModels = useMemo(() => {
     const base: Record<string, AIModelConfig> = {};
-    for (const m of customModels) {
+    for (const m of models) {
       base[m.key] = { provider: m.provider, modelId: m.modelId, name: m.name, shortName: m.shortName, description: m.description, isFree: m.isFree, supportsThinking: m.supportsThinking };
     }
     return base;
-  }, [customModels]);
+  }, [models]);
 
   const currentModel = allModels[value];
   const [selectedProvider, setSelectedProvider] = useState<string>(currentModel?.provider || 'deepseek');
@@ -176,27 +149,6 @@ export const ModelSelector: React.FC<{
   const filteredModels = useMemo(() => {
     return Object.entries(allModels).filter(([_, model]) => model.provider === selectedProvider);
   }, [selectedProvider, allModels]);
-
-  const handleToggleFree = useCallback((key: string) => {
-    setCustomModels(prev => {
-      const next = prev.map(m => m.key === key ? { ...m, isFree: !m.isFree } : m);
-      saveStoredModels(next);
-      return next;
-    });
-  }, []);
-
-  const handleDelete = useCallback((key: string) => {
-    setCustomModels(prev => {
-      const next = prev.filter(m => m.key !== key);
-      saveStoredModels(next);
-      return next;
-    });
-    if (value === key) {
-      const fallback = Object.keys(allModels).find(k => allModels[k].provider === selectedProvider && k !== key);
-      if (fallback) onChange(fallback);
-    }
-    toast.success('已删除');
-  }, [value, allModels, selectedProvider, onChange]);
 
   return (
     <div className="space-y-5">
@@ -237,29 +189,16 @@ export const ModelSelector: React.FC<{
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2">
                     <div className="font-bold text-sm text-[var(--blog-fg)] truncate">{model.name}</div>
-                    <button
-                      onClick={(e) => { e.stopPropagation(); handleToggleFree(key); }}
-                      className={`shrink-0 inline-flex items-center gap-0.5 text-[10px] font-bold px-1.5 py-0.5 rounded-full transition-colors ${model.isFree
-                        ? 'bg-green-100/50 text-green-700 dark:bg-green-900/30 dark:text-green-400'
-                        : 'bg-amber-100/50 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400'
-                      }`}
-                      title={model.isFree ? '点击标记为付费' : '点击标记为免费'}
-                    >
+                    <span className={`shrink-0 inline-flex items-center gap-0.5 text-[10px] font-bold px-1.5 py-0.5 rounded-full transition-colors ${model.isFree
+                      ? 'bg-green-100/50 text-green-700 dark:bg-green-900/30 dark:text-green-400'
+                      : 'bg-amber-100/50 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400'
+                    }`}>
                       {model.isFree ? <><Zap size={9} /> 免费</> : <><Crown size={9} /> 付费</>}
-                    </button>
+                    </span>
                   </div>
                   <div className="text-[11px] text-[var(--blog-muted)] mt-1 font-mono truncate">{model.modelId}</div>
                 </div>
-                <div className="flex items-center gap-1 shrink-0 ml-2">
-                  {isSelected && <CheckCircle size={18} className="text-[var(--blog-fg)]" />}
-                  <button
-                    onClick={(e) => { e.stopPropagation(); handleDelete(key); }}
-                    className="p-1 rounded-full hover:bg-red-100 dark:hover:bg-red-900/30 text-gray-300 hover:text-red-500 transition-colors"
-                    title="删除模型"
-                  >
-                    <Trash2 size={13} />
-                  </button>
-                </div>
+                {isSelected && <CheckCircle size={18} className="text-[var(--blog-fg)] shrink-0 ml-2" />}
               </div>
             </div>
           );
@@ -272,61 +211,58 @@ export const ModelSelector: React.FC<{
   );
 };
 
-// --- Provider Manager (glass panel style matching articles/projects) ---
-export const ProviderManager: React.FC = () => {
-  const [customModels, setCustomModels] = useState<StoredModel[]>(loadStoredModels);
+// --- Provider Manager (model list CRUD) ---
+export const ProviderManager: React.FC<{
+  models: StoredModel[];
+  onChange: (models: StoredModel[]) => void;
+}> = ({ models, onChange }) => {
   const [fetchModalProvider, setFetchModalProvider] = useState<string | null>(null);
   const [isAdding, setIsAdding] = useState(false);
 
   const [form, setForm] = useState({ provider: 'deepseek', modelId: '', name: '', shortName: '', description: '', isFree: false });
 
-  const existingKeys = useMemo(() => new Set(customModels.map(m => m.key)), [customModels]);
+  const existingKeys = useMemo(() => new Set(models.map(m => m.key)), [models]);
 
   const handleAddFromFetch = useCallback((model: StoredModel) => {
-    setCustomModels(prev => {
-      if (prev.some(m => m.key === model.key)) { toast('该模型已添加'); return prev; }
-      const next = [...prev, model];
-      saveStoredModels(next);
-      toast.success(`已添加: ${model.name}`);
-      return next;
-    });
-  }, []);
+    if (models.some(m => m.key === model.key)) { toast('该模型已添加'); return; }
+    const next = [...models, model];
+    onChange(next);
+    toast.success(`已添加: ${model.name}`);
+  }, [models, onChange]);
 
   const handleAddCustom = () => {
     if (!form.modelId.trim() || !form.name.trim()) { toast.error('请填写模型 ID 和名称'); return; }
     const key = `${form.provider}:${form.modelId.trim()}`;
-    setCustomModels(prev => {
-      if (prev.some(m => m.key === key)) { toast.error('该模型已存在'); return prev; }
-      const next = [...prev, {
-        key, provider: form.provider, modelId: form.modelId.trim(),
-        name: form.name.trim(), shortName: form.shortName.trim() || form.name.trim().slice(0, 8),
-        description: form.description.trim() || '自定义添加的模型', isFree: form.isFree,
-        supportsThinking: form.modelId.includes('reasoner') || form.modelId.includes('r1') || form.modelId.includes('thinking') || form.modelId.includes('pro')
-      }];
-      saveStoredModels(next);
-      toast.success('添加成功');
-      return next;
-    });
+    if (models.some(m => m.key === key)) { toast.error('该模型已存在'); return; }
+    const next = [...models, {
+      key, provider: form.provider, modelId: form.modelId.trim(),
+      name: form.name.trim(), shortName: form.shortName.trim() || form.name.trim().slice(0, 8),
+      description: form.description.trim() || '自定义添加的模型', isFree: form.isFree,
+      supportsThinking: form.modelId.includes('reasoner') || form.modelId.includes('r1') || form.modelId.includes('thinking') || form.modelId.includes('pro')
+    }];
+    onChange(next);
+    toast.success('添加成功');
     setForm({ provider: 'deepseek', modelId: '', name: '', shortName: '', description: '', isFree: false });
     setIsAdding(false);
   };
 
   const handleDelete = (key: string) => {
-    setCustomModels(prev => { const next = prev.filter(m => m.key !== key); saveStoredModels(next); toast.success('已删除'); return next; });
+    onChange(models.filter(m => m.key !== key));
+    toast.success('已删除');
   };
 
   const handleToggleFree = (key: string) => {
-    setCustomModels(prev => { const next = prev.map(m => m.key === key ? { ...m, isFree: !m.isFree } : m); saveStoredModels(next); return next; });
+    onChange(models.map(m => m.key === key ? { ...m, isFree: !m.isFree } : m));
   };
 
   const groupedModels = useMemo(() => {
     const groups: Record<string, StoredModel[]> = {};
-    for (const m of customModels) {
+    for (const m of models) {
       if (!groups[m.provider]) groups[m.provider] = [];
       groups[m.provider].push(m);
     }
     return groups;
-  }, [customModels]);
+  }, [models]);
 
   return (
     <div className="glass-panel overflow-hidden">
@@ -383,17 +319,17 @@ export const ProviderManager: React.FC = () => {
 
       {/* Model list by provider */}
       <div className="divide-y divide-[var(--blog-line)]">
-        {Object.entries(groupedModels).map(([providerId, models]) => {
+        {Object.entries(groupedModels).map(([providerId, providerModels]) => {
           const Icon = PROVIDER_ICONS[providerId] || Bot;
           return (
             <div key={providerId}>
               <div className="flex items-center gap-3 px-6 py-3 bg-[var(--blog-fg-soft)]">
                 <Icon size={16} className="text-[var(--blog-muted)]" />
                 <span className="text-xs font-bold text-[var(--blog-muted)] uppercase tracking-wider">{PROVIDER_NAMES[providerId] || providerId}</span>
-                <span className="blog-tag px-2 py-0.5 text-[10px]">{models.length}</span>
+                <span className="blog-tag px-2 py-0.5 text-[10px]">{providerModels.length}</span>
               </div>
               <div className="px-6 py-3 space-y-1">
-                {models.map(m => (
+                {providerModels.map(m => (
                   <div key={m.key} className="flex items-center justify-between py-3 px-3 rounded-xl hover:bg-[var(--blog-fg-soft)] transition-colors group">
                     <div className="flex items-center gap-3 min-w-0 flex-1">
                       <button
@@ -423,65 +359,9 @@ export const ProviderManager: React.FC = () => {
         })}
       </div>
 
-      {customModels.length === 0 && (
+      {models.length === 0 && (
         <div className="text-center py-12 text-sm text-[var(--blog-muted)]">
           暂无模型，请点击上方按钮获取服务商模型列表，或手动添加
-        </div>
-      )}
-    </div>
-  );
-};
-
-// --- SVG Model Selector (glass panel style) ---
-export const SvgModelSelector: React.FC = () => {
-  const [svgModel, setSvgModel] = useState<string>(getSvgModelKey);
-  const [customModels] = useState<StoredModel[]>(loadStoredModels);
-  const allModels = useMemo(() => {
-    const base: Record<string, AIModelConfig> = {};
-    for (const m of customModels) {
-      base[m.key] = { provider: m.provider, modelId: m.modelId, name: m.name, shortName: m.shortName, description: m.description, isFree: m.isFree, supportsThinking: m.supportsThinking };
-    }
-    return base;
-  }, [customModels]);
-
-  const handleChange = (key: string) => { setSvgModel(key); setSvgModelKey(key); toast.success('SVG 绘图模型已更新'); };
-  const current = allModels[svgModel];
-
-  return (
-    <div className="glass-panel overflow-hidden">
-      <div className="p-6 border-b border-[var(--blog-line)]">
-        <h3 className="font-black text-lg text-[var(--blog-fg)] flex items-center gap-2">
-          <Sparkles size={20} /> SVG 绘图模型
-        </h3>
-        <p className="text-sm text-[var(--blog-muted)] mt-1">选择用于生成 SVG 图标的 AI 模型</p>
-      </div>
-      {Object.keys(allModels).length === 0 ? (
-        <div className="text-center py-10 text-sm text-[var(--blog-muted)]">请先在"模型管理"中添加模型</div>
-      ) : (
-        <div className="p-6 grid grid-cols-1 sm:grid-cols-2 gap-3">
-          {Object.entries(allModels).map(([key, model]) => {
-            const isSelected = svgModel === key;
-            return (
-              <div key={key} onClick={() => handleChange(key)}
-                className={`relative p-4 rounded-2xl border transition-all duration-300 cursor-pointer ${isSelected
-                  ? 'border-[var(--blog-fg)] bg-[var(--blog-fg-soft)] shadow-sm'
-                  : 'border-[var(--blog-line)] bg-white/40 dark:bg-white/5 hover:bg-[var(--blog-fg-soft)]'
-                }`}>
-                <div className="flex justify-between items-start">
-                  <div>
-                    <div className="font-bold text-sm text-[var(--blog-fg)]">{model.name}</div>
-                    <div className="text-[11px] text-[var(--blog-muted)] mt-1 font-mono">{model.modelId}</div>
-                  </div>
-                  {isSelected && <CheckCircle size={18} className="text-[var(--blog-fg)] shrink-0" />}
-                </div>
-              </div>
-            );
-          })}
-        </div>
-      )}
-      {current && (
-        <div className="px-6 py-4 border-t border-[var(--blog-line)] text-sm text-[var(--blog-muted)]">
-          当前选择: <span className="font-bold text-[var(--blog-fg)]">{current.name}</span> ({PROVIDER_NAMES[current.provider] || current.provider})
         </div>
       )}
     </div>
