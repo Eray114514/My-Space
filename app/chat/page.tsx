@@ -5,7 +5,7 @@ import {
     Send, Bot, User, Trash2, StopCircle, Sparkles, ChevronDown, Plus,
     Settings, FileText, Hash, X, ArrowLeft, Copy, RefreshCw, Edit2, Check, Save, History, Clock
 } from 'lucide-react';
-import { AIService, AIModelKey, AIModelConfig } from '../../services/ai';
+import { AIService, AIModelKey, AIModelConfig, getModelDisplayName } from '../../services/ai';
 import { StorageService, ChatSession, ChatMessage } from '../../services/storage';
 import { MarkdownRenderer } from '../../components/MarkdownRenderer';
 import { confirmToast } from '../../utils/toast';
@@ -538,7 +538,7 @@ function ChatContent() {
                                         </LiquidGlass>
                                         <div className="text-center space-y-2">
                                             <p className="font-semibold tracking-wide text-lg text-[var(--blog-fg)]">How can I help you today?</p>
-                                            <p className="text-xs text-[var(--blog-muted)] font-mono">Powered by {selectedModel ? (allModels[selectedModel] as any)?.shortName : 'AI'}</p>
+                                            <p className="text-xs text-[var(--blog-muted)] font-mono">Powered by {selectedModel && allModels[selectedModel] ? getModelDisplayName(allModels[selectedModel]) : 'AI'}</p>
                                         </div>
                                     </div>
                                 )}

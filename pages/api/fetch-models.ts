@@ -6,6 +6,24 @@ const isKeyValid = (key: string | undefined): boolean => {
     return !!key && key.trim() !== '' && key.trim().toLowerCase() !== 'none';
 };
 
+const DEEPSEEK_NAME_MAP: Record<string, string> = {
+    'deepseek-chat': 'DeepSeek V3',
+    'deepseek-reasoner': 'DeepSeek R1',
+    'deepseek-coder': 'DeepSeek Coder',
+    'deepseek-v4-flash': 'DeepSeek V4 Flash',
+    'deepseek-v4-pro': 'DeepSeek V4 Pro',
+    'deepseek-v4': 'DeepSeek V4',
+};
+
+function formatDeepSeekName(id: string): string {
+    if (DEEPSEEK_NAME_MAP[id]) return DEEPSEEK_NAME_MAP[id];
+    // Fallback: turn "deepseek-v4-flash" into "DeepSeek V4 Flash"
+    return id
+        .split('-')
+        .map(part => part.charAt(0).toUpperCase() + part.slice(1))
+        .join(' ');
+}
+
 export default async function handler(req: Request) {
     if (req.method !== 'GET') return new Response('Method Not Allowed', { status: 405 });
 
@@ -29,6 +47,7 @@ export default async function handler(req: Request) {
             const data = await res.json();
             const models = (data.data || []).map((m: any) => ({
                 id: m.id,
+                name: formatDeepSeekName(m.id),
                 owned_by: m.owned_by || 'deepseek'
             }));
             return new Response(JSON.stringify({ models }), {

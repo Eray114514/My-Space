@@ -1,5 +1,5 @@
 import { Article, Project } from '../types';
-import { AIModelKey, StoredModel } from './ai';
+import { AIModelKey, StoredModel, normalizeModelDisplay } from './ai';
 
 const THEME_KEY = 'my_theme';
 
@@ -50,8 +50,8 @@ export const StorageService = {
       const raw = await rpc('getAIModels');
       const parsed = typeof raw === 'string' ? JSON.parse(raw) : raw;
       const models = Array.isArray(parsed) ? parsed : [];
-      aiModelsCache = models;
-      return models;
+      aiModelsCache = models.map(normalizeModelDisplay);
+      return aiModelsCache;
     } catch {
       return [];
     }

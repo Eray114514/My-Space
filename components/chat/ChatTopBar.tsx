@@ -3,7 +3,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { ArrowLeft, History, Sparkles, ChevronDown, Check, Settings, Plus } from 'lucide-react';
-import { AIModelKey, AIModelConfig } from '../../services/ai';
+import { AIModelKey, AIModelConfig, getModelDisplayName } from '../../services/ai';
 import { LiquidGlass } from '../LiquidGlass';
 
 interface ChatTopBarProps {
@@ -23,7 +23,10 @@ interface ChatTopBarProps {
 }
 
 function getModelShortName(key: string, allModels: Record<string, AIModelConfig>): string {
-    return allModels[key]?.shortName || key.split(':').pop() || key;
+    const model = allModels[key];
+    if (model?.shortName) return model.shortName;
+    if (model) return getModelDisplayName(model);
+    return key.split(':').pop() || key;
 }
 
 export const ChatTopBar: React.FC<ChatTopBarProps> = ({
@@ -135,8 +138,7 @@ export const ChatTopBar: React.FC<ChatTopBarProps> = ({
                                 onClick={() => { setSelectedModel(key as AIModelKey); setIsModelMenuOpen(false); }}
                                 className={`w-full text-left px-3 py-2.5 text-xs font-medium rounded-xl flex justify-between items-center transition-colors ${selectedModel === key ? 'bg-[var(--blog-fg)] text-[var(--blog-bg)] border border-[var(--blog-fg)]' : 'hover:bg-[var(--blog-fg-soft)] text-[var(--blog-muted)] border border-transparent'}`}
                             >
-                                {/* @ts-ignore */}
-                                {m.name}
+                                {getModelDisplayName(m)}
                                 {selectedModel === key && <Check size={14} />}
                             </button>
                         ))}

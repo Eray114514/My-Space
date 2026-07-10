@@ -1,6 +1,6 @@
 "use client";
 import React, { useState, useMemo, useCallback } from 'react';
-import { AIModelKey, AI_PROVIDERS, AIModelConfig, StoredModel } from '../../../services/ai';
+import { AIModelKey, AI_PROVIDERS, AIModelConfig, StoredModel, getModelDisplayName, normalizeModelDisplay } from '../../../services/ai';
 import { Bot, Box, BrainCircuit, Sparkles, CheckCircle, RefreshCw, Plus, Trash2, Zap, Crown, X, Search } from 'lucide-react';
 import toast from 'react-hot-toast';
 
@@ -51,14 +51,15 @@ const FetchModelsModal: React.FC<{
     const modelId = m.id;
     const key = `${provider}:${modelId}`;
     if (existingKeys.has(key)) { toast('该模型已添加'); return; }
-    const shortName = modelId.split('/').pop()?.slice(0, 12) || modelId.slice(0, 12);
-    const name = m.name || modelId.split('/').pop() || modelId;
+    const rawName = m.name || getModelDisplayName({ modelId });
+    const rawIdPart = modelId.split('/').pop() || modelId;
+    const shortName = rawName.length > 16 ? rawIdPart.slice(0, 16) : rawName;
     const description = m.description || (m.context_length ? `Context: ${m.context_length}` : '');
-    onAdd({
-      key, provider, modelId, name, shortName, description,
+    onAdd(normalizeModelDisplay({
+      key, provider, modelId, name: rawName, shortName, description,
       isFree: false,
       supportsThinking: modelId.includes('reasoner') || modelId.includes('r1') || modelId.includes('thinking') || modelId.includes('pro')
-    });
+    }));
   };
 
   return (
